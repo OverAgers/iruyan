@@ -1,0 +1,26 @@
+# Binaries for programs and plugins
+*.exe
+*.dll
+*.so
+*.dylib
+*.test
+.DS_Store
+/tmp
+
+# Output of the go coverage tool
+*.out
+
+# Directories for dependency management
+vendor/
+
+# IDEs and Editors
+.idea/
+.vscode/
+
+# Go modules
+/go.sum
+/go.mod
+
+# Docker related files
+docker-compose.override.yml
+.env
