@@ -33,18 +33,42 @@
 
 ## 環境構築
 
-### 1. Docker イメージのビルドとコンテナの起動
+### 1. ソースコードのダウンロード
+
+```
+git clone https://github.com/OverAgers/iruyan.git
+```
+
+### 2. root ディレクトリに移動
+
+```
+cd iruyan
+```
+
+### 3. Docker イメージのビルドとコンテナの起動
 
 以下のコマンドで、Docker コンテナをビルドし、バックグラウンドで起動します。
 
-```bash
+```
 docker-compose up -d --build
 ```
 
-### 2. コンテナの終了
+### 4. フロントエンドのアクセス URL で表示を確認
+
+```
+http://localhost:3000
+```
+
+### 5. フロントエンドのアクセス URL で表示を確認
+
+```
+http://localhost:8080
+```
+
+### 6. コンテナの終了
 
 コンテナを停止・削除するためには、以下のコマンドを使用します。
 
-```bash
+```
 docker-compose down
 ```
