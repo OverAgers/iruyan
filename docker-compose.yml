@@ -6,6 +6,7 @@ services:
       - "3000:3000"
     volumes:
       - ./iruyan-front:/app
+      - /app/node_modules  # ホストのnode_modulesをマウントから除外
     environment:
       - NODE_ENV=development
       - CHOKIDAR_USEPOLLING=true
@@ -13,7 +14,7 @@ services:
     depends_on:
       - backend
       - db
-    command: yarn start
+    command: yarn dev
 
   backend:
     container_name: iruyan-api

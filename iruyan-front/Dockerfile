@@ -20,4 +20,4 @@ RUN yarn build
 EXPOSE 3000
 
 # コンテナ起動時にNext.jsのアプリを起動（本番モード）
-CMD ["yarn", "start"]
+CMD ["yarn", "dev"]
