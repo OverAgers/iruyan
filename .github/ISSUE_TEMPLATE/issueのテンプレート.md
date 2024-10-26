@@ -1,5 +1,5 @@
 ---
-name: "[どこで使うか]内容"
+name: Issueのテンプレート
 about: Issue template
 title: ''
 labels: ''
