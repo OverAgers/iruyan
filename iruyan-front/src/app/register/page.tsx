@@ -1,13 +1,12 @@
 "use client"
+
+import AuthLayout from "@/components/layouts/auth-layout";
+import RegisterForm from "@/features/register/components/register-form";
+
 export default function RegisterPage() {
   return (
-    <div>
-      <h1>Register</h1>
-      <form>
-        <input type="text" placeholder="Username" />
-        <input type="password" placeholder="Password" />
-        <button type="submit">Register</button>
-      </form>
-    </div>
+    <AuthLayout>
+      <RegisterForm />
+    </AuthLayout>
   );
 }

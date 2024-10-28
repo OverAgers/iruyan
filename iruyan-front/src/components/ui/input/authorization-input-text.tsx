@@ -4,6 +4,7 @@ type Props = {
   title: string
   type: string;
   placeholder: string;
+  setData: (data: string) => void;
 }
 
 export default function AuthInputText(Props: Props) {
@@ -16,6 +17,7 @@ export default function AuthInputText(Props: Props) {
         variant="outlined"
         type={Props.type}
         placeholder={Props.placeholder}
+        onChange={(e) => Props.setData(e.target.value)}
         sx={{
           borderRadius: "8px",
           width: "31rem",

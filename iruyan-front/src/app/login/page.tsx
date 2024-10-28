@@ -1,13 +1,12 @@
 "use client"
+
+import AuthLayout from "@/components/layouts/auth-layout";
+import LoginForm from "@/features/login/components/login-form";
+
 export default function LoginPage() {
   return (
-    <div>
-      <h1>Login</h1>
-      <form>
-        <input type="text" placeholder="Username" />
-        <input type="password" placeholder="Password" />
-        <button type="submit">Login</button>
-      </form>
-    </div>
+    <AuthLayout>
+      <LoginForm />
+    </AuthLayout>
   );
 }
