@@ -28,6 +28,7 @@ services:
       - DATABASE_URL=postgres://user:password@db:5432/exampledb
     depends_on:
       - db
+
   db:
     image: postgres:13-alpine
     container_name: postgres-db
