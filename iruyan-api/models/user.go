@@ -13,7 +13,7 @@ type User struct {
 	ID       uint   `gorm:"primaryKey;autoIncrement"`
 	Name     string `gorm:"size:255;not null"`
 	Username string `gorm:"uniqueIndex;size:255;not null"`
-	password string `gorm:"size:255;not null"` // ハッシュ化されたパスワード
+	Password string `gorm:"size:255;not null"` // ハッシュ化されたパスワード
 	Task     string `gorm:"size:255"`
 	Status   string `gorm:"size:255"`
 	Email    string `gorm:"uniqueIndex;size:255;not null"`
@@ -52,7 +52,7 @@ func NewUser(db *gorm.DB, name, username, password, task, status, email string) 
 	return &User{
 		Name:     name,
 		Username: username,
-		password: hashedPassword,
+		Password: hashedPassword,
 		Task:     task,
 		Status:   status,
 		Email:    email,
@@ -90,4 +90,10 @@ func validateEmail(email string) error {
 		return fmt.Errorf("invalid email format")
 	}
 	return nil
+}
+
+// CheckPassword 受け取ったプレーンテキストのパスワードをハッシュ化されたパスワードと比較するメソッド
+func (u *User) CheckPassword(password string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password))
+	return err == nil
 }

@@ -18,11 +18,39 @@ func LoginPageHandler(c *gin.Context) {
 
 // ログイン処理
 func LoginHandler(c *gin.Context) {
-	// 仮の処理
 	username := c.PostForm("username")
+	password := c.PostForm("password")
+
+	// ユーザーをデータベースから取得
+	var user models.User
+	result := infrastructure.DB.Where("username = ?", username).First(&user)
+
+	// ユーザーが見つからない場合のエラーハンドリング
+	if result.Error != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "authentication failed: invalid username",
+		})
+		return
+	}
+
+	// パスワードの比較をモデルのメソッドで行う
+	if !user.CheckPassword(password) {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "authentication failed: invalid password",
+		})
+		return
+	}
+
+	// ログイン成功時のレスポンス
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Login successful",
-		"user":    username,
+		"user": gin.H{
+			"username": user.Username,
+			"name":     user.Name,
+			"task":     user.Task,
+			"status":   user.Status,
+			"email":    user.Email,
+		},
 	})
 }
 
@@ -63,6 +91,7 @@ func RegisterHandler(c *gin.Context) {
 		"user": gin.H{
 			"username": user.Username,
 			"name":     user.Name,
+			"password": user.Password,
 			"task":     user.Task,
 			"status":   user.Status,
 			"email":    user.Email,
