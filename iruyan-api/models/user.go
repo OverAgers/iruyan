@@ -4,31 +4,41 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 )
 
 // User 構造体
 type User struct {
-	ID       uuid.UUID
-	Name     string
-	Username string
-	password string // 非公開フィールド（ハッシュ化されたパスワード）
-	Icon     string
-	Task     string
-	Status   string
-	Email    string
+	ID       uint   `gorm:"primaryKey;autoIncrement"`
+	Name     string `gorm:"size:255;not null"`
+	Username string `gorm:"uniqueIndex;size:255;not null"`
+	password string `gorm:"size:255;not null"` // ハッシュ化されたパスワード
+	Task     string `gorm:"size:255"`
+	Status   string `gorm:"size:255"`
+	Email    string `gorm:"uniqueIndex;size:255;not null"`
 }
 
 // NewUser: User構造体のコンストラクタ関数
-func NewUser(name, username, password, icon, task, status, email string) (*User, error) {
-	// パスワードのバリデーション
-	if err := validatePassword(password); err != nil {
-		return nil, err
+func NewUser(db *gorm.DB, name, username, password, task, status, email string) (*User, error) {
+	// ユーザーネームの重複チェック
+	var existingUser User
+	if err := db.Where("username = ?", username).Or("email = ?", email).First(&existingUser).Error; err == nil {
+		if existingUser.Username == username {
+			return nil, fmt.Errorf("username '%s' is already taken", username)
+		}
+		if existingUser.Email == email {
+			return nil, fmt.Errorf("email '%s' is already registered", email)
+		}
 	}
 
 	// メールアドレスのバリデーション
 	if err := validateEmail(email); err != nil {
+		return nil, err
+	}
+
+	// パスワードのバリデーション
+	if err := validatePassword(password); err != nil {
 		return nil, err
 	}
 
@@ -40,11 +50,9 @@ func NewUser(name, username, password, icon, task, status, email string) (*User,
 
 	// 新しいUserインスタンスを生成し、ハッシュ化されたパスワードを設定
 	return &User{
-		ID:       uuid.New(),
 		Name:     name,
 		Username: username,
-		password: hashedPassword, // ハッシュ化済みのパスワード
-		Icon:     icon,
+		password: hashedPassword,
 		Task:     task,
 		Status:   status,
 		Email:    email,
@@ -57,12 +65,21 @@ func HashPassword(password string) (string, error) {
 	return string(bytes), err
 }
 
-// validatePassword: パスワードが4桁の数字かを確認する内部関数
+// validatePassword: パスワードが英数字を含む6文字以上かを確認する内部関数
 func validatePassword(password string) error {
-	match, _ := regexp.MatchString(`^\d{4}$`, password)
-	if !match {
-		return fmt.Errorf("Password must be exactly 4 digits")
+	// パスワードが少なくとも6文字以上であり、英字と数字がそれぞれ少なくとも1つ含まれているかをチェック
+	if len(password) < 6 {
+		return fmt.Errorf("password must be at least 6 characters long")
 	}
+
+	// 英字と数字が少なくとも1つずつ含まれているかを正規表現で確認
+	hasLetter := regexp.MustCompile(`[a-zA-Z]`).MatchString
+	hasNumber := regexp.MustCompile(`[0-9]`).MatchString
+
+	if !hasLetter(password) || !hasNumber(password) {
+		return fmt.Errorf("password must contain at least one letter and one number")
+	}
+
 	return nil
 }
 
@@ -70,31 +87,7 @@ func validatePassword(password string) error {
 func validateEmail(email string) error {
 	match, _ := regexp.MatchString(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`, email)
 	if !match {
-		return fmt.Errorf("Invalid email format")
+		return fmt.Errorf("invalid email format")
 	}
 	return nil
-}
-
-// CheckPasswordHash: パスワードがハッシュと一致するかをチェックする関数
-func (u *User) CheckPasswordHash(password string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(u.password), []byte(password))
-	return err == nil
-}
-
-// 仮想的なデータベースからユーザーを取得する関数
-func GetUserByUsername(username string) (*User, error) {
-	// ここでデータベース接続し、指定されたusernameを持つユーザーを検索する
-	// 以下は仮の例です：
-
-	// 仮のユーザー（データベースから取得したものと想定）
-	if username == "john_doe" {
-		// ハッシュ化されたパスワード（"1234"のハッシュ化例）
-		hashedPassword := "$2a$10$7QxHj7rE3hVtZMQTZWnTEOvGTSNOjZxBoPlODhO.Oz9ypEYbfG8O6"
-		return &User{
-			Username: "john_doe",
-			password: hashedPassword, // ハッシュ化されたパスワード
-		}, nil
-	}
-
-	return nil, fmt.Errorf("user not found")
 }

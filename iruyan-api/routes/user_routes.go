@@ -20,14 +20,14 @@ func RegisterUserRoutes(router *gin.Engine) {
 	router.POST("/register", handlers.RegisterHandler)
 
 	// ユーザー画面
-	router.GET("/u/:user_id", handlers.UserPageHandler)
+	router.GET("/user/:user_id", handlers.UserPageHandler)
 
 	// 1週間の作業日取得
-	router.GET("/u/:user_id/work_info", handlers.WorkInfoHandler)
+	router.GET("/user/:user_id/work_info", handlers.WorkInfoHandler)
 
 	// 一緒に居た時間
-	router.GET("/u/:user_id/together", handlers.TogetherTimeHandler)
+	router.GET("/user/:user_id/together", handlers.TogetherTimeHandler)
 
 	// 集中ランキング
-	router.GET("/u/ranking", handlers.RankingHandler)
+	router.GET("/user/:user_id/ranking", handlers.RankingHandler)
 }

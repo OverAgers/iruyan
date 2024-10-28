@@ -1,9 +1,9 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
 
+	"iruyan-api/infrastructure"
 	"iruyan-api/models"
 
 	"github.com/gin-gonic/gin"
@@ -35,41 +35,38 @@ func RegisterPageHandler(c *gin.Context) {
 
 // 新規登録処理
 func RegisterHandler(c *gin.Context) {
-	// フォームデータから値を取得
 	username := c.PostForm("username")
 	password := c.PostForm("password")
 	name := c.PostForm("name")
-	icon := c.PostForm("icon")
 	task := c.PostForm("task")
 	status := c.PostForm("status")
 	email := c.PostForm("email")
 
-	// エラーハンドラのインスタンスを作成
 	errorHandler := ErrorHandler{}
 
-	// User構造体のインスタンスを作成（この時点でパスワードハッシュ化とバリデーションも行われる）
-	user, err := models.NewUser(name, username, password, icon, task, status, email)
+	// GORMを使ってデータベースからusernameの重複を確認しつつユーザーインスタンスを生成
+	user, err := models.NewUser(infrastructure.DB, name, username, password, task, status, email)
 	if err != nil {
-		// パスワードが4桁でない場合や他のバリデーションに失敗した場合、エラーレスポンスを返す
 		errorHandler.BadRequest(c, err.Error())
 		return
 	}
 
-	// すべてのデータをレスポンスとして表示（パスワードはハッシュ化されているので表示しない）
-	response := fmt.Sprintf(
-		"Register User: \nUsername: %s\nName: %s\nIcon: %s\nTask: %s\nStatus: %s\nEmail: %s\n",
-		user.Username,
-		user.Name,
-		user.Icon,
-		user.Task,
-		user.Status,
-		user.Email,
-	)
+	// ユーザーをデータベースに保存
+	result := infrastructure.DB.Create(user)
+	if result.Error != nil {
+		errorHandler.InternalServerError(c, "Failed to save user to database: "+result.Error.Error())
+		return
+	}
 
-	// レスポンスを送信
 	c.JSON(http.StatusOK, gin.H{
-		"message":  "Registration successful",
-		"response": response,
+		"message": "Registration successful",
+		"user": gin.H{
+			"username": user.Username,
+			"name":     user.Name,
+			"task":     user.Task,
+			"status":   user.Status,
+			"email":    user.Email,
+		},
 	})
 }
 
