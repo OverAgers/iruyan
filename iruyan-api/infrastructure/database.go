@@ -5,6 +5,7 @@ import (
 	"iruyan-api/models"
 	"log"
 	"os"
+	"time"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -19,12 +20,21 @@ func InitDB() {
 	}
 
 	var err error
-	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
-	if err != nil {
-		log.Fatalf("Failed to connect to database: %v", err)
+	maxRetries := 5
+
+	for i := 0; i < maxRetries; i++ {
+		DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+		if err == nil {
+			fmt.Println("Database connection successfully established.")
+			break
+		}
+		log.Printf("Failed to connect to database (attempt %d/%d): %v", i+1, maxRetries, err)
+		time.Sleep(2 * time.Second)
 	}
 
-	fmt.Println("Database connection successfully established.")
+	if err != nil {
+		log.Fatalf("Failed to connect to database after %d attempts: %v", maxRetries, err)
+	}
 
 	// ユーザーモデルをマイグレーション
 	err = DB.AutoMigrate(&models.User{})
