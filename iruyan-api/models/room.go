@@ -30,10 +30,10 @@ func (r *Room) ValidateName() error {
 	return nil
 }
 
-// BeforeCreate: GORMのフックで、新しいIDを自動的に生成
-func (r *Room) BeforeCreate(tx *gorm.DB) error {
-	if r.ID == uuid.Nil {
-		r.ID = uuid.New()
+// FindByID - IDを元にRoomを検索するメソッド
+func (r *Room) FindByID(db *gorm.DB, roomID string) error {
+	if err := db.Where("id = ?", roomID).First(r).Error; err != nil {
+		return errors.New("room not found")
 	}
 	return nil
 }
