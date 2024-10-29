@@ -19,8 +19,3 @@ type UserInfo struct {
 	Task     string `json:"task,omitempty"`
 	Email    string `json:"email"`
 }
-
-// ErrorResponse エラーレスポンス
-type ErrorResponse struct {
-	Message string `json:"message"`
-}

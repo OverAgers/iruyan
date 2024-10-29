@@ -164,6 +164,155 @@
                     }
                 }
             }
+        },
+        "/rooms": {
+            "post": {
+                "description": "Creates a room with the provided name",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "room"
+                ],
+                "summary": "Create a new room",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Room Name",
+                        "name": "name",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.RoomCreateResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/rooms/{room_id}": {
+            "get": {
+                "description": "Retrieves the details of a specific room",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "room"
+                ],
+                "summary": "Get room details",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Room ID",
+                        "name": "room_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.RoomDetailResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/rooms/{room_id}/enter": {
+            "post": {
+                "description": "Allows a user to enter a specific room",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "room"
+                ],
+                "summary": "Enter a room",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Room ID",
+                        "name": "room_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.RoomActionResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/rooms/{room_id}/leave": {
+            "delete": {
+                "description": "Allows a user to leave a specific room",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "room"
+                ],
+                "summary": "Leave a room",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Room ID",
+                        "name": "room_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.RoomActionResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -194,6 +343,42 @@
                 },
                 "user": {
                     "$ref": "#/definitions/responses.UserInfo"
+                }
+            }
+        },
+        "responses.RoomActionResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "room_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.RoomCreateResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "room_id": {
+                    "type": "string"
+                },
+                "room_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.RoomDetailResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "room_id": {
+                    "type": "string"
                 }
             }
         },
