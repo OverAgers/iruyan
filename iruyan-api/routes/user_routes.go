@@ -11,7 +11,7 @@ func RegisterUserRoutes(router *gin.Engine) {
 	router.GET("/user/:user_id", user.UserPageHandler)
 
 	// ユーザーの削除
-	router.POST("/user/:user_id/delete", user.UserDeleteHandler)
+	router.DELETE("/user/:user_id/delete", user.UserDeleteHandler)
 
 	// 1週間の作業日取得
 	router.GET("/user/:user_id/work_info", user.WorkInfoHandler)

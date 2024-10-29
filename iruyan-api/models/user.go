@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
 
@@ -94,4 +95,12 @@ func validateEmail(email string) error {
 func (u *User) CheckPassword(password string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password))
 	return err == nil
+}
+
+// FindByID - IDを元にUserが存在するかを検索するメソッド
+func (u *User) FindByID(db *gorm.DB, userID uint) error {
+	if err := db.Where("id = ?", userID).First(u).Error; err != nil {
+		return errors.New("user not found")
+	}
+	return nil
 }
