@@ -3,63 +3,96 @@ package auth
 import (
 	"net/http"
 
-	errorhandler "iruyan-api/handlers/error" // errorhandlerとしてインポート
+	errorhandler "iruyan-api/handlers/error"
 	"iruyan-api/infrastructure"
 	"iruyan-api/models"
+	"iruyan-api/responses" // 新しく responses をインポート
 
 	"github.com/gin-gonic/gin"
 )
 
-// ログイン画面表示
+// LoginPageHandler ログイン画面表示
+// @Summary Show login page
+// @Description Displays the login page with a message
+// @Tags auth
+// @Produce json
+// @Success 200 {object} responses.ErrorResponse
+// @Router /login [get]
 func LoginPageHandler(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Login page accessed successfully",
+	c.JSON(http.StatusOK, responses.ErrorResponse{
+		Message: "Login page accessed successfully",
 	})
 }
 
-// ログイン処理
+// LoginHandler ログイン処理
+// @Summary User login
+// @Description Authenticates the user based on username and password
+// @Tags auth
+// @Accept x-www-form-urlencoded
+// @Produce json
+// @Param username formData string true "Username" default(johndoe)
+// @Param password formData string true "Password" default(pass1234)
+// @Success 200 {object} responses.LoginSuccessResponse
+// @Failure 401 {object} responses.ErrorResponse
+// @Router /login [post]
 func LoginHandler(c *gin.Context) {
 	username := c.PostForm("username")
 	password := c.PostForm("password")
 
-	// ユーザーをデータベースから取得
 	var user models.User
 	result := infrastructure.DB.Where("username = ?", username).First(&user)
 
-	// ユーザーが見つからない場合のエラーハンドリング
 	if result.Error != nil {
 		errorHandler := errorhandler.ErrorHandler{}
 		errorHandler.Unauthorized(c, "authentication failed: invalid username")
 		return
 	}
 
-	// パスワードの比較をモデルのメソッドで行う
 	if !user.CheckPassword(password) {
 		errorHandler := errorhandler.ErrorHandler{}
 		errorHandler.Unauthorized(c, "authentication failed: invalid password")
 		return
 	}
 
-	// ログイン成功時のレスポンス
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Login successful",
-		"user": gin.H{
-			"username": user.Username,
-			"name":     user.Name,
-			"task":     user.Task,
-			"email":    user.Email,
+	c.JSON(http.StatusOK, responses.LoginSuccessResponse{
+		Message: "Login successful",
+		User: responses.UserInfo{
+			Username: user.Username,
+			Name:     user.Name,
+			Task:     user.Task,
+			Email:    user.Email,
 		},
 	})
 }
 
-// 新規登録画面表示
+// RegisterPageHandler 新規登録画面表示
+// @Summary Show registration page
+// @Description Displays the registration page with a message
+// @Tags auth
+// @Produce json
+// @Success 200 {object} responses.ErrorResponse
+// @Router /register [get]
 func RegisterPageHandler(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Register page accessed successfully",
+	c.JSON(http.StatusOK, responses.ErrorResponse{
+		Message: "Register page accessed successfully",
 	})
 }
 
-// 新規登録処理
+// RegisterHandler 新規登録処理
+// @Summary User registration
+// @Description Registers a new user with the provided details
+// @Tags auth
+// @Accept x-www-form-urlencoded
+// @Produce json
+// @Param username formData string true "Username" default(johndoe)
+// @Param password formData string true "Password" default(pass1234)
+// @Param name formData string true "Name" default(John Doe)
+// @Param task formData string false "Task" default(Developer)
+// @Param email formData string true "Email" default(johndoe@example.com)
+// @Success 200 {object} responses.RegisterSuccessResponse
+// @Failure 400 {object} responses.ErrorResponse
+// @Failure 500 {object} responses.ErrorResponse
+// @Router /register [post]
 func RegisterHandler(c *gin.Context) {
 	username := c.PostForm("username")
 	password := c.PostForm("password")
@@ -69,27 +102,25 @@ func RegisterHandler(c *gin.Context) {
 
 	errorHandler := errorhandler.ErrorHandler{}
 
-	// GORMを使ってデータベースからusernameとemailの重複を確認しつつユーザーインスタンスを生成
 	user, err := models.NewUser(infrastructure.DB, name, username, password, task, email)
 	if err != nil {
 		errorHandler.BadRequest(c, err.Error())
 		return
 	}
 
-	// ユーザーをデータベースに保存
 	result := infrastructure.DB.Create(user)
 	if result.Error != nil {
 		errorHandler.InternalServerError(c, "Failed to save user to database: "+result.Error.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Registration successful",
-		"user": gin.H{
-			"username": user.Username,
-			"name":     user.Name,
-			"task":     user.Task,
-			"email":    user.Email,
+	c.JSON(http.StatusOK, responses.RegisterSuccessResponse{
+		Message: "Registration successful",
+		User: responses.UserInfo{
+			Username: user.Username,
+			Name:     user.Name,
+			Task:     user.Task,
+			Email:    user.Email,
 		},
 	})
 }
