@@ -19,6 +19,29 @@ definitions:
       user:
         $ref: '#/definitions/responses.UserInfo'
     type: object
+  responses.RoomActionResponse:
+    properties:
+      message:
+        type: string
+      room_id:
+        type: string
+    type: object
+  responses.RoomCreateResponse:
+    properties:
+      message:
+        type: string
+      room_id:
+        type: string
+      room_name:
+        type: string
+    type: object
+  responses.RoomDetailResponse:
+    properties:
+      message:
+        type: string
+      room_id:
+        type: string
+    type: object
   responses.UserInfo:
     properties:
       email:
@@ -144,4 +167,102 @@ paths:
       summary: User registration
       tags:
       - auth
+  /rooms:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Creates a room with the provided name
+      parameters:
+      - description: Room Name
+        in: formData
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.RoomCreateResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+      summary: Create a new room
+      tags:
+      - room
+  /rooms/{room_id}:
+    get:
+      description: Retrieves the details of a specific room
+      parameters:
+      - description: Room ID
+        in: path
+        name: room_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.RoomDetailResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+      summary: Get room details
+      tags:
+      - room
+  /rooms/{room_id}/enter:
+    post:
+      description: Allows a user to enter a specific room
+      parameters:
+      - description: Room ID
+        in: path
+        name: room_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.RoomActionResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+      summary: Enter a room
+      tags:
+      - room
+  /rooms/{room_id}/leave:
+    delete:
+      description: Allows a user to leave a specific room
+      parameters:
+      - description: Room ID
+        in: path
+        name: room_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.RoomActionResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+      summary: Leave a room
+      tags:
+      - room
 swagger: "2.0"
