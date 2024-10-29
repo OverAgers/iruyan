@@ -120,11 +120,6 @@ paths:
         name: name
         required: true
         type: string
-      - default: Developer
-        description: Task
-        in: formData
-        name: task
-        type: string
       - default: johndoe@example.com
         description: Email
         in: formData
