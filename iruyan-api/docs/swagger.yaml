@@ -1,0 +1,152 @@
+basePath: /
+definitions:
+  responses.ErrorResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  responses.LoginSuccessResponse:
+    properties:
+      message:
+        type: string
+      user:
+        $ref: '#/definitions/responses.UserInfo'
+    type: object
+  responses.RegisterSuccessResponse:
+    properties:
+      message:
+        type: string
+      user:
+        $ref: '#/definitions/responses.UserInfo'
+    type: object
+  responses.UserInfo:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      task:
+        type: string
+      username:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: This is a server for IRUYAN.
+  title: IRUYAN API
+  version: "1.0"
+paths:
+  /login:
+    get:
+      description: Displays the login page with a message
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+      summary: Show login page
+      tags:
+      - auth
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Authenticates the user based on username and password
+      parameters:
+      - default: johndoe
+        description: Username
+        in: formData
+        name: username
+        required: true
+        type: string
+      - default: pass1234
+        description: Password
+        in: formData
+        name: password
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.LoginSuccessResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+      summary: User login
+      tags:
+      - auth
+  /register:
+    get:
+      description: Displays the registration page with a message
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+      summary: Show registration page
+      tags:
+      - auth
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Registers a new user with the provided details
+      parameters:
+      - default: johndoe
+        description: Username
+        in: formData
+        name: username
+        required: true
+        type: string
+      - default: pass1234
+        description: Password
+        in: formData
+        name: password
+        required: true
+        type: string
+      - default: John Doe
+        description: Name
+        in: formData
+        name: name
+        required: true
+        type: string
+      - default: Developer
+        description: Task
+        in: formData
+        name: task
+        type: string
+      - default: johndoe@example.com
+        description: Email
+        in: formData
+        name: email
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.RegisterSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+      summary: User registration
+      tags:
+      - auth
+swagger: "2.0"
