@@ -6,7 +6,7 @@ import (
 	errorhandler "iruyan-api/handlers/error"
 	"iruyan-api/infrastructure"
 	"iruyan-api/models"
-	"iruyan-api/responses" // 新しく responses をインポート
+	"iruyan-api/responses"
 
 	"github.com/gin-gonic/gin"
 )
