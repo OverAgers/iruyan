@@ -29,6 +29,7 @@ func main() {
 	// ルーティングを登録
 	routes.RegisterAuthRoutes(router)
 	routes.RegisterUserRoutes(router)
+	routes.RegisterRoomRoutes(router)
 
 	// サーバー起動
 	router.Run(":8080")
