@@ -14,7 +14,7 @@ type User struct {
 	Name     string `gorm:"size:255;not null"`
 	Username string `gorm:"uniqueIndex;size:255;not null"`
 	Password string `gorm:"size:255;not null"` // ハッシュ化されたパスワード
-	Task     string `gorm:"size:255"default:''`
+	Task     string `gorm:"size:255;default:''"`
 	Email    string `gorm:"uniqueIndex;size:255;not null"`
 }
 
