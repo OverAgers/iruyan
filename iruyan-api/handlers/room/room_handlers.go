@@ -1,6 +1,8 @@
 package room
 
 import (
+	"iruyan-api/infrastructure"
+	"iruyan-api/models"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -8,9 +10,32 @@ import (
 
 // Room作成
 func CreateRoomHandler(c *gin.Context) {
-	// Room作成のロジックをここに追加
+	roomName := c.PostForm("name")
+
+	// 新しいRoomインスタンスを作成
+	room := models.Room{Name: roomName}
+
+	// ルーム名のバリデーション
+	if err := room.ValidateName(); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	// データベースにRoomを保存
+	if err := infrastructure.DB.Create(&room).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to create room: " + err.Error(),
+		})
+		return
+	}
+
+	// 作成成功レスポンス
 	c.JSON(http.StatusOK, gin.H{
-		"message": "Room created successfully",
+		"message":   "Room created successfully",
+		"room_id":   room.ID,
+		"room_name": room.Name,
 	})
 }
 
