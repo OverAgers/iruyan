@@ -142,13 +142,6 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "default": "Developer",
-                        "description": "Task",
-                        "name": "task",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "string",
                         "default": "johndoe@example.com",
                         "description": "Email",
                         "name": "email",

@@ -87,7 +87,6 @@ func RegisterPageHandler(c *gin.Context) {
 // @Param username formData string true "Username" default(johndoe)
 // @Param password formData string true "Password" default(pass1234)
 // @Param name formData string true "Name" default(John Doe)
-// @Param task formData string false "Task" default(Developer)
 // @Param email formData string true "Email" default(johndoe@example.com)
 // @Success 200 {object} responses.RegisterSuccessResponse
 // @Failure 400 {object} responses.ErrorResponse
@@ -97,12 +96,11 @@ func RegisterHandler(c *gin.Context) {
 	username := c.PostForm("username")
 	password := c.PostForm("password")
 	name := c.PostForm("name")
-	task := c.PostForm("task")
 	email := c.PostForm("email")
 
 	errorHandler := errorhandler.ErrorHandler{}
 
-	user, err := models.NewUser(infrastructure.DB, name, username, password, task, email)
+	user, err := models.NewUser(infrastructure.DB, name, username, password, email)
 	if err != nil {
 		errorHandler.BadRequest(c, err.Error())
 		return

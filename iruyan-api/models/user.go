@@ -14,12 +14,12 @@ type User struct {
 	Name     string `gorm:"size:255;not null"`
 	Username string `gorm:"uniqueIndex;size:255;not null"`
 	Password string `gorm:"size:255;not null"` // ハッシュ化されたパスワード
-	Task     string `gorm:"size:255"`
+	Task     string `gorm:"size:255"default:''"`
 	Email    string `gorm:"uniqueIndex;size:255;not null"`
 }
 
 // NewUser: User構造体のコンストラクタ関数
-func NewUser(db *gorm.DB, name, username, password, task, email string) (*User, error) {
+func NewUser(db *gorm.DB, name, username, password, email string) (*User, error) {
 	// ユーザーネームの重複チェック
 	var existingUser User
 	if err := db.Where("username = ?", username).Or("email = ?", email).First(&existingUser).Error; err == nil {
@@ -52,7 +52,7 @@ func NewUser(db *gorm.DB, name, username, password, task, email string) (*User, 
 		Name:     name,
 		Username: username,
 		Password: hashedPassword,
-		Task:     task,
+		Task:     "",
 		Email:    email,
 	}, nil
 }
