@@ -1,8 +1,10 @@
 "use client"
+import Seats from "@/features/seats/components/seats";
+
 export default function RoomPage() {
   return (
     <div>
-      <h1>Room</h1>
+      <Seats />
     </div>
   );
 }
