@@ -95,7 +95,7 @@ export default function Seats() {
     );
   };
   return (
-    <Box sx={{ backgroundColor: "#8B4513", width: 800}}>
+    <Box>
       <Grid2 container spacing={2}>
         {seats.map((seat) => (
           <Grid2 key={seat.id}>
