@@ -1,6 +1,6 @@
 "use client";
 
-import AuthorizationButton from "@/components/ui/button/authorization-button";
+import AuthorizationButton from "@/components/ui/button/main-button";
 import AuthInputText from "@/components/ui/input/authorization-input-text";
 import { useState } from "react";
 import UseRegister from "../api/post-register";
