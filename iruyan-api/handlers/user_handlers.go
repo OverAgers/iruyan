@@ -67,13 +67,12 @@ func RegisterHandler(c *gin.Context) {
 	password := c.PostForm("password")
 	name := c.PostForm("name")
 	task := c.PostForm("task")
-	status := c.PostForm("status")
 	email := c.PostForm("email")
 
 	errorHandler := ErrorHandler{}
 
 	// GORMを使ってデータベースからusernameの重複を確認しつつユーザーインスタンスを生成
-	user, err := models.NewUser(infrastructure.DB, name, username, password, task, status, email)
+	user, err := models.NewUser(infrastructure.DB, name, username, password, task, email)
 	if err != nil {
 		errorHandler.BadRequest(c, err.Error())
 		return
@@ -93,7 +92,6 @@ func RegisterHandler(c *gin.Context) {
 			"name":     user.Name,
 			"password": user.Password,
 			"task":     user.Task,
-			"status":   user.Status,
 			"email":    user.Email,
 		},
 	})

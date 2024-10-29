@@ -20,7 +20,7 @@ type User struct {
 }
 
 // NewUser: User構造体のコンストラクタ関数
-func NewUser(db *gorm.DB, name, username, password, task, status, email string) (*User, error) {
+func NewUser(db *gorm.DB, name, username, password, task, email string) (*User, error) {
 	// ユーザーネームの重複チェック
 	var existingUser User
 	if err := db.Where("username = ?", username).Or("email = ?", email).First(&existingUser).Error; err == nil {
@@ -54,7 +54,6 @@ func NewUser(db *gorm.DB, name, username, password, task, status, email string) 
 		Username: username,
 		Password: hashedPassword,
 		Task:     task,
-		Status:   status,
 		Email:    email,
 	}, nil
 }
