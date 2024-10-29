@@ -1,8 +1,9 @@
-package handlers
+package auth
 
 import (
 	"net/http"
 
+	errorhandler "iruyan-api/handlers/error" // errorhandlerとしてインポート
 	"iruyan-api/infrastructure"
 	"iruyan-api/models"
 
@@ -27,17 +28,15 @@ func LoginHandler(c *gin.Context) {
 
 	// ユーザーが見つからない場合のエラーハンドリング
 	if result.Error != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"error": "authentication failed: invalid username",
-		})
+		errorHandler := errorhandler.ErrorHandler{}
+		errorHandler.Unauthorized(c, "authentication failed: invalid username")
 		return
 	}
 
 	// パスワードの比較をモデルのメソッドで行う
 	if !user.CheckPassword(password) {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"error": "authentication failed: invalid password",
-		})
+		errorHandler := errorhandler.ErrorHandler{}
+		errorHandler.Unauthorized(c, "authentication failed: invalid password")
 		return
 	}
 
@@ -48,7 +47,6 @@ func LoginHandler(c *gin.Context) {
 			"username": user.Username,
 			"name":     user.Name,
 			"task":     user.Task,
-			"status":   user.Status,
 			"email":    user.Email,
 		},
 	})
@@ -69,9 +67,9 @@ func RegisterHandler(c *gin.Context) {
 	task := c.PostForm("task")
 	email := c.PostForm("email")
 
-	errorHandler := ErrorHandler{}
+	errorHandler := errorhandler.ErrorHandler{}
 
-	// GORMを使ってデータベースからusernameの重複を確認しつつユーザーインスタンスを生成
+	// GORMを使ってデータベースからusernameとemailの重複を確認しつつユーザーインスタンスを生成
 	user, err := models.NewUser(infrastructure.DB, name, username, password, task, email)
 	if err != nil {
 		errorHandler.BadRequest(c, err.Error())
@@ -90,43 +88,8 @@ func RegisterHandler(c *gin.Context) {
 		"user": gin.H{
 			"username": user.Username,
 			"name":     user.Name,
-			"password": user.Password,
 			"task":     user.Task,
 			"email":    user.Email,
 		},
-	})
-}
-
-// ユーザー画面表示
-func UserPageHandler(c *gin.Context) {
-	userID := c.Param("user_id")
-	c.JSON(http.StatusOK, gin.H{
-		"message": "User page accessed successfully",
-		"user_id": userID,
-	})
-}
-
-// 1週間の作業日取得
-func WorkInfoHandler(c *gin.Context) {
-	userID := c.Param("user_id")
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Work info accessed successfully",
-		"user_id": userID,
-	})
-}
-
-// 一緒に居た時間
-func TogetherTimeHandler(c *gin.Context) {
-	userID := c.Param("user_id")
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Together time accessed successfully",
-		"user_id": userID,
-	})
-}
-
-// 集中ランキング取得
-func RankingHandler(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Ranking page accessed successfully",
 	})
 }
