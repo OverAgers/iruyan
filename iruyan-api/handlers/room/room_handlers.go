@@ -15,7 +15,7 @@ func CreateRoomHandler(c *gin.Context) {
 }
 
 // Room表示
-func ShowRoomHandler(c *gin.Context) {
+func GetRoomHandler(c *gin.Context) {
 	roomID := c.Param("room_id")
 	// Room情報取得のロジックをここに追加
 	c.JSON(http.StatusOK, gin.H{
