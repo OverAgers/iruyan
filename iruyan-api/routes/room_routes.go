@@ -20,8 +20,8 @@ func RegisterRoomRoutes(router *gin.Engine) {
 	router.DELETE("/room/:room_id/leave", room.LeaveRoomHandler)
 
 	// 着席
-	router.PATCH("/room/:room_id/:seat_id", room.TakeSeatHandler)
+	router.PATCH("/room/:room_id/:seat_id/take", room.TakeSeatHandler)
 
 	// 離席
-	router.PATCH("/room/:room_id/:seat_id", room.LeaveSeatHandler)
+	router.PATCH("/room/:room_id/:seat_id/leave", room.LeaveSeatHandler)
 }
