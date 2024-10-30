@@ -1,10 +1,14 @@
 package room
 
 import (
+	"fmt"
+	"iruyan-api/handlers/worktime"
 	"iruyan-api/infrastructure"
 	"iruyan-api/models"
 	"iruyan-api/responses"
+	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -61,19 +65,37 @@ func GetRoomHandler(c *gin.Context) {
 	})
 }
 
-// EnterRoomHandler Room入室
+// EnterRoomHandler 部屋への入室処理
 // @Summary Enter a room
-// @Description Allows a user to enter a specific room
+// @Description Records the entry time of a user entering a specific room and stores the entry information in WorkTime.
 // @Tags room
+// @Accept json
 // @Produce json
 // @Param room_id path string true "Room ID"
-// @Success 200 {object} responses.RoomActionResponse
-// @Failure 404 {object} responses.ErrorResponse
-// @Router /rooms/{room_id}/enter [post]
+// @Param user_id path string true "User ID"
+// @Success 200 {object} responses.RoomActionResponse "Entered the room successfully"
+// @Failure 404 {object} responses.ErrorResponse "Room not found"
+// @Failure 500 {object} responses.ErrorResponse "Failed to record entry to the room"
+// @Router /rooms/{room_id}/enter/{user_id} [post]
 func EnterRoomHandler(c *gin.Context) {
 	roomID := c.Param("room_id")
+	userIDStr := c.PostForm("user_id") // ユーザーIDを文字列で取得
+
+	// デバッグ用のログでリクエストパラメータを確認
+	log.Printf("Received user_id: %s", userIDStr)
+
+	userIDUint, err := strconv.ParseUint(userIDStr, 10, 32) // uintに変換
+	if err != nil {
+		c.JSON(http.StatusBadRequest, responses.ErrorResponse{
+			Message: "Invalid user ID format",
+		})
+		return
+	}
+	userID := uint(userIDUint) // `uint`型にキャスト
+
 	var room models.Room
 
+	// ルームが存在するか確認
 	if err := room.FindByID(infrastructure.DB, roomID); err != nil {
 		c.JSON(http.StatusNotFound, responses.ErrorResponse{
 			Message: "Room not found",
@@ -81,9 +103,22 @@ func EnterRoomHandler(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, responses.RoomActionResponse{
-		Message: "Entered the room successfully",
-		RoomID:  roomID,
+	// WorkTimeに入室情報を記録（handlers/worktimeに委譲）
+	workTime, err := worktime.RecordEntry(userID, roomID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
+			Message: "Failed to record entry to the room",
+		})
+		return
+	}
+
+	// 成功時のレスポンスとしてWorkTime情報を返す
+	c.JSON(http.StatusOK, responses.EnterRoomResponse{
+		Message:   "Room entry recorded successfully",
+		RoomID:    workTime.RoomID.String(),
+		RoomName:  room.Name,                          // 部屋の名前を返す
+		UserID:    fmt.Sprintf("%d", workTime.UserID), // UserIDを文字列に変換
+		EntryTime: workTime.EntryTime,
 	})
 }
 

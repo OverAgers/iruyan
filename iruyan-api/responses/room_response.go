@@ -1,6 +1,10 @@
 package responses
 
-import "github.com/google/uuid"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 // RoomCreateResponse Room作成成功時のレスポンス
 type RoomCreateResponse struct {
@@ -19,4 +23,12 @@ type RoomDetailResponse struct {
 type RoomActionResponse struct {
 	Message string `json:"message"`
 	RoomID  string `json:"room_id"`
+}
+
+type EnterRoomResponse struct {
+	Message   string    `json:"message"`
+	RoomID    string    `json:"room_id"`
+	RoomName  string    `json:"room_name"`
+	UserID    string    `json:"user_id"`
+	EntryTime time.Time `json:"entry_time"`
 }
