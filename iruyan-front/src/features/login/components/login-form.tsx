@@ -1,28 +1,27 @@
 "use client";
 
-import AuthorizationButton from "@/components/ui/button/main-button";
+import MainButton from "@/components/ui/button/main-button";
 import AuthInputText from "@/components/ui/input/authorization-input-text";
 
 import UseLogin from "../api/post-login";
 import { useState } from "react";
 
 export default function LoginForm() {
-  const [userId, setUserId] = useState("");
+  const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
   const useLogin = UseLogin();
 
   const handleSubmit = () => {
-    useLogin.setRequest({ userID: userId, password: password }); // リクエスト成功後にリダイレクト
-    console.log(useLogin.data);
+    useLogin.login({ username: userName, password: password });
   };
 
   return (
     <div>
-      <form className="flex-col" onSubmit={handleSubmit}>
+      <form className="flex-col">
         <AuthInputText
           title="ユーザーID"
           type="normal"
-          setData={setUserId}
+          setData={setUserName}
           placeholder="ユーザーID"
         />
         <AuthInputText
@@ -32,7 +31,7 @@ export default function LoginForm() {
           placeholder="パスワード"
         />
         <div>
-          <AuthorizationButton title="入店する" type="submit" />
+          <MainButton title="入店する" type="submit" onClick={handleSubmit}/>
         </div>
       </form>
     </div>
