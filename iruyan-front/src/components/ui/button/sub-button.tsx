@@ -2,7 +2,7 @@ import Button from "@mui/joy/Button";
 
 type Props = {
   title: string;
-  link: string;
+  link?: string;
   size: "xs" | "sm" | "md" | "lg" | "xl";
 };
 
@@ -11,7 +11,7 @@ export default function SubButton(Props: Props) {
     <Button
       component="a"
       href={Props.link}
-      size="xl"
+      size={Props.size}
       sx={{
         color: "#7A8764",
         backgroundColor: "#F7F4ED",
