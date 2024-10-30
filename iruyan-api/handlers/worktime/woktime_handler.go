@@ -2,15 +2,33 @@
 package worktime
 
 import (
+	"fmt"
 	"iruyan-api/infrastructure"
 	"iruyan-api/models"
 	"time"
 
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 // RecordEntry - WorkTimeテーブルに入室情報を記録
 func RecordEntry(userID uint, roomID string) (*models.WorkTime, error) {
+	// ユーザーが存在するか確認
+	var user models.User
+	if err := infrastructure.DB.First(&user, userID).Error; err != nil {
+		return nil, fmt.Errorf("user not found")
+	}
+
+	// すでに入室しているか確認 (LeavingTimeがゼロのレコードをチェック)
+	var activeEntry models.WorkTime
+	if err := infrastructure.DB.
+		Where("user_id = ? AND room_id = ? AND leaving_time IS NULL", userID, roomID).
+		First(&activeEntry).Error; err == nil {
+		return nil, fmt.Errorf("user is already in the room")
+	} else if err != gorm.ErrRecordNotFound {
+		return nil, err // その他のエラーが発生した場合は返す
+	}
+
 	// 入室時刻を現在時刻として取得
 	entryTime := time.Now()
 
@@ -23,16 +41,17 @@ func RecordEntry(userID uint, roomID string) (*models.WorkTime, error) {
 
 	// WorkTimeをデータベースに保存
 	if err := infrastructure.DB.Create(workTime).Error; err != nil {
-		return nil, err // エラーが発生した場合はnilとエラーを返す
+		return nil, err
 	}
 
-	return workTime, nil // 成功時にworkTimeレコードとnil（エラーなし）を返す
+	return workTime, nil
 }
 
+// GetLatestEntry - 最新の入室記録を取得
 func GetLatestEntry(userID uint, roomID string) (*models.WorkTime, error) {
 	var workTime models.WorkTime
 	if err := infrastructure.DB.
-		Where("user_id = ? AND room_id = ?", userID, roomID).
+		Where("user_id = ? AND room_id = ? AND leaving_time IS NULL", userID, roomID).
 		Order("entry_time desc").
 		First(&workTime).Error; err != nil {
 		return nil, err
