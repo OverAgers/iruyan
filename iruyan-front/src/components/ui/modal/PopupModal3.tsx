@@ -6,7 +6,7 @@ import Sheet from "@mui/joy/Sheet";
 import ModalClose from "@mui/joy/ModalClose";
 import MainButton from "@/components/ui/button/main-button";
 
-export default function BasicModal() {
+export default function PopupModal3() {
   const [open, setOpen] = React.useState<boolean>(false);
   return (
     <React.Fragment>
@@ -60,6 +60,7 @@ export default function BasicModal() {
               color: "#3C2800",
               paddingTop: 4,
               paddingBottom: 4,
+              textAlign: "center",
             }}
           >
             1時間30分の作業、お見事です！
