@@ -32,7 +32,7 @@ export default function LoginForm() {
           placeholder="パスワード"
         />
         <div>
-          <AuthorizationButton title="入店する" type="submit" />
+          <AuthorizationButton title="入店する" type="submit" fullWidth={true} />
         </div>
       </form>
     </div>
