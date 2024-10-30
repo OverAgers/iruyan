@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -124,17 +125,33 @@ func EnterRoomHandler(c *gin.Context) {
 
 // LeaveRoomHandler Room退室
 // @Summary Leave a room
-// @Description Allows a user to leave a specific room
+// @Description Allows a user to leave a specific room and records the leaving time
 // @Tags room
 // @Produce json
 // @Param room_id path string true "Room ID"
+// @Param user_id formData string true "User ID"
 // @Success 200 {object} responses.RoomActionResponse
 // @Failure 404 {object} responses.ErrorResponse
-// @Router /rooms/{room_id}/leave [delete]
+// @Failure 500 {object} responses.ErrorResponse
+// @Router /rooms/{room_id}/leave [post]
 func LeaveRoomHandler(c *gin.Context) {
 	roomID := c.Param("room_id")
-	var room models.Room
+	userIDStr := c.PostForm("user_id") // ユーザーIDを文字列で取得
 
+	// デバッグ用のログでリクエストパラメータを確認
+	log.Printf("Received user_id: %s", userIDStr)
+
+	userIDUint, err := strconv.ParseUint(userIDStr, 10, 32) // uintに変換
+	if err != nil {
+		c.JSON(http.StatusBadRequest, responses.ErrorResponse{
+			Message: "Invalid user ID format",
+		})
+		return
+	}
+	userID := uint(userIDUint) // `uint`型にキャスト
+
+	var room models.Room
+	// ルームが存在するか確認
 	if err := room.FindByID(infrastructure.DB, roomID); err != nil {
 		c.JSON(http.StatusNotFound, responses.ErrorResponse{
 			Message: "Room not found",
@@ -142,9 +159,37 @@ func LeaveRoomHandler(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, responses.RoomActionResponse{
-		Message: "Left the room successfully",
-		RoomID:  roomID,
+	// WorkTimeテーブルから最新の入室記録を取得
+	workTime, err := worktime.GetLatestEntry(userID, roomID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
+			Message: "Failed to find entry record",
+		})
+		return
+	}
+
+	// LeavingTimeとDurationを設定
+	leavingTime := time.Now()
+	workTime.LeavingTime = leavingTime
+	workTime.Duration = leavingTime.Sub(workTime.EntryTime)
+
+	// 退室記録をデータベースに保存
+	if err := infrastructure.DB.Save(workTime).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
+			Message: "Failed to record leaving time",
+		})
+		return
+	}
+
+	// 成功時のレスポンス
+	c.JSON(http.StatusOK, responses.LeaveRoomResponse{
+		Message:     "Left the room successfully",
+		RoomID:      roomID,
+		RoomName:    room.Name,
+		UserID:      fmt.Sprintf("%d", workTime.UserID),
+		EntryTime:   workTime.EntryTime,
+		LeavingTime: leavingTime,
+		Duration:    workTime.Duration,
 	})
 }
 

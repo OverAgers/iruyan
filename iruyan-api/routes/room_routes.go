@@ -17,7 +17,7 @@ func RegisterRoomRoutes(router *gin.Engine) {
 	router.POST("/rooms/:room_id/enter", room.EnterRoomHandler)
 
 	// Room退室
-	router.DELETE("/rooms/:room_id/leave", room.LeaveRoomHandler)
+	router.POST("/rooms/:room_id/leave", room.LeaveRoomHandler)
 
 	// 着席
 	router.PATCH("/room/:room_id/:seat_id/take", room.TakeSeatHandler)

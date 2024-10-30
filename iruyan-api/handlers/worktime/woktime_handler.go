@@ -28,3 +28,14 @@ func RecordEntry(userID uint, roomID string) (*models.WorkTime, error) {
 
 	return workTime, nil // 成功時にworkTimeレコードとnil（エラーなし）を返す
 }
+
+func GetLatestEntry(userID uint, roomID string) (*models.WorkTime, error) {
+	var workTime models.WorkTime
+	if err := infrastructure.DB.
+		Where("user_id = ? AND room_id = ?", userID, roomID).
+		Order("entry_time desc").
+		First(&workTime).Error; err != nil {
+		return nil, err
+	}
+	return &workTime, nil
+}
