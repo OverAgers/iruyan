@@ -1,6 +1,6 @@
 import { usePathname } from "next/navigation";
-import ChangeAuthorizationButton from "@/components/ui/button/change-authorization-button";
-import { Box, Typography} from "@mui/material";
+import SubButton from "@/components/ui/button/sub-button";
+import { Box, Typography, Grid2} from "@mui/material";
 
 type Props = {
   children: React.ReactNode;
@@ -12,29 +12,27 @@ export default function AuthLayout({ children }: Props) {
   const changeButtonTitle = isLoginPage ? "新規登録" : "入店する";
   const changeLink = isLoginPage ? "/register" : "/login";
   return (
-    <div
-      className="flex-col size-full relative"
-      style={{ background: "#F7F4ED", height: "100vh" }}
+    <Grid2
+      container
+      bgcolor={"#F7F4ED"}
+      justifyContent={"center"}
+      height={"100vh"}
+      alignItems={"flex-start"}
     >
-      <div className="inline-block absolute top-4 right-8">
-        <ChangeAuthorizationButton
-          title={changeButtonTitle}
-          link={changeLink}
-        />
-      </div>
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          height: "100%",
-        }}
-      >
-        <Typography variant="subtitle2">IRUYAN</Typography>
-        <Typography variant="h3">居る家ん</Typography>
-        {children}
-      </Box>
-    </div>
+      <Grid2 container padding={6} size={12} justifyContent={"flex-end"}>
+        <SubButton title={changeButtonTitle} link={changeLink} size="lg" />
+      </Grid2>
+      <Grid2 container>
+        <Grid2 container flexDirection={"column"} justifyContent={"center"}>
+          <Typography variant="subtitle2" textAlign={"center"}>
+            IRUYAN
+          </Typography>
+          <Typography variant="h3" textAlign={"center"} mb={2}>
+            居る家ん
+          </Typography>
+          {children}
+        </Grid2>
+      </Grid2>
+    </Grid2>
   );
 }
