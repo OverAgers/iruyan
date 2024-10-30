@@ -1,4 +1,4 @@
-import SeatCard from "@/components/ui/seat-card/seat-card";
+import SeatCard from "@/components/ui/card/seat-card";
 import { Box, Grid2 } from "@mui/material";
 import { useState } from "react";
 
