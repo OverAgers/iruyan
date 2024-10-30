@@ -61,7 +61,7 @@ export default function RegisterForm() {
           placeholder="パスワード確認"
         />
         <div>
-          <AuthorizationButton title="新規登録" type="submit" onClick={ handleSubmit } />
+          <AuthorizationButton title="新規登録" type="submit" onClick={ handleSubmit } fullWidth={true} />
         </div>
       </form>
     </div>
