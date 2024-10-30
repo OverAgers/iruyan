@@ -10,6 +10,7 @@ export default function RegisterForm() {
   const [password, setPassword] = useState("");
   const [userName, setUserName] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
+  const [email, setEmail] = useState("");
   const useRegister = UseRegister();
 
   const handleSubmit = () => {
@@ -17,10 +18,11 @@ export default function RegisterForm() {
     console.log(password);
     console.log(userName);
     console.log(passwordConfirm);
-    useRegister.setRequest({
+    useRegister.register({
       userID: userId,
       password: password,
       userName: userName,
+      email: email,
     });
     console.log(useRegister.data);
   };
@@ -41,6 +43,12 @@ export default function RegisterForm() {
           placeholder="ユーザー名"
         />
         <AuthInputText
+          title="メールアドレス"
+          type="normal"
+          setData={setEmail}
+          placeholder="メールアドレス"
+        />
+        <AuthInputText
           title="パスワード"
           type="password"
           setData={setPassword}
@@ -53,7 +61,7 @@ export default function RegisterForm() {
           placeholder="パスワード確認"
         />
         <div>
-          <AuthorizationButton title="新規登録" type="submit" />
+          <AuthorizationButton title="新規登録" type="submit" onClick={ handleSubmit } fullWidth={true} />
         </div>
       </form>
     </div>

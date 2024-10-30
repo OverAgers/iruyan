@@ -31,7 +31,7 @@ export default function LoginForm() {
           placeholder="パスワード"
         />
         <div>
-          <MainButton title="入店する" type="submit" onClick={handleSubmit}/>
+          <AuthorizationButton title="入店する" type="submit" fullWidth={true} />
         </div>
       </form>
     </div>
