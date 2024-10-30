@@ -1,9 +1,9 @@
 package models
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
-	"errors"
 
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
@@ -13,23 +13,25 @@ import (
 type User struct {
 	ID       uint   `gorm:"primaryKey;autoIncrement"`
 	Name     string `gorm:"size:255;not null"`
-	Username string `gorm:"uniqueIndex;size:255;not null"`
+	IruyanID string `gorm:"uniqueIndex;size:255;not null"`
 	Password string `gorm:"size:255;not null"` // ハッシュ化されたパスワード
 	Task     string `gorm:"size:255;default:''"`
 	Email    string `gorm:"uniqueIndex;size:255;not null"`
 }
 
 // NewUser: User構造体のコンストラクタ関数
-func NewUser(db *gorm.DB, name, username, password, email string) (*User, error) {
+func NewUser(db *gorm.DB, name, iruyanID, password, email string) (*User, error) {
 	// ユーザーネームの重複チェック
 	var existingUser User
-	if err := db.Where("username = ?", username).Or("email = ?", email).First(&existingUser).Error; err == nil {
-		if existingUser.Username == username {
-			return nil, fmt.Errorf("username '%s' is already taken", username)
+	if err := db.Where("iruyan_id = ?", iruyanID).Or("email = ?", email).First(&existingUser).Error; err == nil {
+		if existingUser.IruyanID == iruyanID {
+			return nil, fmt.Errorf("iruyan_id '%s' is already taken", iruyanID)
 		}
 		if existingUser.Email == email {
 			return nil, fmt.Errorf("email '%s' is already registered", email)
 		}
+	} else if !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, fmt.Errorf("failed to check existing user: %w", err)
 	}
 
 	// メールアドレスのバリデーション
@@ -51,7 +53,7 @@ func NewUser(db *gorm.DB, name, username, password, email string) (*User, error)
 	// 新しいUserインスタンスを生成し、ハッシュ化されたパスワードを設定
 	return &User{
 		Name:     name,
-		Username: username,
+		IruyanID: iruyanID,
 		Password: hashedPassword,
 		Task:     "",
 		Email:    email,

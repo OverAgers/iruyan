@@ -14,7 +14,7 @@ type RegisterSuccessResponse struct {
 
 // UserInfo ユーザー情報のレスポンス
 type UserInfo struct {
-	Username string `json:"username"`
+	IruyanID string `json:"iruyanID"`
 	Name     string `json:"name"`
 	Task     string `json:"task,omitempty"`
 	Email    string `json:"email"`
