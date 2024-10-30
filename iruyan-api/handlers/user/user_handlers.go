@@ -2,13 +2,47 @@ package user
 
 import (
 	"net/http"
+	"iruyan-api/infrastructure"
+	"iruyan-api/models"
+	"iruyan-api/responses"
 
 	"github.com/gin-gonic/gin"
+	"strconv"
 )
 
 // ユーザー画面表示
 func UserPageHandler(c *gin.Context) {
-	userID := c.Param("user_id")
+	userIDParam := c.Param("user_id")
+	// user_idをuint型に変換してuserID変数に保存
+	userIDUint64, err := strconv.ParseUint(userIDParam, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, responses.ErrorResponse{
+			Message: "Invalid user id format",
+		})
+		return 
+	}
+	userID := uint(userIDUint64)
+
+	var user models.User
+	// ユーザIDがDBに存在するか確認する
+	// ユーザが見つからない場合はエラーを返す
+	if err = user.FindByID(infrastructure.DB, userID); err != nil{
+		if err.Error() == "user not found" {
+			// ユーザがデータベースに存在しない場合
+			c.JSON(http.StatusNotFound, responses.ErrorResponse {
+				Message: "User not found",
+			})
+			return 
+		} else {
+			// その他のサーバ側のエラーの場合
+			c.JSON(http.StatusInternalServerError, responses.ErrorResponse {
+				Message: "Database error",
+			})
+			return  
+		}
+	}
+
+	// ユーザが存在する場合は200を返す
 	c.JSON(http.StatusOK, gin.H{
 		"message": "User page accessed successfully",
 		"user_id": userID,

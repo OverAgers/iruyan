@@ -3,6 +3,7 @@ package models
 import (
 	"fmt"
 	"regexp"
+	"errors"
 
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
@@ -94,4 +95,15 @@ func validateEmail(email string) error {
 func (u *User) CheckPassword(password string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password))
 	return err == nil
+}
+
+// FindByID - IDを元にUserが存在するかを検索するメソッド
+func (u *User) FindByID(db *gorm.DB, userID uint) error {
+	if err := db.Where("id = ?", userID).First(u).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return errors.New("user not found")
+		}
+		return err
+	}
+	return nil
 }
