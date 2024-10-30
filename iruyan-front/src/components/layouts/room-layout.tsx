@@ -1,4 +1,4 @@
-import { Box, Typography } from "@mui/joy";
+import { Box, Container, Typography, Grid } from "@mui/joy";
 import { Grid2 } from "@mui/material";
 import Sidebar from "../ui/sidebar/sidebar";
 
