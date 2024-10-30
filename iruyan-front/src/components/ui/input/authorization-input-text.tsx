@@ -1,36 +1,40 @@
-import { TextField, Typography } from "@mui/material";
+import { FormControl, FormHelperText, FormLabel, Input } from "@mui/joy";
+import { FieldError } from "react-hook-form";
 
 type Props = {
-  title: string
-  type: string;
+  label: string;
   placeholder: string;
-  setData: (data: string) => void;
-}
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  defaultValue?: string;
+  endDecorator?: React.ReactNode;
+  error: FieldError | undefined;
+  type?: "text" | "password";
+};
 
 export default function AuthInputText(Props: Props) {
   return (
-    <>
-      <Typography variant="h6" sx={{ fontWeight: "bold", color: "#3C2800" }}>
-        {Props.title}
-      </Typography>
-      <TextField
-        variant="outlined"
-        type={Props.type}
+    <FormControl error={Props.error != null} sx={{ mb: 2 }}>
+      <FormLabel
+        sx={{ mb: 0.5, fontSize: "lg", fontWeight: "bold", color: "#3C2800" }}
+      >
+        {Props.label}
+      </FormLabel>
+      <Input
         placeholder={Props.placeholder}
-        onChange={(e) => Props.setData(e.target.value)}
+        onChange={Props.onChange}
+        type={Props.type}
+        defaultValue={Props.defaultValue}
+        endDecorator={Props.endDecorator}
+        fullWidth={true}
         sx={{
+          border: "none",
           borderRadius: "8px",
-          width: "31rem",
-          mb: 4,
-          bgcolor: "#ffffff",
-          "& .MuiOutlinedInput-root": {
-            borderRadius: "8px",
-            "& fieldset": {
-              border: "none",
-            },
-          },
+          boxShadow: "none",
         }}
       />
-    </>
+      {Props.error != null ? (
+        <FormHelperText>{Props.error.message}</FormHelperText>
+      ) : null}
+    </FormControl>
   );
 }

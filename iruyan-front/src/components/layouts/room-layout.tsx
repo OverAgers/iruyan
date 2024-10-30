@@ -1,6 +1,6 @@
 import { Box, Container, Typography, Grid } from "@mui/joy";
 import { Grid2 } from "@mui/material";
-import Sidebar from "../ui/sidebar/sidebar";
+import Sidebar from "@/features/sidebar/components/sidebar";
 
 type Props = {
   children: React.ReactNode;

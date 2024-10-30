@@ -1,19 +1,19 @@
 import axios from "axios";
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 import useSWRMutation from "swr/mutation";
 
 import z from "zod";
 
 export const postRegisterSchema = z.object({
-  userID: z.string().min(1, "required"),
-  userName: z.string().min(1, "required"),
-  password: z.string().min(1, "required"),
-  email: z.string().min(1, "required"),
+  iruyanId: z.string(),
+  userName: z.string(),
+  email: z.string(),
+  password: z.string(),
 });
 
 export type PostRegisterRequest = z.infer<typeof postRegisterSchema>;
 
-export default function UseRegister() {
+export default function UsePostRegisterRequest() {
   // const requestURL = `${process.env.NEXT_PUBLIC_API_URL}/login`;
   const requestURL = `http://localhost:8080/register`;
 
@@ -23,7 +23,7 @@ export default function UseRegister() {
         const res = await axios.post(url, arg);
         return res.data;
       } catch (error: any) {
-        throw new Error(`ログインエラー: ${error.message}`);
+        throw new Error(`登録エラー: ${error.message}`);
       }
     },
     []
