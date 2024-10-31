@@ -4,6 +4,8 @@ type Props = {
   title: string;
   link?: string;
   size: "xs" | "sm" | "md" | "lg" | "xl";
+  onClick?: () => void;
+  disabled?: boolean;
 };
 
 export default function SubButton(Props: Props) {
@@ -12,6 +14,8 @@ export default function SubButton(Props: Props) {
       component="a"
       href={Props.link}
       size={Props.size}
+      onClick={Props.onClick}
+      disabled={Props.disabled}
       sx={{
         color: "#7A8764",
         backgroundColor: "#F7F4ED",

@@ -1,53 +1,44 @@
-import {
-  Avatar,
-  Box,
-  Button,
-  ButtonGroup,
-  Card,
-  List,
-  ListItem,
-  ToggleButtonGroup,
-  Typography,
-} from "@mui/joy";
-import SubButton from "../button/sub-button";
 import { useState } from "react";
+import { Box, Typography, Button } from "@mui/joy";
+import WorkTime from "@/features/work-time/components/work-time";
+import Timer from "@/features/timer/components/timer";
 
-export default function SidebarCardUp() {
-  const [workTime, setWorkTime] = useState("12:10");
-  const [restTime, setRestTime] = useState("12:10");
+export default function SidebarCardDown() {
+  const [activeTab, setActiveTab] = useState("work"); // Track active tab
+
+  const handleTabChange = (tab:string) => {
+    setActiveTab(tab);
+  };
+
   return (
-    <Card size="md" sx={{ mb: 2, height: "333px", width: "339px" }}>
-      <Box>
-        <Box display={"flex"} justifyContent={"center"}>
-          <ToggleButtonGroup variant="outlined">
-            <SubButton title={"作業時間"} size={"sm"}></SubButton>
-            <SubButton title={"タイマー"} size={"sm"}></SubButton>
-          </ToggleButtonGroup>
-        </Box>
-        <Box>
-          <Box mb={2}>
-            <Box display={"flex"}>
-              <Typography>作業時間</Typography>
-              <Typography>{workTime}</Typography>
-            </Box>
-            <Box display={"flex"}>
-              <Typography>休憩時間</Typography>
-              <Typography>{restTime}</Typography>
-            </Box>
-          </Box>
-          <Box
-            display={"flex"}
-            flexDirection={"column"}
-            justifyContent={"center"}
-          >
-            <Box display={"flex"}>
-              <SubButton title={"鬼集中"} size={"md"}></SubButton>
-              <SubButton title={"休憩"} size={"md"}></SubButton>
-            </Box>
-            <SubButton title={"席を離れる"} size={"md"}></SubButton>
-          </Box>
-        </Box>
+    <Box
+      sx={{
+        p: 2,
+        borderRadius: "8px",
+        backgroundColor: "#f3f0e9",
+        maxWidth: "300px",
+        mx: "auto",
+      }}
+    >
+      <Box display="flex" mb={2} borderRadius="8px" overflow="hidden">
+        <Button
+          onClick={() => handleTabChange("work")}
+          variant={activeTab === "work" ? "solid" : "plain"}
+          color={activeTab === "work" ? "success" : "neutral"}
+          sx={{ flex: 1, fontWeight: "bold", borderRadius: 0 }}
+        >
+          作業時間
+        </Button>
+        <Button
+          onClick={() => handleTabChange("timer")}
+          variant={activeTab === "timer" ? "solid" : "plain"}
+          color={activeTab === "timer" ? "success" : "neutral"}
+          sx={{ flex: 1, fontWeight: "bold", borderRadius: 0 }}
+        >
+          タイマー
+        </Button>
       </Box>
-    </Card>
+      {activeTab === "work" ? (<WorkTime />) : (<Timer />)}
+    </Box>
   );
 }
