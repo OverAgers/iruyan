@@ -38,7 +38,7 @@ export default function PopupModal1() {
             gap: 2
           }}
         >
-  
+
           <Typography
             component="h2"
             id="modal-title"
@@ -55,6 +55,7 @@ export default function PopupModal1() {
             🔥鬼集中🔥
           </Typography>
           <MainButton
+            component="button"
             title="受付に戻る"
             type="button"
             maxWidth="342px"

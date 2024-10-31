@@ -69,6 +69,7 @@ export default function PopupModal3() {
           </Typography>
           {/* 下部に配置されたModalClose */}
           <MainButton
+            component="button"
             title="受付に戻る"
             type="button"
             maxWidth="342px"
