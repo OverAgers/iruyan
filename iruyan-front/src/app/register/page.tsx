@@ -1,23 +1,16 @@
 "use client";
 
-import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import AuthLayout from "@/components/layouts/auth-layout";
-import UsePostRegisterRequest from "@/features/register/api/post-register";
 import UserRegisterForm from "@/features/register/components/user-register-form";
-import { RegisterForm } from "@/schema/register-form-schema";
+import { UserInfo } from "@/types/user-info";
 
 export default function RegisterPage() {
-  const { data, register } = UsePostRegisterRequest();
+  const router = useRouter();
 
-  const onSuccess = (data: RegisterForm) => {
-    register(data);
+  const onSuccess = (data: UserInfo) => {
+    router.push("/lobby");
   };
-
-  useEffect(() => {
-    if (data) {
-      window.location.href = "/lobby";
-    }
-  }, [data]);
 
   return (
     <AuthLayout>

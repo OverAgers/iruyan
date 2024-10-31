@@ -7,6 +7,7 @@ type Props = {
   maxWidth?: string;
   width?: string;
   onClick?: () => void;
+  disabled?: boolean;
   component:
     | "a"
     | "button"
@@ -26,6 +27,7 @@ export default function MainButton(Props: Props) {
       size="lg"
       fullWidth={Props.fullWidth}
       onClick={Props.onClick}
+      disabled={Props.disabled}
       sx={{
         backgroundColor: "#7A8764",
         fontWeight: "bold",
