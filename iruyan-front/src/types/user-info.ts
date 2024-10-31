@@ -11,4 +11,6 @@ export type UserInfo = {
   workTime: number;
   restTime: number;
   startTime: number;
+  cumulativeTime?: number;
+  consecutiveDays?: number;
 };
