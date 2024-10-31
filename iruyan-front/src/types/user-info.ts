@@ -1,3 +1,5 @@
+export type StatusType = "working" | "resting" | "idle";
+
 export type UserInfo = {
   iruyanId: string;
   name: string;
@@ -5,5 +7,8 @@ export type UserInfo = {
   avatarUrl?: string;
   task?: string;
   note?: string;
-  
+  status: StatusType;
+  workTime: number;
+  restTime: number;
+  startTime: number;
 };
