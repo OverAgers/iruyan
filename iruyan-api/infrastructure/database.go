@@ -47,7 +47,7 @@ func InitDB() {
 	}
 
 	// モデルをマイグレーション
-	err = DB.AutoMigrate(&models.User{}, &models.Room{})
+	err = DB.AutoMigrate(&models.User{}, &models.Room{}, &models.Seat{}, &models.WorkTime{})
 	if err != nil {
 		log.Fatalf("Failed to migrate database: %v", err)
 	}

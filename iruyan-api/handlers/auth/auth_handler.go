@@ -26,25 +26,25 @@ func LoginPageHandler(c *gin.Context) {
 
 // LoginHandler ログイン処理
 // @Summary User login
-// @Description Authenticates the user based on username and password
+// @Description Authenticates the user based on iruyanID and password
 // @Tags auth
 // @Accept x-www-form-urlencoded
 // @Produce json
-// @Param username formData string true "Username" default(johndoe)
+// @Param iruyanID formData string true "IruyanID" default(johndoe)
 // @Param password formData string true "Password" default(pass1234)
 // @Success 200 {object} responses.LoginSuccessResponse
 // @Failure 401 {object} responses.ErrorResponse
 // @Router /login [post]
 func LoginHandler(c *gin.Context) {
-	username := c.PostForm("username")
+	iruyanID := c.PostForm("iruyanID")
 	password := c.PostForm("password")
 
 	var user models.User
-	result := infrastructure.DB.Where("username = ?", username).First(&user)
+	result := infrastructure.DB.Where("iruyan_id = ?", iruyanID).First(&user)
 
 	if result.Error != nil {
 		errorHandler := errorhandler.ErrorHandler{}
-		errorHandler.Unauthorized(c, "authentication failed: invalid username")
+		errorHandler.Unauthorized(c, "authentication failed: invalid iruyanID")
 		return
 	}
 
@@ -57,7 +57,7 @@ func LoginHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, responses.LoginSuccessResponse{
 		Message: "Login successful",
 		User: responses.UserInfo{
-			Username: user.Username,
+			IruyanID: user.IruyanID,
 			Name:     user.Name,
 			Task:     user.Task,
 			Email:    user.Email,
@@ -84,7 +84,7 @@ func RegisterPageHandler(c *gin.Context) {
 // @Tags auth
 // @Accept x-www-form-urlencoded
 // @Produce json
-// @Param username formData string true "Username" default(johndoe)
+// @Param iruyanID formData string true "IruyanID" default(johndoe)
 // @Param password formData string true "Password" default(pass1234)
 // @Param name formData string true "Name" default(John Doe)
 // @Param email formData string true "Email" default(johndoe@example.com)
@@ -93,14 +93,14 @@ func RegisterPageHandler(c *gin.Context) {
 // @Failure 500 {object} responses.ErrorResponse
 // @Router /register [post]
 func RegisterHandler(c *gin.Context) {
-	username := c.PostForm("username")
+	iruyanID := c.PostForm("iruyanID")
 	password := c.PostForm("password")
 	name := c.PostForm("name")
 	email := c.PostForm("email")
 
 	errorHandler := errorhandler.ErrorHandler{}
 
-	user, err := models.NewUser(infrastructure.DB, name, username, password, email)
+	user, err := models.NewUser(infrastructure.DB, name, iruyanID, password, email)
 	if err != nil {
 		errorHandler.BadRequest(c, err.Error())
 		return
@@ -115,7 +115,7 @@ func RegisterHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, responses.RegisterSuccessResponse{
 		Message: "Registration successful",
 		User: responses.UserInfo{
-			Username: user.Username,
+			IruyanID: user.IruyanID,
 			Name:     user.Name,
 			Task:     user.Task,
 			Email:    user.Email,
