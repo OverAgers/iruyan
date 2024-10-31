@@ -1,8 +1,8 @@
 import axios from "axios";
 import { useCallback } from "react";
 import useSWRMutation from "swr/mutation";
-
 import z from "zod";
+import { UserInfo } from "@/types/user-info";
 
 export const postLoginSchema = z.object({
   iruyanId: z.string().min(1, "入力してください"),
@@ -12,16 +12,17 @@ export const postLoginSchema = z.object({
 export type PostLoginRequest = z.infer<typeof postLoginSchema>;
 
 export default function UseLoginRequest() {
-  // const requestURL = `${process.env.NEXT_PUBLIC_API_URL}/login`;
   const requestURL = `http://localhost:8080/Login`;
 
   const fetcher = useCallback(
     async (url: string, { arg }: { arg: PostLoginRequest }) => {
       try {
         const res = await axios.post(url, arg);
-        return res.data;
+        return res.data as UserInfo;
       } catch (error: any) {
-        throw new Error(`ログインエラー: ${error.message}`);
+        throw new Error(
+          `ログインエラー: ${error.response?.data?.message || error.message}`
+        );
       }
     },
     []
@@ -32,10 +33,14 @@ export default function UseLoginRequest() {
     error,
     isMutating: isLoading,
     trigger,
-  } = useSWRMutation(requestURL, fetcher);
+  } = useSWRMutation<UserInfo, any, string, PostLoginRequest>(
+    requestURL,
+    fetcher
+  );
 
-  const login = (LoginData: PostLoginRequest) => {
-    trigger(LoginData);
+  const login = async (loginData: PostLoginRequest): Promise<UserInfo> => {
+    const userData = await trigger(loginData);
+    return userData;
   };
 
   return { data, error, isLoading, login };
