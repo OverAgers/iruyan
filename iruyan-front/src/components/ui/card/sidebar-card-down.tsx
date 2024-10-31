@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { Box, Typography, Button } from "@mui/joy";
+import { Box, Button } from "@mui/joy";
 import WorkTime from "@/features/work-time/components/work-time";
 import Timer from "@/features/timer/components/timer";
 
 export default function SidebarCardDown() {
-  const [activeTab, setActiveTab] = useState("work"); // Track active tab
+  const [activeTab, setActiveTab] = useState("work");
 
   const handleTabChange = (tab:string) => {
     setActiveTab(tab);
@@ -16,8 +16,6 @@ export default function SidebarCardDown() {
         p: 2,
         borderRadius: "8px",
         backgroundColor: "#f3f0e9",
-        maxWidth: "300px",
-        mx: "auto",
       }}
     >
       <Box display="flex" mb={2} borderRadius="8px" overflow="hidden">
@@ -38,7 +36,7 @@ export default function SidebarCardDown() {
           タイマー
         </Button>
       </Box>
-      {activeTab === "work" ? (<WorkTime />) : (<Timer />)}
+      {activeTab === "work" ? <WorkTime /> : <Timer />}
     </Box>
   );
 }
