@@ -37,7 +37,7 @@ export default function PopupModal2() {
             paddingBottom: 4,
           }}
         >
-
+  
           <Typography
             component="h2"
             id="modal-title"
@@ -72,7 +72,6 @@ export default function PopupModal2() {
             type="button"
             maxWidth="342px"
             width="50%"
-            component="a"
           />
           {/* 下部に配置されたModalClose */}
           <Button

@@ -73,7 +73,6 @@ export default function PopupModal3() {
             type="button"
             maxWidth="342px"
             width="50%"
-            component="a"
           />
         </Sheet>
       </Modal>
