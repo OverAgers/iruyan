@@ -4,18 +4,41 @@ import MainButton from "@/components/ui/button/main-button";
 import AuthInputText from "@/components/ui/input/authorization-input-text";
 import UseRegisterForm from "@/features/register/hooks/use-register-hooks";
 import { RegisterForm } from "@/schema/register-form-schema";
+import { useState } from "react";
+import { UserInfo } from "@/types/user-info";
+import UsePostRegisterRequest from "../api/post-register";
 
 type Props = {
-  onSuccess: (data: RegisterForm) => void;
+  onSuccess: (data: UserInfo) => void;
 };
 
 export default function UserRegisterForm({ onSuccess }: Props) {
-  const { errors, setValue, onSubmit } = UseRegisterForm({
-    onSubmit: onSuccess,
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const {
+    register: registerUser,
+    isLoading,
+    error: registerError,
+  } = UsePostRegisterRequest();
+
+  async function onSubmit(formData: RegisterForm): Promise<void> {
+    try {
+      const { passwordConfirm, ...dataToSubmit } = formData;
+      const userData = await registerUser(dataToSubmit);
+      onSuccess(userData as UserInfo);
+    } catch (error: any) {
+      console.error("登録に失敗しました", error);
+      setErrorMessage(error.message || "登録に失敗しました");
+      alert(errorMessage || "登録に失敗しました");
+    }
+  }
+
+  const { errors, setValue, handleFormSubmit } = UseRegisterForm({
+    onSubmit,
   });
 
   return (
-    <form className="flex-col" onSubmit={onSubmit}>
+    <form className="flex-col" onSubmit={handleFormSubmit}>
       <AuthInputText
         label="ユーザーID"
         placeholder="ユーザーID"
@@ -51,9 +74,10 @@ export default function UserRegisterForm({ onSuccess }: Props) {
       <div>
         <MainButton
           component="button"
-          title="新規登録"
+          title={isLoading ? "登録中..." : "新規登録"}
           type="submit"
           fullWidth={true}
+          disabled={isLoading}
         />
       </div>
     </form>

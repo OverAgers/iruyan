@@ -1,3 +1,4 @@
+import { UserInfo } from "@/types/user-info";
 import axios from "axios";
 import { useCallback } from "react";
 import useSWRMutation from "swr/mutation";
@@ -20,10 +21,13 @@ export default function UsePostRegisterRequest() {
   const fetcher = useCallback(
     async (url: string, { arg }: { arg: PostRegisterRequest }) => {
       try {
+        console.log("fetcher", arg);
         const res = await axios.post(url, arg);
-        return res.data;
+        return res.data as UserInfo;
       } catch (error: any) {
-        throw new Error(`登録エラー: ${error.message}`);
+        throw new Error(
+          error.response?.data?.message || `登録エラー: ${error.message}`
+        );
       }
     },
     []
@@ -34,10 +38,10 @@ export default function UsePostRegisterRequest() {
     error,
     isMutating: isLoading,
     trigger,
-  } = useSWRMutation(requestURL, fetcher);
+  } = useSWRMutation<UserInfo, any, string, PostRegisterRequest>(requestURL, fetcher);
 
   const register = (registerData: PostRegisterRequest) => {
-    trigger(registerData);
+    return trigger(registerData);
   };
 
   return { data, error, isLoading, register };

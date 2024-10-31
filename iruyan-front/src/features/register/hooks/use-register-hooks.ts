@@ -28,6 +28,6 @@ export default function UseRegisterForm({ onSubmit }: Props) {
     setValue,
     watch,
     errors,
-    onSubmit: handleSubmit(onSubmit),
+    handleFormSubmit: handleSubmit(onSubmit),
   };
 }
