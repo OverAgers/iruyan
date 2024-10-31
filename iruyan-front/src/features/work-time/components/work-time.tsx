@@ -1,89 +1,81 @@
-import { Box, Typography } from "@mui/joy";
+import { Box, Typography, LinearProgress } from "@mui/joy";
 import SubButton from "@/components/ui/button/sub-button";
 import { useEffect } from "react";
 import { FormatTime } from "@/utils/format-time";
 import useUserStore from "@/stores/user-store";
+import { useTimer } from "@/hooks/timer-hooks";
 
 export default function WorkTime() {
+  const { currentUser, setStatus, incrementWorkTime, incrementRestTime } =
+    useUserStore();
+
   const {
-    currentUser,
-    setStatus,
-    incrementWorkTime,
-    incrementRestTime,
-    setStartTime,
-    resetTimes,
-  } = useUserStore();
+    timeLeft,
+    isRunning,
+    mode,
+    progress,
+    reset,
+    stop,
+    start,
+    switchMode,
+  } = useTimer({
+  initialWorkTime: 1500,
+  initialBreakTime: 300,
+  onTick: () => {
+    if (mode === "work") {
+      incrementWorkTime();
+    } else if (mode === "break") {
+      incrementRestTime();
+    }
+  },
+});
 
   useEffect(() => {
-    if (!currentUser) return;
+    if (!isRunning) return;
 
-    const { status, startTime } = currentUser;
-
-    if (status !== "idle" && startTime) {
-      const now = Date.now();
-      const elapsed = Math.floor((now - startTime) / 1000);
-      if (status === "working") {
-        incrementWorkTime(elapsed);
-      } else if (status === "resting") {
-        incrementRestTime(elapsed);
+    const interval = setInterval(() => {
+      if (mode === "work") {
+        incrementWorkTime();
+      } else if (mode === "break") {
+        incrementRestTime();
       }
-      setStartTime(now);
-    }
-  }, []);
+    }, 1000);
 
-  useEffect(() => {
-    if (!currentUser) return;
-
-    let interval: NodeJS.Timeout | null = null;
-
-    if (currentUser.status !== "idle") {
-      interval = setInterval(() => {
-        if (currentUser.status === "working") {
-          incrementWorkTime(1);
-        } else if (currentUser.status === "resting") {
-          incrementRestTime(1);
-        }
-      }, 1000);
-    }
-
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [currentUser?.status]);
-
-  const handleStart = (newStatus: "working" | "resting") => {
-    setStatus(newStatus);
-    setStartTime(Date.now());
-  };
-
-  const handleStop = () => {
-    setStatus("idle");
-    setStartTime(0);
-  };
+    return () => clearInterval(interval);
+  }, [isRunning, mode]);
 
   if (!currentUser) {
     return <div>ログインしてください。</div>;
   }
+
   return (
     <>
       <Box display="flex" flexDirection="column" alignItems="center" mb={3}>
+        <Typography fontSize="32px" fontWeight="bold" color="primary">
+          {FormatTime(timeLeft)}
+        </Typography>
+        <LinearProgress
+          determinate
+          value={progress}
+          sx={{ width: "100%", mb: 2 }}
+        />
         <Box
           display="flex"
           justifyContent="space-between"
           width="100%"
           mb={1}
-          alignItems={"center"}
+          alignItems="center"
         >
-          <Typography level="body-md">作業時間</Typography>
+          <Typography level="body-md">累計作業時間</Typography>
           <Typography level="h1">{FormatTime(currentUser.workTime)}</Typography>
         </Box>
         <Box
           display="flex"
           justifyContent="space-between"
           width="100%"
-          alignItems={"center"}
+          alignItems="center"
         >
-          <Typography level="body-md">休憩時間</Typography>
+          <Typography level="body-md">累計休憩時間</Typography>
           <Typography level="h2">{FormatTime(currentUser.restTime)}</Typography>
         </Box>
       </Box>
@@ -91,19 +83,43 @@ export default function WorkTime() {
         <SubButton
           title={"鬼集中 🔥"}
           size={"lg"}
-          onClick={() => handleStart("working")}
+          onClick={() => {
+            setStatus("working");
+            if (mode !== "work") switchMode();
+            start();
+          }}
         />
         <SubButton
           title={"休憩 😴"}
           size={"lg"}
-          onClick={() => handleStart("resting")}
+          onClick={() => {
+            setStatus("resting");
+            if (mode !== "break") switchMode();
+            start();
+          }}
+        />
+      </Box>
+      <Box display="flex" justifyContent="center" mb={2}>
+        <SubButton
+          title={isRunning ? "一時停止" : "再開"}
+          size={"lg"}
+          onClick={() => {
+            if (isRunning) {
+              stop();
+            } else {
+              start();
+            }
+          }}
         />
       </Box>
       <Box display="flex" justifyContent="center">
         <SubButton
-          title={"席を離れる 👋"}
+          title={"リセット"}
           size={"lg"}
-          onClick={handleStop}
+          onClick={() => {
+            reset();
+            setStatus("idle");
+          }}
         />
       </Box>
     </>
