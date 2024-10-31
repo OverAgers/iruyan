@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import Seats from "@/features/seats/components/seats";
 import RoomLayout from "@/components/layouts/room-layout";
 
