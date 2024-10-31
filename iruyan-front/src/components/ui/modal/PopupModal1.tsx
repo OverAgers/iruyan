@@ -38,7 +38,7 @@ export default function PopupModal1() {
             gap: 2
           }}
         >
-  
+
           <Typography
             component="h2"
             id="modal-title"
@@ -59,6 +59,7 @@ export default function PopupModal1() {
             type="button"
             maxWidth="342px"
             width="50%"
+            component="a"
           />
           {/* 下部に配置されたModalClose */}
           <Button
