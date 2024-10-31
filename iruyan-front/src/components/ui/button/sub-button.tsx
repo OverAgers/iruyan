@@ -1,4 +1,5 @@
 import Button from "@mui/joy/Button";
+import { SxProps } from "@mui/system"; // SxProps型をインポート
 
 type Props = {
   title: string;
@@ -6,6 +7,7 @@ type Props = {
   size: "xs" | "sm" | "md" | "lg" | "xl";
   onClick?: () => void;
   disabled?: boolean;
+  sx?: SxProps; // sxプロパティを追加
 };
 
 export default function SubButton(Props: Props) {
@@ -18,7 +20,7 @@ export default function SubButton(Props: Props) {
       disabled={Props.disabled}
       sx={{
         color: "#7A8764",
-        backgroundColor: "#F7F4ED",
+        backgroundColor: "#FFFFFF",
         border: "5px solid #7A8764",
         borderRadius: "8px",
         "&:hover": {
@@ -30,6 +32,7 @@ export default function SubButton(Props: Props) {
           color: "#F7F4ED",
           border: "5px solid #353A2B",
         },
+        ...Props.sx, // Props.sx を展開して既存のスタイルにマージ
       }}
     >
       {Props.title}
