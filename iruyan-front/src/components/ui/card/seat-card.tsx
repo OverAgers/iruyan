@@ -8,8 +8,8 @@ type Props = {
   isVacant: boolean | true;
   name: string;
   image: string | "";
-  tweet: string | "つぶやき";
-  status: React.ReactNode | null;
+  note: string | "つぶやき";
+  task: React.ReactNode | null;
   onClick: () => void;
 }
 
@@ -40,7 +40,7 @@ export default function SeatCard(Props: Props) {
           {!Props.isVacant && (
             <>
               <Typography
-                startDecorator={Props.status}
+                startDecorator={Props.task}
                 level="title-lg"
                 fontWeight="bold"
                 color="primary"
@@ -48,7 +48,7 @@ export default function SeatCard(Props: Props) {
                 テスト勉強
               </Typography>
               <Typography level="title-lg" mt={1}>
-                {Props.tweet}
+                {Props.note}
               </Typography>
             </>
           )}
