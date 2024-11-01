@@ -8,10 +8,13 @@ import MainButton from "@/components/ui/button/main-button";
 import SubButton from "@/components/ui/button/sub-button";
 import useUserStore from "@/stores/user-store";
 import Webcam from "react-webcam";
+import UseGetRoomList from "@/features/lobby/api/get-room-list";
 
 export default function Lobby() {
   const currentUser = useUserStore((state) => state.currentUser);
   const { setTask, setNote, setAvatarUrl } = useUserStore();
+  const getRoomList = UseGetRoomList();
+  const [roomId, setRoomId] = useState("");
 
   const [task, setTaskInput] = useState(currentUser?.task || "");
   const [note, setNoteInput] = useState(currentUser?.note || "");
@@ -19,9 +22,13 @@ export default function Lobby() {
   const webcamRef = useRef<Webcam>(null);
 
   const handleUpdateUser = () => {
+    if (getRoomList.data) {
+      setRoomId(getRoomList.data.rooms[0].roomId);
+      console.log("部屋ID:", roomId);
+    }
     setTask(task);
     setNote(note);
-    window.location.href = "/rooms/:aaa";
+    window.location.href = "/rooms/" + roomId;
   };
 
   const handleCapture = () => {
