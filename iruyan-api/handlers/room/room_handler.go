@@ -352,12 +352,97 @@ func TakeSeatHandler(c *gin.Context) {
 
 // 離席
 func LeaveSeatHandler(c *gin.Context) {
-	roomID := c.Param("room_id")
-	seatID := c.Param("seat_id")
-	// 離席処理のロジックをここに追加
+	roomIDParam := c.Param("room_id")
+	seatNumberParam := c.Param("seat_number")
+	userIDStr := c.PostForm("user_id")
+
+	// room_idをUUID型に変換してroomID変数に保存
+	roomID, err := uuid.Parse(roomIDParam)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, responses.ErrorResponse {
+			Message: "Invalid roomID format",
+		})
+		return 
+	}
+
+	// seat_idをUUID型に変換してseatID変数に保存
+	seatNumber, err := strconv.Atoi(seatNumberParam)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, responses.ErrorResponse {
+			Message: "Invalid seatID format",
+		})
+		return
+	}
+
+	// ユーザーIDをuintに変換
+	userIDUint, err := strconv.ParseUint(userIDStr, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, responses.ErrorResponse{
+			Message: "Invalid user ID format",
+		})
+		return
+	}
+	userID := uint(userIDUint)
+
+	// ユーザーが存在するか確認
+	var user models.User
+	if err := infrastructure.DB.First(&user, userID).Error; err != nil {
+		c.JSON(http.StatusNotFound, responses.ErrorResponse{
+			Message: "User not found",
+		})
+		return
+	}
+	
+	// WorkTimeテーブルからユーザの最新の入室記録を取得
+	workTime, err := worktime.GetLatestEntry(userID, roomIDParam)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			c.JSON(http.StatusBadRequest, responses.ErrorResponse{
+				Message: "User is not currently in the room",
+			})
+		} else {
+			c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
+				Message: "Failed to find entry record",
+			})
+		}
+		return
+	}
+
+	// ユーザのDB上の座席情報が指定された座席情報と一致しているか確認する
+	// 着席していなかった場合
+	if workTime.SeatNumber == 0 {
+		// 座席番号が0であれば、ユーザーは着席していない
+		c.JSON(http.StatusBadRequest, responses.ErrorResponse{
+			Message: "The user is not currently seated.",
+		})
+		return
+	}
+	
+	// 着席しているが、番号が一致していなかった場合
+	if workTime.SeatNumber != seatNumber {
+		// 座席番号が一致しない場合のエラーメッセージ
+		c.JSON(http.StatusBadRequest, responses.ErrorResponse{
+			Message: fmt.Sprintf("The seat number does not match the user's record. Current seat number is %d", workTime.SeatNumber),
+		})
+		return
+	}
+
+	// 座席情報を更新する
+	newSeatNumber := 0
+	workTime.SeatNumber = seatNumber
+	
+
+	// 座席情報をデータベースに更新
+	if err := infrastructure.DB.Model(&workTime).Update("seat_number", newSeatNumber).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
+			Message: "Failed to record seat number",
+		})
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Left the seat successfully",
 		"room_id": roomID,
-		"seat_id": seatID,
+		"seat_number": seatNumber,
 	})
 }
