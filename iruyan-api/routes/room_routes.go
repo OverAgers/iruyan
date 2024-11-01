@@ -23,5 +23,5 @@ func RegisterRoomRoutes(router *gin.Engine) {
 	router.PATCH("/rooms/:room_id/:seat_number/take", room.TakeSeatHandler)
 
 	// 離席
-	router.PATCH("/rooms/:room_id/:seat_number/leave", room.LeaveSeatHandler)
+	router.PATCH("/rooms/:room_id/leave", room.LeaveSeatHandler)
 }
