@@ -43,19 +43,16 @@ export default function SidebarCardUp() {
   const handleUpdateTask = () => {
     if (!currentUser) return;
     setUser({ ...currentUser, task });
-    // 必要に応じてサーバーにも更新を送信
-    // updateUserTask(currentUser.iruyanId, task);
   };
 
   const handleUpdateNote = () => {
     if (!currentUser) return;
     setUser({ ...currentUser, note });
-    // 必要に応じてサーバーにも更新を送信
-    // updateUserNote(currentUser.iruyanId, note);
   };
 
   // サーバーからユーザーステータスを取得する関数（ダミー実装）
-  const fetchUserStats = async (userId: string) => {
+  const fetchUserStats = async (iruyanID: string) => {
+    console.log("ユーザーステータスを取得します:", iruyanID);
     // 実際のAPIコールに置き換えてください
     // 例:
     // const response = await fetch(`/api/users/${userId}/stats`);
@@ -81,6 +78,7 @@ export default function SidebarCardUp() {
         p: 2,
         borderRadius: "8px",
         backgroundColor: "#f3f0e9",
+        mb: 3,
       }}
     >
       <Box>
