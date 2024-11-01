@@ -1,44 +1,66 @@
-import React from "react";
+'use client';
+
+import React, { useState } from "react";
 import { Box, Typography, Button } from "@mui/joy";
-import TextField from "@mui/material/TextField"; // Material UIのTextFieldをインポート
+import TextField from "@mui/material/TextField";
 import CameraIcon from "@mui/icons-material/CameraAlt";
 import MainButton from "@/components/ui/button/main-button";
 import SubButton from "@/components/ui/button/sub-button";
+import useUserStore from "@/stores/user-store";
 
-function HomeScreen() {
+export default function Lobby() {
+  const currentUser = useUserStore((state) => state.currentUser);
+  const { setTask, setNote } = useUserStore();
+
+  const [task, setTaskInput] = useState(currentUser?.task || "");
+  const [note, setNoteInput] = useState(currentUser?.note || "");
+  const handleUpdateUser = () => {
+    setTask(task);
+    setNote(note);
+    window.location.href = "/rooms/:aaa";
+  }
+
+  if (!currentUser) {
+    return <Typography>ログインしてください。</Typography>;
+  }
+
   return (
     <Box
       sx={{
-        position: "relative", // 子要素の絶対配置の基準
+        position: "relative",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
         minHeight: "100vh",
-        bgcolor: "#F7F4ED", // 背景色を指定
+        bgcolor: "#F7F4ED",
         p: 2,
       }}
     >
-      {/* Right Top Button */}
       <SubButton
-        title="右上ボタン"
+        title="ログアウト"
         size="lg"
         sx={{
-          position: "absolute", // 絶対位置で配置
-          top: "37px", // 上から37px
-          right: "41px", // 右から41px
+          position: "absolute",
+          top: "37px",
+          right: "200px",
         }}
       />
-
-      {/* Title */}
+      <SubButton
+        title="来店記録"
+        size="lg"
+        sx={{
+          position: "absolute",
+          top: "37px",
+          right: "41px",
+        }}
+      />
       <Typography level="h4" sx={{ mb: 1, fontSize: "48px" }}>
         ご案内用紙
       </Typography>
       <Typography level="h4" sx={{ mb: 3, color: "text.secondary" }}>
-        ほしょさん、ごゆっくりどうぞ
+        {currentUser?.name}さん、ごゆっくりどうぞ
       </Typography>
-
-      {/* Icon and Form Section */}
       <Box
         sx={{
           display: "flex",
@@ -48,7 +70,6 @@ function HomeScreen() {
           maxWidth: 840,
         }}
       >
-        {/* Icon */}
         <Box
           sx={{
             display: "flex",
@@ -63,14 +84,14 @@ function HomeScreen() {
           <Button
             variant="plain"
             sx={{
-              width: "240px", // ボタンの幅
-              height: "240px", // ボタンの高さ（円形にするために幅と同じ）
-              borderRadius: "50%", // 円形にするための設定
-              bgcolor: "white", // 背景色を白に設定
-              color: "text.primary", // アイコンの色
-              boxShadow: 1, // ボタンに軽い影を追加
+              width: "240px",
+              height: "240px",
+              borderRadius: "50%",
+              bgcolor: "white",
+              color: "text.primary",
+              boxShadow: 1,
               "&:hover": {
-                bgcolor: "#f0f0f0", // ホバー時に少し変化
+                bgcolor: "#f0f0f0",
               },
             }}
           >
@@ -100,8 +121,10 @@ function HomeScreen() {
             <TextField
               placeholder="勉強"
               fullWidth
+              value={task}
+              onChange={(e) => setTaskInput(e.target.value)}
               sx={{
-                bgcolor: "white", // 背景色を白に設定
+                bgcolor: "white",
                 width: "100%",
               }}
             />
@@ -120,18 +143,16 @@ function HomeScreen() {
             <TextField
               placeholder="課題やばい、、よ"
               fullWidth
+              value={note}
+              onChange={(e) => setNoteInput(e.target.value)}
               sx={{
-                bgcolor: "white", // 背景色を白に設定
+                bgcolor: "white",
                 width: "100%",
               }}
             />
           </Box>
         </Box>
       </Box>
-
-      {/* Task Content and Motivation */}
-
-      {/* Main Button */}
       <Box
         sx={{
           paddingTop: 7,
@@ -143,9 +164,8 @@ function HomeScreen() {
         maxWidth="240px"
         width="50%"
         component={"div"}
+        onClick={handleUpdateUser}
       />
     </Box>
   );
 }
-
-export default HomeScreen;

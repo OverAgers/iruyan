@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const loginFormSchema = z.object({
-  iruyanId: z.string().min(1, "入力してください"),
+  iruyanID: z.string().min(1, "入力してください"),
   password: z.string().min(1, "入力してください"),
 });
 
