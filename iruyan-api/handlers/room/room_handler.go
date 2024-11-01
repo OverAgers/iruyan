@@ -124,9 +124,38 @@ func GetRoomsHandler(c *gin.Context) {
 // @Router /rooms/{room_id} [get]
 func GetRoomHandler(c *gin.Context) {
 	roomID := c.Param("room_id")
-	c.JSON(http.StatusOK, responses.RoomDetailResponse{
+
+	// Roomモデルを定義
+	var room models.Room
+
+	// 指定された room_id の Roomをデータベースから取得
+	if err := infrastructure.DB.Preload("Seats").Where("id = ?", roomID).First(&room).Error; err != nil {
+		// Roomが見つからない場合、404エラーレスポンスを返す
+		c.JSON(http.StatusNotFound, responses.ErrorResponse{
+			Message: "Room not found",
+		})
+		return
+	}
+
+	// Room情報とSeat情報をレスポンス形式に整形
+	seats := make([]responses.SeatDetail, len(room.Seats))
+	for i, seat := range room.Seats {
+		seats[i] = responses.SeatDetail{
+			SeatID:     seat.ID.String(),
+			RoomID:     seat.RoomID.String(),
+			SeatNumber: seat.SeatNumber,
+		}
+	}
+
+	// Roomが見つかった場合の成功レスポンス
+	c.JSON(http.StatusOK, responses.RoomResponse{
 		Message: "Room details retrieved successfully",
-		RoomID:  roomID,
+		RoomID:  room.ID.String(),
+		Room: responses.RoomDetail{
+			RoomID:   room.ID.String(),
+			RoomName: room.Name,
+			Seats:    seats,
+		},
 	})
 }
 

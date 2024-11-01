@@ -33,6 +33,13 @@ type RoomCreateResponse struct {
 	RoomName string    `json:"room_name"`
 }
 
+// RoomResponse 単一のルーム詳細を含むレスポンス
+type RoomResponse struct {
+	Message string     `json:"message"`
+	RoomID  string     `json:"room_id"`
+	Room    RoomDetail `json:"room"`
+}
+
 // RoomDetailResponse Room詳細表示のレスポンス
 type RoomDetailResponse struct {
 	Message string `json:"message"`
