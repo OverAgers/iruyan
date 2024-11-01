@@ -237,7 +237,7 @@ func LeaveRoomHandler(c *gin.Context) {
 // 着席
 func TakeSeatHandler(c *gin.Context) {
 	roomIDParam := c.Param("room_id")
-	seatIDParam := c.Param("seat_id")
+	seatNumberParam := c.Param("seat_number")
 	userIDStr := c.PostForm("user_id")
 
 	// room_idをUUID型に変換してroomID変数に保存
@@ -250,7 +250,7 @@ func TakeSeatHandler(c *gin.Context) {
 	}
 
 	// seat_idをUUID型に変換してseatID変数に保存
-	seatNumber, err := strconv.Atoi(seatIDParam)
+	seatNumber, err := strconv.Atoi(seatNumberParam)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, responses.ErrorResponse {
 			Message: "Invalid seatID format",
@@ -268,6 +268,15 @@ func TakeSeatHandler(c *gin.Context) {
 	}
 	userID := uint(userIDUint)
 
+	// ユーザーが存在するか確認
+	var user models.User
+	if err := infrastructure.DB.First(&user, userID).Error; err != nil {
+		c.JSON(http.StatusNotFound, responses.ErrorResponse{
+			Message: "User not found",
+		})
+		return
+	}
+	
 	// 指定された座席が部屋に存在するかを確認
 	// 存在しない場合、エラー（無効な座席番号）を返す
 	var seat models.Seat
@@ -284,15 +293,6 @@ func TakeSeatHandler(c *gin.Context) {
 	if err := work.IsSeatTakenInRoom(infrastructure.DB, roomID, seatNumber); err != nil {
 		c.JSON(http.StatusConflict, responses.ErrorResponse{
 			Message: "Seat is already taken",
-		})
-		return
-	}
-
-	// ユーザーが存在するか確認
-	var user models.User
-	if err := infrastructure.DB.First(&user, userID).Error; err != nil {
-		c.JSON(http.StatusNotFound, responses.ErrorResponse{
-			Message: "User not found",
 		})
 		return
 	}
