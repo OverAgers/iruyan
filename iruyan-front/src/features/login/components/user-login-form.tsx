@@ -24,16 +24,10 @@ export default function UserLoginForm({ onSuccess }: Props) {
   });
   const { isLoading, login } = UseLoginRequest();
 
-  // フォームの onSubmit 関数を定義
   async function onSubmit(formData: LoginForm) {
     try {
-      // ログインリクエストを実行
       const userData = await login(formData as PostLoginRequest);
-
-      // currentUser を更新
       setUser(userData);
-
-      // 成功時のコールバックを呼び出す（必要であれば）
       if (onSuccess) {
         onSuccess(formData);
       }
@@ -52,8 +46,8 @@ export default function UserLoginForm({ onSuccess }: Props) {
       <AuthInputText
         label="ユーザーID"
         placeholder="ユーザーID"
-        onChange={(e) => setValue("iruyanId", e.target.value)}
-        error={errors.iruyanId}
+        onChange={(e) => setValue("iruyanID", e.target.value)}
+        error={errors.iruyanID}
       />
       <AuthInputText
         label="パスワード"
