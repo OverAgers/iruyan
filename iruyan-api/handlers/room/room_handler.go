@@ -2,19 +2,19 @@ package room
 
 import (
 	"fmt"
-	"iruyan-api/handlers/worktime"
 	"iruyan-api/handlers/seat"
+	"iruyan-api/handlers/worktime"
 	"iruyan-api/infrastructure"
 	"iruyan-api/models"
 	"iruyan-api/responses"
-	
+
 	"net/http"
 	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 // CreateRoomHandler Room作成
@@ -59,7 +59,7 @@ func CreateRoomHandler(c *gin.Context) {
 			return
 		}
 	}
-	
+
 	tx.Commit() // 全て（ルームの作成・シートの作成）成功したらコミット
 
 	c.JSON(http.StatusOK, responses.RoomCreateResponse{
@@ -68,6 +68,49 @@ func CreateRoomHandler(c *gin.Context) {
 		RoomName: room.Name,
 	})
 
+}
+
+// GetRoomsHandler ルーム一覧を取得
+// @Summary Get list of rooms with seats
+// @Description Retrieves a list of rooms, each with associated seat information
+// @Tags rooms
+// @Produce json
+// @Success 200 {object} responses.RoomListResponse
+// @Router /rooms [get]
+func GetRoomsHandler(c *gin.Context) {
+	var rooms []models.Room
+
+	// ルーム情報を関連するシート情報と共に取得
+	if err := infrastructure.DB.Preload("Seats").Find(&rooms).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
+			Message: "Failed to retrieve rooms: " + err.Error(),
+		})
+		return
+	}
+
+	// レスポンスデータの準備
+	roomDetails := make([]responses.RoomDetail, len(rooms))
+	for i, room := range rooms {
+		seats := make([]responses.SeatDetail, len(room.Seats))
+		for j, seat := range room.Seats {
+			seats[j] = responses.SeatDetail{
+				SeatID:     seat.ID.String(),
+				RoomID:     seat.RoomID.String(),
+				SeatNumber: seat.SeatNumber,
+			}
+		}
+		roomDetails[i] = responses.RoomDetail{
+			RoomID:   room.ID.String(),
+			RoomName: room.Name,
+			Seats:    seats,
+		}
+	}
+
+	// レスポンスを送信
+	c.JSON(http.StatusOK, responses.RoomListResponse{
+		Message: "Rooms retrieved successfully",
+		Rooms:   roomDetails,
+	})
 }
 
 // GetRoomHandler Room表示
@@ -263,16 +306,16 @@ func TakeSeatHandler(c *gin.Context) {
 	// room_idをUUID型に変換してroomID変数に保存
 	roomID, err := uuid.Parse(roomIDParam)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, responses.ErrorResponse {
+		c.JSON(http.StatusBadRequest, responses.ErrorResponse{
 			Message: "Invalid roomID format",
 		})
-		return 
+		return
 	}
 
 	// seat_idをUUID型に変換してseatID変数に保存
 	seatNumber, err := strconv.Atoi(seatNumberParam)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, responses.ErrorResponse {
+		c.JSON(http.StatusBadRequest, responses.ErrorResponse{
 			Message: "Invalid seatID format",
 		})
 		return
@@ -296,7 +339,7 @@ func TakeSeatHandler(c *gin.Context) {
 		})
 		return
 	}
-	
+
 	// 指定された座席が部屋に存在するかを確認
 	// 存在しない場合、エラー（無効な座席番号）を返す
 	var seat models.Seat
@@ -359,16 +402,16 @@ func LeaveSeatHandler(c *gin.Context) {
 	// room_idをUUID型に変換してroomID変数に保存
 	roomID, err := uuid.Parse(roomIDParam)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, responses.ErrorResponse {
+		c.JSON(http.StatusBadRequest, responses.ErrorResponse{
 			Message: "Invalid roomID format",
 		})
-		return 
+		return
 	}
 
 	// seat_idをUUID型に変換してseatID変数に保存
 	seatNumber, err := strconv.Atoi(seatNumberParam)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, responses.ErrorResponse {
+		c.JSON(http.StatusBadRequest, responses.ErrorResponse{
 			Message: "Invalid seatID format",
 		})
 		return
@@ -392,7 +435,7 @@ func LeaveSeatHandler(c *gin.Context) {
 		})
 		return
 	}
-	
+
 	// WorkTimeテーブルからユーザの最新の入室記録を取得
 	workTime, err := worktime.GetLatestEntry(userID, roomIDParam)
 	if err != nil {
@@ -417,7 +460,7 @@ func LeaveSeatHandler(c *gin.Context) {
 		})
 		return
 	}
-	
+
 	// 着席しているが、番号が一致していなかった場合
 	if workTime.SeatNumber != seatNumber {
 		// 座席番号が一致しない場合のエラーメッセージ
@@ -430,7 +473,6 @@ func LeaveSeatHandler(c *gin.Context) {
 	// 座席情報を更新する
 	newSeatNumber := 0
 	workTime.SeatNumber = seatNumber
-	
 
 	// 座席情報をデータベースに更新
 	if err := infrastructure.DB.Model(&workTime).Update("seat_number", newSeatNumber).Error; err != nil {
@@ -441,8 +483,8 @@ func LeaveSeatHandler(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "Left the seat successfully",
-		"room_id": roomID,
+		"message":     "Left the seat successfully",
+		"room_id":     roomID,
 		"seat_number": seatNumber,
 	})
 }

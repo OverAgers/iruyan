@@ -7,6 +7,9 @@ import (
 )
 
 func RegisterRoomRoutes(router *gin.Engine) {
+	// Roomの一覧取得
+	router.GET("/rooms", room.GetRoomsHandler)
+
 	// Room作成
 	router.POST("/rooms", room.CreateRoomHandler)
 
