@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef} from "react";
 import { Box, Typography, Button, Modal } from "@mui/joy";
 import TextField from "@mui/material/TextField";
 import CameraIcon from "@mui/icons-material/CameraAlt";
@@ -9,26 +9,50 @@ import SubButton from "@/components/ui/button/sub-button";
 import useUserStore from "@/stores/user-store";
 import Webcam from "react-webcam";
 import UseGetRoomList from "@/features/lobby/api/get-room-list";
+import UsePostRoomEnterRequest, { PostRoomEnterRequest } from "@/features/lobby/api/post-room-enter";
 
 export default function Lobby() {
   const currentUser = useUserStore((state) => state.currentUser);
   const { setTask, setNote, setAvatarUrl } = useUserStore();
-  const getRoomList = UseGetRoomList();
-  const [roomId, setRoomId] = useState("");
-
-  const [task, setTaskInput] = useState(currentUser?.task || "");
-  const [note, setNoteInput] = useState(currentUser?.note || "");
-  const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const {
+    data: roomListData,
+    error: roomListError,
+    isLoading: roomListLoading,
+  } = UseGetRoomList();
+  const [roomId, setRoomId] = useState<string>("");
+  const [task, setTaskInput] = useState<string>(currentUser?.task || "");
+  const [note, setNoteInput] = useState<string>(currentUser?.note || "");
+  const [isCameraOpen, setIsCameraOpen] = useState<boolean>(false);
   const webcamRef = useRef<Webcam>(null);
+  const roomEntry = UsePostRoomEnterRequest(roomId);
 
-  const handleUpdateUser = () => {
-    if (getRoomList.data) {
-      setRoomId(getRoomList.data.rooms[0].roomId);
-      console.log("部屋ID:", roomId);
-    }
+  const handleUpdateUser = async () => {
     setTask(task);
     setNote(note);
-    window.location.href = "/rooms/" + roomId;
+
+    if (roomListData && roomListData.rooms.length > 0) {
+      const selectedRoomId = roomListData.rooms[0].roomId;
+      setRoomId(selectedRoomId);
+      console.log("選択された部屋ID:", selectedRoomId);
+
+      if (currentUser) {
+        const requestData: PostRoomEnterRequest = {
+          iruyanID: currentUser.iruyanID,
+          task: task,
+        };
+
+        try {
+          await roomEntry.entry(requestData);
+          window.location.href = `/rooms/${selectedRoomId}`;
+        } catch (error: any) {
+          console.error("部屋へのエントリーに失敗しました:", error.message);
+        }
+      }
+    } else if (roomListLoading) {
+      console.log("ルームリストを取得中...");
+    } else {
+      console.log("部屋IDが取得できませんでした");
+    }
   };
 
   const handleCapture = () => {
@@ -195,6 +219,7 @@ export default function Lobby() {
         width="50%"
         component={"div"}
         onClick={handleUpdateUser}
+        disabled={roomEntry.isLoading || roomListLoading}
       />
       <Modal
         open={isCameraOpen}
