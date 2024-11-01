@@ -58,3 +58,17 @@ func GetLatestEntry(userID uint, roomID string) (*models.WorkTime, error) {
 	}
 	return &workTime, nil
 }
+
+// GetLogForLastWeek - 1週間の作業記録を取得するメソッド
+func GetLogForLastWeek(userID uint) ([]models.WorkTime, error) {
+	var workTimes []models.WorkTime
+	// 1週間前の日時を計算
+	oneWeekAgo := time.Now().AddDate(0, 0, -6)
+	if err := infrastructure.DB.
+			Where("user_id = ? AND entry_time >= ?", userID, oneWeekAgo).
+			Order("entry_time desc").
+			Find(&workTimes).Error; err != nil {
+			return nil, err
+	}
+	return workTimes, nil
+}
