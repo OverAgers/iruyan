@@ -5,12 +5,12 @@ import Card from "@mui/joy/Card";
 import Box from "@mui/joy/Box";
 
 type SeatCardProps = {
-  id: number;
+  seatId: string;
   isVacant: boolean;
-  name: string;
-  image: string;
-  note: string;
-  task: string;
+  name?: string;
+  image?: string;
+  note?: string;
+  task?: string;
   onClick: () => void;
 };
 

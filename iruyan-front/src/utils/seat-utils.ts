@@ -4,11 +4,11 @@ import { UserInfo } from "@/types/user-info";
 
 export const occupySeat = (
   seats: SeatsInfo[],
-  seatId: number,
+  seatId: string,
   userInfo: UserInfo
 ): SeatsInfo[] => {
   return seats.map((seat) =>
-    seat.id === seatId && seat.isVacant
+    seat.seatId === seatId && seat.isVacant
       ? {
           ...seat,
           isVacant: false,
@@ -21,9 +21,12 @@ export const occupySeat = (
   );
 };
 
-export const vacateSeat = (seats: SeatsInfo[], seatId: number): SeatsInfo[] => {
+export const vacateSeat = (
+  seats: SeatsInfo[],
+  seatId: string
+): SeatsInfo[] => {
   return seats.map((seat) =>
-    seat.id === seatId && !seat.isVacant
+    seat.seatId === seatId && !seat.isVacant
       ? {
           ...seat,
           isVacant: true,

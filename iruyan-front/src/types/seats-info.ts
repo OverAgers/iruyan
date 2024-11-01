@@ -1,8 +1,10 @@
 export type SeatsInfo = {
-  id: number;
+  seatId: string;
+  roomId: string;
+  seatNumber: number;
   isVacant: boolean;
-  name: string;
-  image: string;
-  note: string;
-  task: string;
+  name?: string;
+  image?: string;
+  note?: string;
+  task?: string;
 };

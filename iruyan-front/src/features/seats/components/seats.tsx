@@ -15,12 +15,12 @@ export default function Seats() {
         (seat) => !seat.isVacant && seat.name === currentUser.name
       );
       if (occupiedSeat) {
-        sitOnSeat(occupiedSeat.id, currentUser);
+        sitOnSeat(occupiedSeat.seatId, currentUser);
       }
     }
   }, [currentUser, seats]);
 
-  const handleSeatClick = (seatId: number, isVacant: boolean) => {
+  const handleSeatClick = (seatId: string, isVacant: boolean) => {
     if (isVacant) {
       if (currentUser) {
         sitOnSeat(seatId, currentUser);
@@ -29,7 +29,7 @@ export default function Seats() {
       }
     } else {
       // 座っているのが自分自身かどうかを確認
-      const seat = seats.find((s) => s.id === seatId);
+      const seat = seats.find((s) => s.seatId === seatId);
       if (seat && seat.name === currentUser?.name) {
         leaveSeat(seatId);
       } else {
@@ -42,10 +42,10 @@ export default function Seats() {
     <Box sx={{ width: 800 }}>
       <Grid2 container spacing={2}>
         {seats.map((seat) => (
-          <Grid2 key={seat.id}>
+          <Grid2 key={seat.seatId}>
             <SeatCard
               {...seat}
-              onClick={() => handleSeatClick(seat.id, seat.isVacant)}
+              onClick={() => handleSeatClick(seat.seatId, seat.isVacant)}
             />
           </Grid2>
         ))}
