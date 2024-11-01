@@ -6,8 +6,8 @@ import useSWRMutation from "swr/mutation";
 import z from "zod";
 
 export const postRegisterSchema = z.object({
-  iruyanId: z.string(),
-  userName: z.string(),
+  iruyanID: z.string(),
+  name: z.string(),
   email: z.string(),
   password: z.string(),
 });
@@ -20,10 +20,24 @@ export default function UsePostRegisterRequest() {
 
   const fetcher = useCallback(
     async (url: string, { arg }: { arg: PostRegisterRequest }) => {
+      const request = postRegisterSchema.parse(arg);
       try {
-        console.log("fetcher", arg);
-        const res = await axios.post(url, arg);
-        return res.data as UserInfo;
+        console.log("request", request);
+        const res = await axios.post(url, request, {
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        });
+        console.log("res", res.data);
+        const data = res.data.user;
+        const userInfo: UserInfo = {
+          iruyanID: data.iruyanID,
+          name: data.name,
+          email: data.email,
+          status: "idle",
+          workTime: 0,
+          restTime: 0,
+          startTime: 0,
+        };
+        return userInfo;
       } catch (error: any) {
         throw new Error(
           error.response?.data?.message || `登録エラー: ${error.message}`
