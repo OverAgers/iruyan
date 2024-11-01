@@ -21,4 +21,7 @@ func RegisterUserRoutes(router *gin.Engine) {
 
 	// 集中ランキング
 	router.GET("/user/:user_id/ranking", user.RankingHandler)
+
+	// タスクの更新
+	router.POST("/user/:user_id/task", user.TaskHandler)
 }
