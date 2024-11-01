@@ -52,6 +52,7 @@ function UserPage() {
           justifyContent: "center",
           gap: "10%",
           mt: "100px",
+          // margin: "0 auto",
         }}
       >
         <Box
@@ -61,6 +62,7 @@ function UserPage() {
             flexDirection: "column",
             alignItems: "flex-start",
             gap: "44px",
+            width: "fit-content",
           }}
         >
           <Box
@@ -263,14 +265,13 @@ function UserPage() {
             display: "flex",
             flexDirection: "column",
             alignItems: "flex-start",
-            gap: "23px",
             width: "fit-content",
           }}
         >
           <Typography align="center" sx={{ fontSize: "25px" }}>
             ご来店記録
           </Typography>
-          <TableContainer sx={{ maxWidth: 500 }}>
+          <TableContainer sx={{ minWidth: "40vw" }}>
             <Table>
               <TableHead>
                 <TableRow>
@@ -292,7 +293,7 @@ function UserPage() {
               </TableBody>
             </Table>
           </TableContainer>
-          <Box sx={{ width: 300 }}>
+          <Box sx={{ width: 400 }}>
             <BarChart
               series={[
                 {
@@ -300,7 +301,7 @@ function UserPage() {
                   color: "#D3AE6F",
                 },
               ]}
-              height={315}
+              height={400}
               xAxis={[
                 {
                   data: chartData.map((item) => item.day),
