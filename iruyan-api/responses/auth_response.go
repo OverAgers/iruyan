@@ -12,10 +12,15 @@ type RegisterSuccessResponse struct {
 	User    UserInfo `json:"user"`
 }
 
+// LogoutSuccessResponse ログアウト成功時のレスポンス
+type LogoutSuccessResponse struct {
+	Message string   `json:"message"`
+	User    UserInfo `json:"user"`
+}
+
 // UserInfo ユーザー情報のレスポンス
 type UserInfo struct {
-	IruyanID string `json:"iruyanID"`
+	IruyanID string `json:"iruyan_id"`
 	Name     string `json:"name"`
-	Task     string `json:"task,omitempty"`
 	Email    string `json:"email"`
 }
