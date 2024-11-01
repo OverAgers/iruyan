@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef} from "react";
+import React, { useState, useRef } from "react";
 import { Box, Typography, Button, Modal } from "@mui/joy";
 import TextField from "@mui/material/TextField";
 import CameraIcon from "@mui/icons-material/CameraAlt";
@@ -9,16 +9,14 @@ import SubButton from "@/components/ui/button/sub-button";
 import useUserStore from "@/stores/user-store";
 import Webcam from "react-webcam";
 import UseGetRoomList from "@/features/lobby/api/get-room-list";
-import UsePostRoomEnterRequest, { PostRoomEnterRequest } from "@/features/lobby/api/post-room-enter";
+import UsePostRoomEnterRequest, {
+  PostRoomEnterRequest,
+} from "@/features/lobby/api/post-room-enter";
 
 export default function Lobby() {
   const currentUser = useUserStore((state) => state.currentUser);
   const { setTask, setNote, setAvatarUrl } = useUserStore();
-  const {
-    data: roomListData,
-    error: roomListError,
-    isLoading: roomListLoading,
-  } = UseGetRoomList();
+  const { data: roomListData, isLoading: roomListLoading } = UseGetRoomList();
   const [roomId, setRoomId] = useState<string>("");
   const [task, setTaskInput] = useState<string>(currentUser?.task || "");
   const [note, setNoteInput] = useState<string>(currentUser?.note || "");
@@ -44,8 +42,8 @@ export default function Lobby() {
         try {
           await roomEntry.entry(requestData);
           window.location.href = `/rooms/${selectedRoomId}`;
-        } catch (error: any) {
-          console.error("部屋へのエントリーに失敗しました:", error.message);
+        } catch (error) {
+          console.error("部屋へのエントリーに失敗しました:", error);
         }
       }
     } else if (roomListLoading) {
@@ -74,12 +72,11 @@ export default function Lobby() {
       sx={{
         position: "relative",
         display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
+        alignItems: "flex-end",
         justifyContent: "center",
-        minHeight: "100vh",
-        bgcolor: "#F7F4ED",
-        p: 2,
+        height: "100vh",
+        backgroundImage: "url('/bg-image/bg_lobby.jpg')",
+        backgroundSize: "cover",
       }}
     >
       <SubButton
@@ -100,127 +97,128 @@ export default function Lobby() {
           right: "41px",
         }}
       />
-      <Typography level="h4" sx={{ mb: 1, fontSize: "48px" }}>
-        ご案内用紙
-      </Typography>
-      <Typography level="h4" sx={{ mb: 3, color: "text.secondary" }}>
-        {currentUser?.name}さん、ごゆっくりどうぞ
-      </Typography>
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          gap: "8%",
-          width: "100%",
-          maxWidth: 840,
-        }}
-      >
+      <Box display={"flex"} flexDirection={"column"} alignItems={"center"} mb={20}>
+        <Typography level="h4" sx={{ mb: 1, fontSize: "48px" }}>
+          ご案内用紙
+        </Typography>
+        <Typography level="h4" sx={{ mb: 3, color: "text.secondary" }}>
+          {currentUser?.name}さん、ごゆっくりどうぞ
+        </Typography>
         <Box
           sx={{
             display: "flex",
-            alignItems: "center",
             justifyContent: "center",
-            bgcolor: "background.default",
-            flexDirection: "column",
-            mr: 2,
-          }}
-        >
-          <Typography level="h4">今日のアイコン</Typography>
-          <Button
-            variant="plain"
-            sx={{
-              width: "240px",
-              height: "240px",
-              borderRadius: "50%",
-              bgcolor: "white",
-              color: "text.primary",
-              boxShadow: 1,
-              "&:hover": {
-                bgcolor: "#f0f0f0",
-              },
-            }}
-            onClick={() => setIsCameraOpen(true)}
-          >
-            {currentUser?.avatarUrl ? (
-              <img
-                src={currentUser.avatarUrl}
-                alt="Avatar"
-                style={{ width: "100%", height: "100%", borderRadius: "50%" }}
-              />
-            ) : (
-              <CameraIcon fontSize="large" />
-            )}
-          </Button>
-        </Box>
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "flex-start",
-            justifyContent: "center",
-            flexDirection: "column",
-            gap: "44px",
+            gap: "8%",
+            width: "100%",
+            maxWidth: 840,
           }}
         >
           <Box
             sx={{
               display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              bgcolor: "background.default",
               flexDirection: "column",
-              justifyContent: "flex-start",
-              width: "30vw",
+              mr: 2,
             }}
           >
-            <Typography level="h4" sx={{ mb: 1 }}>
-              ・作業内容
-            </Typography>
-            <TextField
-              placeholder="勉強"
-              fullWidth
-              value={task}
-              onChange={(e) => setTaskInput(e.target.value)}
+            <Typography level="h4">今日のアイコン</Typography>
+            <Button
+              variant="plain"
               sx={{
+                width: "240px",
+                height: "240px",
+                borderRadius: "50%",
                 bgcolor: "white",
-                width: "100%",
+                color: "text.primary",
+                boxShadow: 1,
+                "&:hover": {
+                  bgcolor: "#f0f0f0",
+                },
               }}
-            />
+              onClick={() => setIsCameraOpen(true)}
+            >
+              {currentUser?.avatarUrl ? (
+                  <img
+                    src={currentUser.avatarUrl}
+                    alt="Avatar"
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      borderRadius: "50%",
+                    }}
+                  />
+              ) : (
+                <CameraIcon fontSize="large" />
+              )}
+            </Button>
           </Box>
           <Box
             sx={{
               display: "flex",
+              alignItems: "flex-start",
               justifyContent: "center",
               flexDirection: "column",
-              width: "30vw",
+              gap: "44px",
             }}
           >
-            <Typography level="h4" sx={{ mb: 1 }}>
-              ・今日のやる気 / つぶやき
-            </Typography>
-            <TextField
-              placeholder="課題やばい、、よ"
-              fullWidth
-              value={note}
-              onChange={(e) => setNoteInput(e.target.value)}
+            <Box
               sx={{
-                bgcolor: "white",
-                width: "100%",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "flex-start",
+                width: "30vw",
               }}
-            />
+            >
+              <Typography level="h4" sx={{ mb: 1 }}>
+                ・作業内容
+              </Typography>
+              <TextField
+                placeholder="勉強"
+                fullWidth
+                value={task}
+                onChange={(e) => setTaskInput(e.target.value)}
+                sx={{
+                  bgcolor: "white",
+                  width: "100%",
+                }}
+              />
+            </Box>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                flexDirection: "column",
+                width: "30vw",
+              }}
+            >
+              <Typography level="h4" sx={{ mb: 1 }}>
+                ・今日のやる気 / つぶやき
+              </Typography>
+              <TextField
+                placeholder="課題やばい、、よ"
+                fullWidth
+                value={note}
+                onChange={(e) => setNoteInput(e.target.value)}
+                sx={{
+                  bgcolor: "white",
+                  width: "100%",
+                }}
+              />
+            </Box>
           </Box>
         </Box>
+        <MainButton
+          title="席に着く"
+          type="button"
+          maxWidth="240px"
+          width="50%"
+          component={"div"}
+          onClick={handleUpdateUser}
+          disabled={roomEntry.isLoading || roomListLoading}
+        />
       </Box>
-      <Box
-        sx={{
-          paddingTop: 7,
-        }}
-      ></Box>
-      <MainButton
-        title="席に着く"
-        type="button"
-        maxWidth="240px"
-        width="50%"
-        component={"div"}
-        onClick={handleUpdateUser}
-        disabled={roomEntry.isLoading || roomListLoading}
-      />
       <Modal
         open={isCameraOpen}
         onClose={() => setIsCameraOpen(false)}

@@ -1,4 +1,4 @@
-import { Box, Container, Typography, Grid } from "@mui/joy";
+import { Typography } from "@mui/joy";
 import { Grid2 } from "@mui/material";
 import Sidebar from "@/features/sidebar/components/sidebar";
 
@@ -10,7 +10,11 @@ export default function RoomLayout({ children }: Props) {
   return (
     <Grid2
       container
-      sx={{ height: "100vh" }}
+      sx={{
+        height: "100vh",
+        backgroundImage: "url('/bg-image/bg_room.jpg')",
+        backgroundSize: "cover",
+      }}
       justifyContent={"space-between"}
       bgcolor={"#3C2800"}
     >
@@ -25,9 +29,7 @@ export default function RoomLayout({ children }: Props) {
             </Typography>
           </Grid2>
           <Grid2 padding={4} size={9}>
-            <Box>
-              <Typography>通知</Typography>
-            </Box>
+              {/* <Typography>通知</Typography> */}
           </Grid2>
         </Grid2>
         <Grid2>{children}</Grid2>

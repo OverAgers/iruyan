@@ -9,10 +9,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Paper,
 } from "@mui/material";
-import { Button } from "@mui/joy";
-import MainButton from "@/components/ui/button/main-button";
 import SubButton from "@/components/ui/button/sub-button";
 import { BarChart } from "@mui/x-charts/BarChart";
 
@@ -31,9 +28,10 @@ function UserPage() {
     <Box
       sx={{
         position: "relative",
-        minHeight: "100vh",
+        height: "100vh",
         bgcolor: "#F7F4ED",
-        p: 4,
+        backgroundImage: "url('/bg-image/bg_user.jpg')",
+        backgroundSize: "cover",
       }}
     >
       <SubButton
@@ -46,13 +44,12 @@ function UserPage() {
         }}
       />
       <Box
+        display={"flex"}
+        justifyContent={"center"}
+        alignItems={"flex-end"}
+        pt={20}
         sx={{
-          textAlign: "center",
-          display: "flex",
-          justifyContent: "center",
           gap: "10%",
-          mt: "100px",
-          // margin: "0 auto",
         }}
       >
         <Box
