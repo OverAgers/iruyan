@@ -1,37 +1,25 @@
 import React from "react";
 import SeatCard from "@/components/ui/card/seat-card";
-import { Box, Grid2 } from "@mui/material";
+import { Box, Grid2, Typography } from "@mui/material";
 import useSeatStore from "@/stores/seats-store";
 import useUserStore from "@/stores/user-store";
-import { useEffect } from "react";
 
 export default function Seats() {
-  const { seats, sitOnSeat, leaveSeat } = useSeatStore();
-  const { currentUser } = useUserStore();
+  const currentUser = useUserStore((state) => state.currentUser);
+  const seats = useSeatStore((state) => state.seats);
+  const moveSeat = useSeatStore((state) => state.moveSeat);
 
-  useEffect(() => {
-    if (currentUser) {
-      const occupiedSeat = seats.find(
-        (seat) => !seat.isVacant && seat.name === currentUser.name
-      );
-      if (occupiedSeat) {
-        sitOnSeat(occupiedSeat.seatId, currentUser);
-      }
-    }
-  }, [currentUser, seats]);
+  if (!currentUser) {
+    return <Typography>ログインしてください</Typography>;
+  }
 
   const handleSeatClick = (seatId: string, isVacant: boolean) => {
     if (isVacant) {
-      if (currentUser) {
-        sitOnSeat(seatId, currentUser);
-      } else {
-        alert("ログインしてください");
-      }
+      moveSeat(seatId, currentUser);
     } else {
-      // 座っているのが自分自身かどうかを確認
       const seat = seats.find((s) => s.seatId === seatId);
-      if (seat && seat.name === currentUser?.name) {
-        leaveSeat(seatId);
+      if (seat && seat.name === currentUser.name) {
+        useSeatStore.getState().leaveSeat(seatId);
       } else {
         alert("この席は他のユーザーが使用中です");
       }

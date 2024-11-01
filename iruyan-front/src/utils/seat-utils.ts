@@ -7,34 +7,41 @@ export const occupySeat = (
   seatId: string,
   userInfo: UserInfo
 ): SeatsInfo[] => {
-  return seats.map((seat) =>
-    seat.seatId === seatId && seat.isVacant
-      ? {
-          ...seat,
-          isVacant: false,
-          name: userInfo.name,
-          image: userInfo.avatarUrl || "",
-          note: userInfo.note || "",
-          task: userInfo.task || "",
-        }
-      : seat
-  );
+  let isChanged = false;
+  const updatedSeats = seats.map((seat) => {
+    if (seat.seatId === seatId && seat.isVacant) {
+      isChanged = true;
+      return {
+        ...seat,
+        isVacant: false,
+        name: userInfo.name,
+        iruyanID: userInfo.iruyanID,
+        image: userInfo.avatarUrl || "",
+        note: userInfo.note || "",
+        task: userInfo.task || "",
+      };
+    }
+    return seat;
+  });
+  return isChanged ? updatedSeats : seats;
 };
 
-export const vacateSeat = (
-  seats: SeatsInfo[],
-  seatId: string
-): SeatsInfo[] => {
-  return seats.map((seat) =>
-    seat.seatId === seatId && !seat.isVacant
-      ? {
-          ...seat,
-          isVacant: true,
-          name: "空席",
-          image: "",
-          note: "",
-          task: "",
-        }
-      : seat
-  );
+export const vacateSeat = (seats: SeatsInfo[], seatId: string): SeatsInfo[] => {
+  let isChanged = false;
+  const updatedSeats = seats.map((seat) => {
+    if (seat.seatId === seatId && !seat.isVacant) {
+      isChanged = true;
+      return {
+        ...seat,
+        isVacant: true,
+        name: "空席",
+        image: "",
+        iruyanID: "",
+        note: "",
+        task: "",
+      };
+    }
+    return seat;
+  });
+  return isChanged ? updatedSeats : seats;
 };
