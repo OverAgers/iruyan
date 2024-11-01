@@ -28,11 +28,11 @@ export default function useGetRoomList() {
 
   const fetcher = useCallback(
     async (url: string): Promise<GetRoomListRequest> => {
+      console.log("データ取得中:", url);
       try {
         const res = await axios.get(url);
-        const data = getRoomListSchema.parse(res.data);
-        console.log("データ取得成功:", data);
-        return data;
+        console.log("データ取得成功:", res.data);
+        return res.data;
       } catch (error: any) {
         if (axios.isAxiosError(error)) {
           throw new Error(
@@ -54,12 +54,7 @@ export default function useGetRoomList() {
 
   const { data, error, isLoading } = useSWR<GetRoomListRequest, Error>(
     requestURL,
-    fetcher,
-    {
-      revalidateOnFocus: true,
-      dedupingInterval: 60000,
-    }
-  );
+    fetcher,);
 
   return { data, error, isLoading };
 }
