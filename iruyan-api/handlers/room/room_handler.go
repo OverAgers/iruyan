@@ -353,6 +353,7 @@ func TakeSeatHandler(c *gin.Context) {
 // 離席
 func LeaveSeatHandler(c *gin.Context) {
 	roomIDParam := c.Param("room_id")
+	seatNumberParam := c.Param("seat_number")
 	userIDStr := c.PostForm("user_id")
 
 	// room_idをUUID型に変換してroomID変数に保存
@@ -362,6 +363,15 @@ func LeaveSeatHandler(c *gin.Context) {
 			Message: "Invalid roomID format",
 		})
 		return 
+	}
+
+	// seat_idをUUID型に変換してseatID変数に保存
+	seatNumber, err := strconv.Atoi(seatNumberParam)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, responses.ErrorResponse {
+			Message: "Invalid seatID format",
+		})
+		return
 	}
 
 	// ユーザーIDをuintに変換
@@ -398,13 +408,32 @@ func LeaveSeatHandler(c *gin.Context) {
 		return
 	}
 
+	// ユーザのDB上の座席情報が指定された座席情報と一致しているか確認する
+	// 着席していなかった場合
+	if workTime.SeatNumber == 0 {
+		// 座席番号が0であれば、ユーザーは着席していない
+		c.JSON(http.StatusBadRequest, responses.ErrorResponse{
+			Message: "The user is not currently seated.",
+		})
+		return
+	}
+	
+	// 着席しているが、番号が一致していなかった場合
+	if workTime.SeatNumber != seatNumber {
+		// 座席番号が一致しない場合のエラーメッセージ
+		c.JSON(http.StatusBadRequest, responses.ErrorResponse{
+			Message: fmt.Sprintf("The seat number does not match the user's record. Current seat number is %d", workTime.SeatNumber),
+		})
+		return
+	}
+
 	// 座席情報を更新する
-	seatNumber := 0
+	newSeatNumber := 0
 	workTime.SeatNumber = seatNumber
 	
 
 	// 座席情報をデータベースに更新
-	if err := infrastructure.DB.Model(&workTime).Update("seat_number", seatNumber).Error; err != nil {
+	if err := infrastructure.DB.Model(&workTime).Update("seat_number", newSeatNumber).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
 			Message: "Failed to record seat number",
 		})
