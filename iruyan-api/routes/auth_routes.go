@@ -18,4 +18,7 @@ func RegisterAuthRoutes(router *gin.Engine) {
 
 	// 新規登録処理
 	router.POST("/register", auth.RegisterHandler)
+
+	// ログアウト
+	router.POST("/logout", auth.LogoutHandler)
 }

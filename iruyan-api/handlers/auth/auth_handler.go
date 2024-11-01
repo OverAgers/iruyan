@@ -9,6 +9,7 @@ import (
 	"iruyan-api/responses"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 // LoginPageHandler ログイン画面表示
@@ -113,6 +114,45 @@ func RegisterHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, responses.RegisterSuccessResponse{
 		Message: "Registration successful",
+		User: responses.UserInfo{
+			IruyanID: user.IruyanID,
+			Name:     user.Name,
+			Email:    user.Email,
+		},
+	})
+}
+
+// LogoutHandler ログアウト処理
+// @Summary User logout
+// @Description Logs out the user based on provided IruyanID
+// @Tags auth
+// @Accept x-www-form-urlencoded
+// @Produce json
+// @Param iruyanID formData string true "IruyanID" default(johndoe)
+// @Success 200 {object} responses.LogoutSuccessResponse
+// @Failure 400 {object} responses.ErrorResponse
+// @Failure 404 {object} responses.ErrorResponse
+// @Router /logout [post]
+func LogoutHandler(c *gin.Context) {
+	iruyanID := c.PostForm("iruyanID")
+
+	// エラーハンドラをインスタンス化
+	errorHandler := errorhandler.ErrorHandler{}
+
+	// ユーザーが存在するか確認
+	var user models.User
+	if err := infrastructure.DB.Where("iruyan_id = ?", iruyanID).First(&user).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			errorHandler.NotFoundError(c, "User not found")
+		} else {
+			errorHandler.InternalServerError(c, "Database error")
+		}
+		return
+	}
+
+	// ログアウト成功レスポンス
+	c.JSON(http.StatusOK, responses.LogoutSuccessResponse{
+		Message: "Logout successful",
 		User: responses.UserInfo{
 			IruyanID: user.IruyanID,
 			Name:     user.Name,
