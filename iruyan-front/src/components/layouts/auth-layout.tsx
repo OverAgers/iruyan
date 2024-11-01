@@ -1,6 +1,6 @@
 import { usePathname } from "next/navigation";
 import SubButton from "@/components/ui/button/sub-button";
-import { Box, Typography, Grid2 } from "@mui/material";
+import { Typography, Grid2 } from "@mui/material";
 
 type Props = {
   children: React.ReactNode;
@@ -18,6 +18,7 @@ export default function AuthLayout({ children }: Props) {
       justifyContent={"center"}
       height={"100vh"}
       alignItems={"flex-start"}
+      sx={{backgroundImage: "url('/bg-image/bg_login.jpg')", backgroundSize: "cover"}}
     >
       <Grid2 container padding={6} size={12} justifyContent={"flex-end"}>
         <SubButton title={changeButtonTitle} link={changeLink} size="lg" />
@@ -38,6 +39,7 @@ export default function AuthLayout({ children }: Props) {
           {children}
         </Grid2>
       </Grid2>
+
     </Grid2>
   );
 }

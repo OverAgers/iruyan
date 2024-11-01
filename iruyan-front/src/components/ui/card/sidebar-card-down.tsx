@@ -16,6 +16,7 @@ export default function SidebarCardDown() {
         p: 2,
         borderRadius: "8px",
         backgroundColor: "#f3f0e9",
+        mb: 3,
       }}
     >
       <Box display="flex" mb={2} borderRadius="8px" overflow="hidden">

@@ -6,7 +6,7 @@ import useCurrentTime  from "@/hooks/current-time-hooks";
 export default function Sidebar() {
   const currentTime = useCurrentTime();
   return (
-    <Box justifySelf={"flex-end"} pr={2} pt={2}>
+    <Box justifySelf={"flex-end"} pr={2} pt={3}>
       <SidebarCardUp />
       <SidebarCardDown />
       <Box>

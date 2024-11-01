@@ -1,4 +1,4 @@
-import { Box, Typography, LinearProgress } from "@mui/joy";
+import { Box, Typography } from "@mui/joy";
 import SubButton from "@/components/ui/button/sub-button";
 import { useEffect } from "react";
 import { FormatTime } from "@/utils/format-time";
@@ -10,11 +10,8 @@ export default function WorkTime() {
     useUserStore();
 
   const {
-    timeLeft,
     isRunning,
     mode,
-    progress,
-    reset,
     stop,
     start,
     switchMode,
@@ -51,14 +48,6 @@ export default function WorkTime() {
   return (
     <>
       <Box display="flex" flexDirection="column" alignItems="center" mb={3}>
-        <Typography fontSize="32px" fontWeight="bold" color="primary">
-          {FormatTime(timeLeft)}
-        </Typography>
-        <LinearProgress
-          determinate
-          value={progress}
-          sx={{ width: "100%", mb: 2 }}
-        />
         <Box
           display="flex"
           justifyContent="space-between"
@@ -99,26 +88,13 @@ export default function WorkTime() {
           }}
         />
       </Box>
-      <Box display="flex" justifyContent="center" mb={2}>
+      <Box textAlign={"center"}>
         <SubButton
-          title={isRunning ? "一時停止" : "再開"}
+          title={"席を離れる 👋"}
           size={"lg"}
           onClick={() => {
-            if (isRunning) {
-              stop();
-            } else {
-              start();
-            }
-          }}
-        />
-      </Box>
-      <Box display="flex" justifyContent="center">
-        <SubButton
-          title={"リセット"}
-          size={"lg"}
-          onClick={() => {
-            reset();
             setStatus("idle");
+            stop();
           }}
         />
       </Box>
