@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -34,4 +35,14 @@ func NewSeat(db *gorm.DB, roomID uuid.UUID) (*Seat, error) {
 		RoomID		: roomID,
 		SeatNumber	: seatNumber,
 	}, nil	
+}
+
+// IsSeatExistsInRoom - 部屋に指定された座席番号が存在するか確認するメソッド
+func (s *Seat) IsSeatExistsInRoom(db *gorm.DB, roomID uuid.UUID, seatNumber int) error {
+	if err := db.Where("room_id = ? AND seat_number = ?", roomID, seatNumber).First(s).Error; err != nil {
+		// 座席が存在しないとき
+		return errors.New("Seat is not found in this room")
+	}
+	// 座席が存在するとき
+	return nil
 }
