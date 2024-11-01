@@ -22,6 +22,9 @@ func RegisterUserRoutes(router *gin.Engine) {
 	// 集中ランキング
 	router.GET("/user/:user_id/ranking", user.RankingHandler)
 
+	// 直近5回分の作業時間を取得
+	router.GET("/user/:user_id/recent_log", user.GetRecentLog)
+	
 	// タスクの更新
 	router.POST("/user/:user_id/task", user.TaskHandler)
 }
