@@ -5,6 +5,7 @@ import (
 	"iruyan-api/infrastructure"
 	"iruyan-api/models"
 	"iruyan-api/responses"
+	"time"
 
 	"net/http"
 	"strconv"
@@ -104,7 +105,7 @@ func WorkInfoHandler(c *gin.Context) {
 	dailyWorkHours := make(map[string]time.Duration) // 日付をキー、作業時間を値とするマップ
 	for _, log := range workLogs {
 		dateStr := log.EntryTime.Format("2006-01-02") // EntryTimeを利用
-		dailyWorkHours[dateStr] += log.Duration // Durationを時間に変換して加算
+		dailyWorkHours[dateStr] += log.Duration       // Durationを時間に変換して加算
 	}
 
 	// レスポンスのデータを整形
@@ -117,7 +118,7 @@ func WorkInfoHandler(c *gin.Context) {
 	}
 
 	workInfo := responses.WorkLogForLastWeekResponse{
-		UserID:   userID,
+		UserID:    userID,
 		DailyLogs: dailyLogs, // スライスを格納
 	}
 
