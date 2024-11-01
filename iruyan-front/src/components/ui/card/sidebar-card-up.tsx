@@ -30,7 +30,7 @@ export default function SidebarCardUp() {
     }
 
     // サーバーから累計集中時間と連続入室日数を取得
-    fetchUserStats(currentUser.iruyanId)
+    fetchUserStats(currentUser.iruyanID)
       .then((stats) => {
         setCumulativeTime(stats.cumulativeTime);
         setConsecutiveDays(stats.consecutiveDays);
