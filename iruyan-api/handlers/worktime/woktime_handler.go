@@ -71,3 +71,30 @@ func GetLatestLogs(userID uint, limitN int) ([]models.WorkTime, error) {
 	}
 	return workTimes, nil
 }
+
+// GetLatestLogs - 最近N回の入室記録を取得
+func GetLatestLogs(userID uint, limitN int) ([]models.WorkTime, error) {
+	var workTimes []models.WorkTime
+	if err := infrastructure.DB.
+		Where("user_id = ?", userID).
+		Order("entry_time desc").
+		Limit(limitN).
+		Find(&workTimes).Error; err != nil {
+		return nil, err
+	}
+	return workTimes, nil
+}
+
+// GetLogForLastWeek - 1週間の作業記録を取得するメソッド
+func GetLogForLastWeek(userID uint) ([]models.WorkTime, error) {
+	var workTimes []models.WorkTime
+	// 1週間前の日時を計算
+	oneWeekAgo := time.Now().AddDate(0, 0, -6)
+	if err := infrastructure.DB.
+			Where("user_id = ? AND entry_time >= ?", userID, oneWeekAgo).
+			Order("entry_time desc").
+			Find(&workTimes).Error; err != nil {
+			return nil, err
+	}
+	return workTimes, nil
+}
