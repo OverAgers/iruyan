@@ -7,12 +7,14 @@ import { RegisterForm } from "@/schema/register-form-schema";
 import { useState } from "react";
 import { UserInfo } from "@/types/user-info";
 import UsePostRegisterRequest from "../api/post-register";
+import useUserStore from "@/stores/user-store";
 
 type Props = {
   onSuccess: (data: UserInfo) => void;
 };
 
 export default function UserRegisterForm({ onSuccess }: Props) {
+  const setUser = useUserStore((state) => state.setUser);
   const [errorMessage, setErrorMessage] = useState("");
 
   const {
@@ -25,7 +27,8 @@ export default function UserRegisterForm({ onSuccess }: Props) {
     try {
       const { passwordConfirm, ...dataToSubmit } = formData;
       const userData = await registerUser(dataToSubmit);
-      onSuccess(userData as UserInfo);
+      setUser(userData);
+      onSuccess(userData);
     } catch (error: any) {
       console.error("登録に失敗しました", error);
       setErrorMessage(error.message || "登録に失敗しました");
@@ -42,14 +45,14 @@ export default function UserRegisterForm({ onSuccess }: Props) {
       <AuthInputText
         label="ユーザーID"
         placeholder="ユーザーID"
-        onChange={(e) => setValue("iruyanId", e.target.value)}
-        error={errors.iruyanId}
+        onChange={(e) => setValue("iruyanID", e.target.value)}
+        error={errors.iruyanID}
       />
       <AuthInputText
         label="ユーザー名（表示名）"
         placeholder="ユーザー名"
-        onChange={(e) => setValue("userName", e.target.value)}
-        error={errors.userName}
+        onChange={(e) => setValue("name", e.target.value)}
+        error={errors.name}
       />
       <AuthInputText
         label="メールアドレス"

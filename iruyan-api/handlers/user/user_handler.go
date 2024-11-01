@@ -1,13 +1,13 @@
 package user
 
 import (
-	"net/http"
 	"iruyan-api/handlers/worktime"
 	"iruyan-api/infrastructure"
 	"iruyan-api/models"
 	"iruyan-api/responses"
 
 	"github.com/gin-gonic/gin"
+	"net/http"
 	"gorm.io/gorm"
 	"strconv"
 )
@@ -21,26 +21,26 @@ func UserPageHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, responses.ErrorResponse{
 			Message: "Invalid user id format",
 		})
-		return 
+		return
 	}
 	userID := uint(userIDUint64)
 
 	var user models.User
 	// ユーザIDがDBに存在するか確認する
 	// ユーザが見つからない場合はエラーを返す
-	if err = user.FindByID(infrastructure.DB, userID); err != nil{
+	if err = user.FindByID(infrastructure.DB, userID); err != nil {
 		if err.Error() == "user not found" {
 			// ユーザがデータベースに存在しない場合
-			c.JSON(http.StatusNotFound, responses.ErrorResponse {
+			c.JSON(http.StatusNotFound, responses.ErrorResponse{
 				Message: "User not found",
 			})
-			return 
+			return
 		} else {
 			// その他のサーバ側のエラーの場合
-			c.JSON(http.StatusInternalServerError, responses.ErrorResponse {
+			c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
 				Message: "Database error",
 			})
-			return  
+			return
 		}
 	}
 
@@ -82,6 +82,126 @@ func TogetherTimeHandler(c *gin.Context) {
 func RankingHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Ranking page accessed successfully",
+	})
+}
+
+// タスク内容の更新
+func TaskHandler(c *gin.Context) {
+	userIDParam := c.Param("user_id")
+	task := c.PostForm("task")
+
+	// user_idをuint型に変換してuserID変数に保存
+	userIDUint64, err := strconv.ParseUint(userIDParam, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, responses.ErrorResponse{
+			Message: "Invalid user id format",
+		})
+		return
+	}
+	userID := uint(userIDUint64)
+
+	// ユーザーが存在するか確認
+	var user models.User
+	if err = user.FindByID(infrastructure.DB, userID); err != nil {
+		if err.Error() == "user not found" {
+			c.JSON(http.StatusNotFound, responses.ErrorResponse{
+				Message: "User not found",
+			})
+			return
+		} else {
+			c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
+				Message: "Database error",
+			})
+			return
+		}
+	}
+
+	// WorkTimeテーブルから、入室中のレコード（LeavingTimeが設定されていない）を取得
+	var workTime models.WorkTime
+	if err = infrastructure.DB.Where("user_id = ? AND leaving_time IS NULL", userID).First(&workTime).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			c.JSON(http.StatusBadRequest, responses.ErrorResponse{
+				Message: "User is not currently in a room",
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
+			Message: "Database error",
+		})
+		return
+	}
+
+	// タスク内容を更新
+	workTime.Task = task
+	if err = infrastructure.DB.Save(&workTime).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
+			Message: "Failed to update task",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Task updated successfully",
+	})
+}
+
+// タスク内容の更新
+func TaskHandler(c *gin.Context) {
+	userIDParam := c.Param("user_id")
+	task := c.PostForm("task")
+
+	// user_idをuint型に変換してuserID変数に保存
+	userIDUint64, err := strconv.ParseUint(userIDParam, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, responses.ErrorResponse{
+			Message: "Invalid user id format",
+		})
+		return
+	}
+	userID := uint(userIDUint64)
+
+	// ユーザーが存在するか確認
+	var user models.User
+	if err = user.FindByID(infrastructure.DB, userID); err != nil {
+		if err.Error() == "user not found" {
+			c.JSON(http.StatusNotFound, responses.ErrorResponse{
+				Message: "User not found",
+			})
+			return
+		} else {
+			c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
+				Message: "Database error",
+			})
+			return
+		}
+	}
+
+	// WorkTimeテーブルから、入室中のレコード（LeavingTimeが設定されていない）を取得
+	var workTime models.WorkTime
+	if err = infrastructure.DB.Where("user_id = ? AND leaving_time IS NULL", userID).First(&workTime).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			c.JSON(http.StatusBadRequest, responses.ErrorResponse{
+				Message: "User is not currently in a room",
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
+			Message: "Database error",
+		})
+		return
+	}
+
+	// タスク内容を更新
+	workTime.Task = task
+	if err = infrastructure.DB.Save(&workTime).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
+			Message: "Failed to update task",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Task updated successfully",
 	})
 }
 
