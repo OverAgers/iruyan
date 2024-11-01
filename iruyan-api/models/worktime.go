@@ -1,8 +1,9 @@
 package models
 
 import (
-	"time"
 	"errors"
+	"time"
+
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -11,6 +12,7 @@ type WorkTime struct {
 	ID          int           `gorm:"primaryKey;autoIncrement"`
 	UserID      uint          `gorm:"type:uuid;not null"`
 	RoomID      uuid.UUID     `gorm:"type:uuid;not null"`
+	Task        string        `gorm:"size:255;default:''"`
 	EntryTime   time.Time     `gorm:"not null"`
 	LeavingTime time.Time     `gorm:"default:null"` // 空の値をデフォルトに
 	SeatNumber  int           `gorm:"default:0"`    // デフォルト値を0に設定

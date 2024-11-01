@@ -15,7 +15,6 @@ type User struct {
 	Name     string `gorm:"size:255;not null"`
 	IruyanID string `gorm:"uniqueIndex;size:255;not null"`
 	Password string `gorm:"size:255;not null"` // ハッシュ化されたパスワード
-	Task     string `gorm:"size:255;default:''"`
 	Email    string `gorm:"uniqueIndex;size:255;not null"`
 }
 
@@ -55,7 +54,6 @@ func NewUser(db *gorm.DB, name, iruyanID, password, email string) (*User, error)
 		Name:     name,
 		IruyanID: iruyanID,
 		Password: hashedPassword,
-		Task:     "",
 		Email:    email,
 	}, nil
 }
