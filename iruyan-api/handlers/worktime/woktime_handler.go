@@ -58,3 +58,16 @@ func GetLatestEntry(userID uint, roomID string) (*models.WorkTime, error) {
 	}
 	return &workTime, nil
 }
+
+// GetLatestLogs - 最近N回の入室記録を取得
+func GetLatestLogs(userID uint, limitN int) ([]models.WorkTime, error) {
+	var workTimes []models.WorkTime
+	if err := infrastructure.DB.
+		Where("user_id = ?", userID).
+		Order("entry_time desc").
+		Limit(limitN).
+		Find(&workTimes).Error; err != nil {
+		return nil, err
+	}
+	return workTimes, nil
+}
