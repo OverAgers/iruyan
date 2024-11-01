@@ -3,9 +3,11 @@ package room
 import (
 	"fmt"
 	"iruyan-api/handlers/worktime"
+	"iruyan-api/handlers/seat"
 	"iruyan-api/infrastructure"
 	"iruyan-api/models"
 	"iruyan-api/responses"
+	
 	"net/http"
 	"strconv"
 	"time"
@@ -35,18 +37,36 @@ func CreateRoomHandler(c *gin.Context) {
 		return
 	}
 
-	if err := infrastructure.DB.Create(&room).Error; err != nil {
+	// トランザクションを開始
+	tx := infrastructure.DB.Begin()
+	if err := tx.Create(&room).Error; err != nil {
+		tx.Rollback() // エラーが発生したらロールバック
 		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
 			Message: "Failed to create room: " + err.Error(),
 		})
 		return
 	}
 
+	// 部屋の作成と同時にシートを自動的に10個作る
+	for i := 0; i < 10; i++ {
+		_, err := seat.CreateSeat(tx, room.ID)
+		if err != nil {
+			tx.Rollback() // シート作成に失敗したらロールバック
+			c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
+				Message: "Failed to create seat: " + err.Error(),
+			})
+			return
+		}
+	}
+	
+	tx.Commit() // 全て（ルームの作成・シートの作成）成功したらコミット
+
 	c.JSON(http.StatusOK, responses.RoomCreateResponse{
 		Message:  "Room created successfully",
 		RoomID:   room.ID,
 		RoomName: room.Name,
 	})
+
 }
 
 // GetRoomHandler Room表示
