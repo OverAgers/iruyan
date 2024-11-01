@@ -59,7 +59,6 @@ func LoginHandler(c *gin.Context) {
 		User: responses.UserInfo{
 			IruyanID: user.IruyanID,
 			Name:     user.Name,
-			Task:     user.Task,
 			Email:    user.Email,
 		},
 	})
@@ -117,7 +116,6 @@ func RegisterHandler(c *gin.Context) {
 		User: responses.UserInfo{
 			IruyanID: user.IruyanID,
 			Name:     user.Name,
-			Task:     user.Task,
 			Email:    user.Email,
 		},
 	})
