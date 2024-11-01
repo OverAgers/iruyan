@@ -1,24 +1,38 @@
-'use client';
+"use client";
 
-import React, { useState } from "react";
-import { Box, Typography, Button } from "@mui/joy";
+import React, { useState, useRef } from "react";
+import { Box, Typography, Button, Modal } from "@mui/joy";
 import TextField from "@mui/material/TextField";
 import CameraIcon from "@mui/icons-material/CameraAlt";
 import MainButton from "@/components/ui/button/main-button";
 import SubButton from "@/components/ui/button/sub-button";
 import useUserStore from "@/stores/user-store";
+import Webcam from "react-webcam";
 
 export default function Lobby() {
   const currentUser = useUserStore((state) => state.currentUser);
-  const { setTask, setNote } = useUserStore();
+  const { setTask, setNote, setAvatarUrl } = useUserStore();
 
   const [task, setTaskInput] = useState(currentUser?.task || "");
   const [note, setNoteInput] = useState(currentUser?.note || "");
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const webcamRef = useRef<Webcam>(null);
+
   const handleUpdateUser = () => {
     setTask(task);
     setNote(note);
     window.location.href = "/rooms/:aaa";
-  }
+  };
+
+  const handleCapture = () => {
+    const imageSrc = webcamRef.current?.getScreenshot();
+    if (imageSrc) {
+      setAvatarUrl(imageSrc);
+      setIsCameraOpen(false);
+    }
+  };
+
+  console.log("現在のユーザー情報:", currentUser);
 
   if (!currentUser) {
     return <Typography>ログインしてください。</Typography>;
@@ -94,8 +108,17 @@ export default function Lobby() {
                 bgcolor: "#f0f0f0",
               },
             }}
+            onClick={() => setIsCameraOpen(true)}
           >
-            <CameraIcon fontSize="large" />
+            {currentUser?.avatarUrl ? (
+              <img
+                src={currentUser.avatarUrl}
+                alt="Avatar"
+                style={{ width: "100%", height: "100%", borderRadius: "50%" }}
+              />
+            ) : (
+              <CameraIcon fontSize="large" />
+            )}
           </Button>
         </Box>
         <Box
@@ -166,6 +189,59 @@ export default function Lobby() {
         component={"div"}
         onClick={handleUpdateUser}
       />
+      <Modal
+        open={isCameraOpen}
+        onClose={() => setIsCameraOpen(false)}
+        aria-labelledby="camera-modal-title"
+        aria-describedby="camera-modal-description"
+      >
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: { xs: "90%", sm: 400 },
+            bgcolor: "background.paper",
+            borderRadius: 2,
+            boxShadow: 24,
+            p: 4,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+          }}
+        >
+          <Typography
+            id="camera-modal-title"
+            level="body-md"
+            component="h2"
+            sx={{ mb: 2 }}
+          >
+            カメラで写真を撮る
+          </Typography>
+          <Webcam
+            audio={false}
+            ref={webcamRef}
+            screenshotFormat="image/jpeg"
+            videoConstraints={{
+              facingMode: "user",
+            }}
+            style={{ width: "100%", borderRadius: "8px" }}
+          />
+          <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
+            <Button color="primary" onClick={handleCapture}>
+              撮影
+            </Button>
+            <Button
+              variant="outlined"
+              color="warning"
+              onClick={() => setIsCameraOpen(false)}
+            >
+              キャンセル
+            </Button>
+          </Box>
+        </Box>
+      </Modal>
     </Box>
   );
 }
