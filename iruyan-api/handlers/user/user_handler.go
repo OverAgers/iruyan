@@ -6,10 +6,11 @@ import (
 	"iruyan-api/models"
 	"iruyan-api/responses"
 
-	"github.com/gin-gonic/gin"
 	"net/http"
-	"gorm.io/gorm"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 // ユーザー画面表示
@@ -145,66 +146,6 @@ func TaskHandler(c *gin.Context) {
 	})
 }
 
-// タスク内容の更新
-func TaskHandler(c *gin.Context) {
-	userIDParam := c.Param("user_id")
-	task := c.PostForm("task")
-
-	// user_idをuint型に変換してuserID変数に保存
-	userIDUint64, err := strconv.ParseUint(userIDParam, 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, responses.ErrorResponse{
-			Message: "Invalid user id format",
-		})
-		return
-	}
-	userID := uint(userIDUint64)
-
-	// ユーザーが存在するか確認
-	var user models.User
-	if err = user.FindByID(infrastructure.DB, userID); err != nil {
-		if err.Error() == "user not found" {
-			c.JSON(http.StatusNotFound, responses.ErrorResponse{
-				Message: "User not found",
-			})
-			return
-		} else {
-			c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
-				Message: "Database error",
-			})
-			return
-		}
-	}
-
-	// WorkTimeテーブルから、入室中のレコード（LeavingTimeが設定されていない）を取得
-	var workTime models.WorkTime
-	if err = infrastructure.DB.Where("user_id = ? AND leaving_time IS NULL", userID).First(&workTime).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			c.JSON(http.StatusBadRequest, responses.ErrorResponse{
-				Message: "User is not currently in a room",
-			})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
-			Message: "Database error",
-		})
-		return
-	}
-
-	// タスク内容を更新
-	workTime.Task = task
-	if err = infrastructure.DB.Save(&workTime).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
-			Message: "Failed to update task",
-		})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Task updated successfully",
-	})
-}
-
 // 直近5回分の作業時間を取得
 func GetRecentLog(c *gin.Context) {
 	userIDParam := c.Param("user_id")
@@ -214,7 +155,7 @@ func GetRecentLog(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, responses.ErrorResponse{
 			Message: "Invalid user id format",
 		})
-		return 
+		return
 	}
 	userID := uint(userIDUint64)
 
@@ -226,9 +167,9 @@ func GetRecentLog(c *gin.Context) {
 		})
 		return
 	}
-	
+
 	// WorkTimeテーブルからユーザの直近5回の入室記録を取得
-	workTimes, err := worktime.GetLatestLogs(userID, 5)	// 5件取得
+	workTimes, err := worktime.GetLatestLogs(userID, 5) // 5件取得
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusBadRequest, responses.ErrorResponse{
@@ -254,8 +195,8 @@ func GetRecentLog(c *gin.Context) {
 
 	// 成功時のレスポンスを返す
 	c.JSON(http.StatusOK, responses.GetRecentLogResponse{
-		Message:      "Get recent log successfully",
-		UserID:       userIDParam,
-		WorkTimeLog:  workTimeLogs,
+		Message:     "Get recent log successfully",
+		UserID:      userIDParam,
+		WorkTimeLog: workTimeLogs,
 	})
 }
