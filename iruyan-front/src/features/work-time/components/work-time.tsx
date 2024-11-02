@@ -6,7 +6,7 @@ import useUserStore from "@/stores/user-store";
 import { useTimer } from "@/hooks/timer-hooks";
 
 export default function WorkTime() {
-  const { currentUser, setStatus, incrementWorkTime, incrementRestTime } =
+  const { currentUser, setStatus, incrementWorkTime, incrementRestTime, clearUser } =
     useUserStore();
 
   const {
@@ -40,6 +40,20 @@ export default function WorkTime() {
 
     return () => clearInterval(interval);
   }, [isRunning, mode]);
+
+    const handleLogout = async () => {
+      // try {
+      console.log(currentUser);
+      // await logout.logout({ iruyanID: currentUser.iruyanID });
+      localStorage.removeItem("user-store");
+      clearUser();
+      window.location.href = "/login";
+      setStatus("idle");
+      stop();
+      // } catch (error) {
+      // console.error("ログアウトに失敗しました:", error);
+      // }
+    };
 
   if (!currentUser) {
     return <div>ログインしてください。</div>;
@@ -92,10 +106,7 @@ export default function WorkTime() {
         <SubButton
           title={"席を離れる 👋"}
           size={"lg"}
-          onClick={() => {
-            setStatus("idle");
-            stop();
-          }}
+          onClick={handleLogout}
         />
       </Box>
     </>

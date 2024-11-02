@@ -9,16 +9,14 @@ import SubButton from "@/components/ui/button/sub-button";
 import useUserStore from "@/stores/user-store";
 import Webcam from "react-webcam";
 import useGetRoomList from "@/features/lobby/api/get-room-list";
-import usePostRoomEnterRequest, {
-  PostRoomEnterRequest,
-} from "@/features/lobby/api/post-room-enter";
-import usePostLogoutRequest from "@/features/lobby/api/post-user-logout";
+import usePostRoomEnterRequest from "@/features/lobby/api/post-room-enter";
+// import usePostLogoutRequest from "@/features/lobby/api/post-user-logout";
 import usePostRoomRequest from "@/features/lobby/api/post-room";
 
 export default function Lobby() {
   // ユーザー情報の取得
   const currentUser = useUserStore((state) => state.currentUser);
-  const { setTask, setNote, setAvatarUrl } = useUserStore();
+  const { setTask, setNote, setAvatarUrl, clearUser } = useUserStore();
 
   const roomList = useGetRoomList();
 
@@ -41,28 +39,28 @@ export default function Lobby() {
   const webcamRef = useRef<Webcam>(null);
 
   // カスタムフックの取得
-  const logout = usePostLogoutRequest();
+  // const logout = usePostLogoutRequest();
   const postRoom = usePostRoomRequest();
   const roomEntry = usePostRoomEnterRequest();
 
   // 初期化用 useEffect
   useEffect(() => {
     // console.log("Initial userInfo:", localStorage.getItem("user-store"));
-      const userInfo = localStorage.getItem("user-store");
-      if (!userInfo) {
-        console.log(
-          "ユーザー情報が存在しないため、ログインページにリダイレクトします。"
-        );
-        window.location.href = "/login";
-        return;
-      }
-      try {
-        // 部屋の作成
-        postRoom.createRoom({ name: "mokumoku" });
-        console.log("部屋の作成が成功しました。");
-      } catch (error) {
-        console.error("初期化中にエラーが発生しました:", error);
-      }
+    const userInfo = localStorage.getItem("user-store");
+    if (!userInfo) {
+      console.log(
+        "ユーザー情報が存在しないため、ログインページにリダイレクトします。"
+      );
+      window.location.href = "/login";
+      return;
+    }
+    try {
+      // 部屋の作成
+      postRoom.createRoom({ name: "mokumoku" });
+      console.log("部屋の作成が成功しました。");
+    } catch (error) {
+      console.error("初期化中にエラーが発生しました:", error);
+    }
   }, []); // 関数を依存配列に追加
   // ログイン確認
   if (!currentUser) {
@@ -76,16 +74,16 @@ export default function Lobby() {
 
       if (list) {
         setRoomId(list);
-        console.log("aaa",roomId)
+        console.log("aaa", roomId);
       }
-      setTask(taskInput)
-      setNote(noteInput)
+      setTask(taskInput);
+      setNote(noteInput);
       // const requestData: PostRoomEnterRequest = {
       //   user_id: currentUser.iruyanID,
       //   task: taskInput,
       // };
       try {
-        await roomEntry.entry({user_id: currentUser.iruyanID, room_id: list});
+        await roomEntry.entry({ user_id: currentUser.iruyanID, room_id: list });
         if (list) {
           window.location.href = `/rooms/:${list}`;
         }
@@ -96,13 +94,15 @@ export default function Lobby() {
   };
 
   const handleLogout = async () => {
-    try {
-      await logout.logout({ iruyanID: currentUser.iruyanID });
-      localStorage.removeItem("user-store");
-      window.location.href = "/login";
-    } catch (error) {
-      console.error("ログアウトに失敗しました:", error);
-    }
+    // try {
+    console.log(currentUser);
+    // await logout.logout({ iruyanID: currentUser.iruyanID });
+    localStorage.removeItem("user-store");
+    clearUser();
+    window.location.href = "/login";
+    // } catch (error) {
+    // console.error("ログアウトに失敗しました:", error);
+    // }
   };
 
   const handleCapture = async () => {

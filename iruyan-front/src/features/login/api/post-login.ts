@@ -22,7 +22,6 @@ export default function UseLoginRequest() {
           headers: { "Content-Type": "application/x-www-form-urlencoded" }
         });
         const data = res.data.user;
-
         const userInfo: UserInfo = {
           iruyanID: data.iruyanID,
           name: data.name,
