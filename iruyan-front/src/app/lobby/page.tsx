@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Box, Typography, Button, Modal } from "@mui/joy";
 import TextField from "@mui/material/TextField";
 import CameraIcon from "@mui/icons-material/CameraAlt";
@@ -8,64 +8,112 @@ import MainButton from "@/components/ui/button/main-button";
 import SubButton from "@/components/ui/button/sub-button";
 import useUserStore from "@/stores/user-store";
 import Webcam from "react-webcam";
-import UseGetRoomList from "@/features/lobby/api/get-room-list";
-import UsePostRoomEnterRequest, {
+import useGetRoomList from "@/features/lobby/api/get-room-list";
+import usePostRoomEnterRequest, {
   PostRoomEnterRequest,
 } from "@/features/lobby/api/post-room-enter";
+import usePostLogoutRequest from "@/features/lobby/api/post-user-logout";
+import usePostRoomRequest from "@/features/lobby/api/post-room";
 
 export default function Lobby() {
+  // ユーザー情報の取得
   const currentUser = useUserStore((state) => state.currentUser);
   const { setTask, setNote, setAvatarUrl } = useUserStore();
-  const { data: roomListData, isLoading: roomListLoading } = UseGetRoomList();
-  const [roomId, setRoomId] = useState<string>("");
-  const [task, setTaskInput] = useState<string>(currentUser?.task || "");
-  const [note, setNoteInput] = useState<string>(currentUser?.note || "");
+
+  const roomList = useGetRoomList();
+
+  // 部屋リストの取得
+  // const {
+  //   data: roomListData,
+  //   error: roomListError,
+  //   isLoading: roomListLoading,
+  //   mutate: refetchRoomList,
+  // } = useGetRoomList();
+
+  // ステートの定義
+  const [roomId, setRoomId] = useState<string>(
+    "25e6a8db-b950-4d67-a46a-afb5b637575a"
+  );
+  const [taskInput, setTaskInput] = useState<string>(currentUser?.task || "");
+  const [noteInput, setNoteInput] = useState<string>(currentUser?.note || "");
   const [isCameraOpen, setIsCameraOpen] = useState<boolean>(false);
+
   const webcamRef = useRef<Webcam>(null);
-  const roomEntry = UsePostRoomEnterRequest(roomId);
 
-  const handleUpdateUser = async () => {
-    setTask(task);
-    setNote(note);
+  // カスタムフックの取得
+  const logout = usePostLogoutRequest();
+  const postRoom = usePostRoomRequest();
+  const roomEntry = usePostRoomEnterRequest();
 
-    if (roomListData && roomListData.rooms.length > 0) {
-      const selectedRoomId = roomListData.rooms[0].roomId;
-      setRoomId(selectedRoomId);
-      console.log("選択された部屋ID:", selectedRoomId);
-
-      if (currentUser) {
-        const requestData: PostRoomEnterRequest = {
-          iruyanID: currentUser.iruyanID,
-          task: task,
-        };
-
-        try {
-          await roomEntry.entry(requestData);
-          window.location.href = `/rooms/${selectedRoomId}`;
-        } catch (error) {
-          console.error("部屋へのエントリーに失敗しました:", error);
-        }
+  // 初期化用 useEffect
+  useEffect(() => {
+    // console.log("Initial userInfo:", localStorage.getItem("user-store"));
+      const userInfo = localStorage.getItem("user-store");
+      if (!userInfo) {
+        console.log(
+          "ユーザー情報が存在しないため、ログインページにリダイレクトします。"
+        );
+        window.location.href = "/login";
+        return;
       }
-    } else if (roomListLoading) {
-      console.log("ルームリストを取得中...");
-    } else {
-      console.log("部屋IDが取得できませんでした");
-    }
-  };
-
-  const handleCapture = () => {
-    const imageSrc = webcamRef.current?.getScreenshot();
-    if (imageSrc) {
-      setAvatarUrl(imageSrc);
-      setIsCameraOpen(false);
-    }
-  };
-
-  console.log("現在のユーザー情報:", currentUser);
-
+      try {
+        // 部屋の作成
+        postRoom.createRoom({ name: "mokumoku" });
+        console.log("部屋の作成が成功しました。");
+      } catch (error) {
+        console.error("初期化中にエラーが発生しました:", error);
+      }
+  }, []); // 関数を依存配列に追加
+  // ログイン確認
   if (!currentUser) {
     return <Typography>ログインしてください。</Typography>;
   }
+
+  // ユーザー更新ハンドラー
+  const handleUpdateUser = async () => {
+    if (roomList.data) {
+      const list = roomList.data.rooms[0].room_id;
+
+      if (list) {
+        setRoomId(list);
+        console.log("aaa",roomId)
+      }
+      setTask(taskInput)
+      setNote(noteInput)
+      // const requestData: PostRoomEnterRequest = {
+      //   user_id: currentUser.iruyanID,
+      //   task: taskInput,
+      // };
+      try {
+        await roomEntry.entry({user_id: currentUser.iruyanID, room_id: list});
+        if (list) {
+          window.location.href = `/rooms/:${list}`;
+        }
+      } catch (error) {
+        console.error("部屋へのエントリーに失敗しました:", error);
+      }
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout.logout({ iruyanID: currentUser.iruyanID });
+      localStorage.removeItem("user-store");
+      window.location.href = "/login";
+    } catch (error) {
+      console.error("ログアウトに失敗しました:", error);
+    }
+  };
+
+  const handleCapture = async () => {
+    if (webcamRef.current) {
+      const imageSrc = webcamRef.current.getScreenshot();
+      if (imageSrc) {
+        setAvatarUrl(imageSrc);
+        setIsCameraOpen(false);
+      }
+    }
+  };
 
   return (
     <Box
@@ -82,6 +130,7 @@ export default function Lobby() {
       <SubButton
         title="ログアウト"
         size="lg"
+        onClick={handleLogout}
         sx={{
           position: "absolute",
           top: "37px",
@@ -91,13 +140,19 @@ export default function Lobby() {
       <SubButton
         title="来店記録"
         size="lg"
+        onClick={() => (window.location.href = "/user")}
         sx={{
           position: "absolute",
           top: "37px",
           right: "41px",
         }}
       />
-      <Box display={"flex"} flexDirection={"column"} alignItems={"center"} mb={20}>
+      <Box
+        display={"flex"}
+        flexDirection={"column"}
+        alignItems={"center"}
+        mb={20}
+      >
         <Typography level="h4" sx={{ mb: 1, fontSize: "48px" }}>
           ご案内用紙
         </Typography>
@@ -140,15 +195,16 @@ export default function Lobby() {
               onClick={() => setIsCameraOpen(true)}
             >
               {currentUser?.avatarUrl ? (
-                  <img
-                    src={currentUser.avatarUrl}
-                    alt="Avatar"
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      borderRadius: "50%",
-                    }}
-                  />
+                <img
+                  src={currentUser.avatarUrl}
+                  alt="Avatar"
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    borderRadius: "50%",
+                    objectFit: "cover",
+                  }}
+                />
               ) : (
                 <CameraIcon fontSize="large" />
               )}
@@ -177,7 +233,7 @@ export default function Lobby() {
               <TextField
                 placeholder="勉強"
                 fullWidth
-                value={task}
+                value={taskInput}
                 onChange={(e) => setTaskInput(e.target.value)}
                 sx={{
                   bgcolor: "white",
@@ -199,7 +255,7 @@ export default function Lobby() {
               <TextField
                 placeholder="課題やばい、、よ"
                 fullWidth
-                value={note}
+                value={noteInput}
                 onChange={(e) => setNoteInput(e.target.value)}
                 sx={{
                   bgcolor: "white",
@@ -216,7 +272,7 @@ export default function Lobby() {
           width="50%"
           component={"div"}
           onClick={handleUpdateUser}
-          disabled={roomEntry.isLoading || roomListLoading}
+          disabled={roomList.isLoading}
         />
       </Box>
       <Modal

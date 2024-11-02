@@ -5,29 +5,29 @@ import { z } from "zod";
 import { UserInfo } from "@/types/user-info";
 
 export const postRoomEnterSchema = z.object({
-  iruyanID: z.string(),
-  task: z.string(),
+  user_id: z.string(),
+  room_id: z.string(),
 });
 
 export type PostRoomEnterRequest = z.infer<typeof postRoomEnterSchema>;
 
-
-
-export default function usePostRoomEnterRequest(roomId: string) {
+export default function usePostRoomEnterRequest() {
   const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
-  const requestURL = `${BASE_URL}/${roomId}/enter`;
+  // const requestURL = `${BASE_URL}/${roomId}/enter`;
 
   const fetcher = useCallback(
     async (url: string, { arg }: { arg: PostRoomEnterRequest }) => {
       try {
-        const validatedData = postRoomEnterSchema.parse(arg);
-        const response = await axios.post(url, validatedData);
+        const idurl = `${BASE_URL}/${arg.room_id}/enter/${arg.user_id}`;
+        // const validatedData = postRoomEnterSchema.parse(arg);
+        const response = await axios.post(idurl, arg.user_id);
+        console.log("入室成功:", response.data);
         return response.data;
       } catch (error: any) {
         if (axios.isAxiosError(error)) {
-          throw new Error(
-            `入室エラー: ${error.response?.data?.message || error.message}`
-          );
+          // throw new Error(
+          //   `入室エラー: ${error.response?.data?.message || error.message}`
+          // );
         } else if (error instanceof z.ZodError) {
           throw new Error(
             `入力エラー: ${error.errors.map((e) => e.message).join(", ")}`
@@ -37,7 +37,7 @@ export default function usePostRoomEnterRequest(roomId: string) {
         }
       }
     },
-    [requestURL]
+    []
   );
 
   const {
@@ -46,14 +46,11 @@ export default function usePostRoomEnterRequest(roomId: string) {
     isMutating: isLoading,
     trigger,
   } = useSWRMutation<UserInfo, Error, string, PostRoomEnterRequest>(
-    requestURL,
+    BASE_URL,
     fetcher
   );
 
   const entry = async (requestData: PostRoomEnterRequest): Promise<UserInfo> => {
-    if (!roomId) {
-      throw new Error("部屋IDが指定されていません。");
-    }
     return await trigger(requestData);
   };
 

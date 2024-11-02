@@ -7,12 +7,12 @@ export const getRoomListSchema = z.object({
   message: z.string(),
   rooms: z.array(
     z.object({
-      roomId: z.string().uuid(),
+      room_id: z.string(),
       roomName: z.string(),
       seats: z.array(
         z.object({
-          seatId: z.string().uuid(),
-          roomId: z.string().uuid(),
+          seatID: z.string(),
+          roomID: z.string(),
           seatNumber: z.number(),
         })
       ),
@@ -52,9 +52,9 @@ export default function useGetRoomList() {
     []
   );
 
-  const { data, error, isLoading } = useSWR<GetRoomListRequest, Error>(
+  const { data, error, isLoading, mutate } = useSWR<GetRoomListRequest, Error>(
     requestURL,
     fetcher,);
 
-  return { data, error, isLoading };
+  return { data, error, isLoading, mutate };
 }
