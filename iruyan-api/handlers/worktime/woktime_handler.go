@@ -12,7 +12,7 @@ import (
 )
 
 // RecordEntry - WorkTimeテーブルに入室情報を記録
-func RecordEntry(userID uint, roomID string) (*models.WorkTime, error) {
+func RecordEntry(userID uint, roomID string, task string) (*models.WorkTime, error) {
 	// ユーザーが存在するか確認
 	var user models.User
 	if err := infrastructure.DB.First(&user, userID).Error; err != nil {
@@ -24,7 +24,7 @@ func RecordEntry(userID uint, roomID string) (*models.WorkTime, error) {
 	if err := infrastructure.DB.
 		Where("user_id = ? AND room_id = ? AND leaving_time IS NULL", userID, roomID).
 		First(&activeEntry).Error; err == nil {
-		return nil, fmt.Errorf("user is already in the room")
+		return nil, fmt.Errorf("User is already in the room")
 	} else if err != gorm.ErrRecordNotFound {
 		return nil, err // その他のエラーが発生した場合は返す
 	}
@@ -34,9 +34,10 @@ func RecordEntry(userID uint, roomID string) (*models.WorkTime, error) {
 
 	// WorkTimeレコードの作成
 	workTime := &models.WorkTime{
-		UserID:    userID,
-		RoomID:    uuid.MustParse(roomID),
-		EntryTime: entryTime,
+		UserID:		userID,
+		RoomID:		uuid.MustParse(roomID),
+		Task:		task,
+		EntryTime:	entryTime,
 	}
 
 	// WorkTimeをデータベースに保存
