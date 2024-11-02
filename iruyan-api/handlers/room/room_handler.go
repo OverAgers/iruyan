@@ -29,7 +29,7 @@ import (
 // @Failure 500 {object} responses.ErrorResponse
 // @Router /rooms [post]
 func CreateRoomHandler(c *gin.Context) {
-	roomName := c.PostForm("name")
+	roomName := c.PostForm("roomName")
 
 	room := models.Room{Name: roomName}
 
@@ -123,7 +123,7 @@ func GetRoomsHandler(c *gin.Context) {
 // @Failure 404 {object} responses.ErrorResponse
 // @Router /rooms/{room_id} [get]
 func GetRoomHandler(c *gin.Context) {
-	roomID := c.Param("room_id")
+	roomID := c.Param("roomId")
 
 	// Roomモデルを定義
 	var room models.Room
@@ -172,8 +172,8 @@ func GetRoomHandler(c *gin.Context) {
 // @Failure 500 {object} responses.ErrorResponse "Failed to record entry to the room"
 // @Router /rooms/{room_id}/enter/{user_id} [post]
 func EnterRoomHandler(c *gin.Context) {
-	roomID := c.Param("room_id")
-	userIDStr := c.PostForm("user_id")
+	roomID := c.Param("roomId")
+	userIDStr := c.PostForm("userId")
 	task := c.PostForm("task")
 
 	// ユーザーIDを文字列からuintに変換
@@ -239,8 +239,8 @@ func EnterRoomHandler(c *gin.Context) {
 // @Failure 500 {object} responses.ErrorResponse "Failed to record leaving time"
 // @Router /rooms/{room_id}/leave [post]
 func LeaveRoomHandler(c *gin.Context) {
-	roomID := c.Param("room_id")
-	userIDStr := c.PostForm("user_id")
+	roomID := c.Param("roomId")
+	userIDStr := c.PostForm("userId")
 	durationStr := c.PostForm("duration") // DurationをPostFormで取得
 
 	// ユーザーIDをuintに変換
@@ -330,9 +330,9 @@ func LeaveRoomHandler(c *gin.Context) {
 
 // 着席
 func TakeSeatHandler(c *gin.Context) {
-	roomIDParam := c.Param("room_id")
-	seatNumberParam := c.Param("seat_number")
-	userIDStr := c.PostForm("user_id")
+	roomIDParam := c.Param("roomId")
+	seatNumberParam := c.Param("seatNumber")
+	userIDStr := c.PostForm("userId")
 
 	// room_idをUUID型に変換してroomID変数に保存
 	roomID, err := uuid.Parse(roomIDParam)
@@ -419,16 +419,16 @@ func TakeSeatHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Seated successfully",
-		"room_id": roomID,
-		"seat_id": seatNumber,
+		"roomId": roomID,
+		"seatId": seatNumber,
 	})
 }
 
 // 離席
 func LeaveSeatHandler(c *gin.Context) {
-	roomIDParam := c.Param("room_id")
-	seatNumberParam := c.Param("seat_number")
-	userIDStr := c.PostForm("user_id")
+	roomIDParam := c.Param("roomId")
+	seatNumberParam := c.Param("seatNumber")
+	userIDStr := c.PostForm("userId")
 
 	// room_idをUUID型に変換してroomID変数に保存
 	roomID, err := uuid.Parse(roomIDParam)
@@ -515,7 +515,7 @@ func LeaveSeatHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"message":     "Left the seat successfully",
-		"room_id":     roomID,
-		"seat_number": seatNumber,
+		"roomId":     roomID,
+		"seatNumber": seatNumber,
 	})
 }

@@ -10,6 +10,6 @@ type SeatCreateResponse struct {
 
 // SeatInfo シート情報のレスポンス
 type SeatInfo struct {
-	RoomID     uuid.UUID `json:"room_id"`
-	SeatNumber int       `json:"seat_number"`
+	RoomID     uuid.UUID `json:"roomId"`
+	SeatNumber int       `json:"seatNumber"`
 }

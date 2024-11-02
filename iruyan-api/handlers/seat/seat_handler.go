@@ -14,8 +14,8 @@ import (
 
 // ルームIDに基づくシート作成
 func SeatCreateHandler(c *gin.Context) {
-	roomIDParam := c.Param("room_id")
-	
+	roomIDParam := c.Param("roomId")
+
 	// room_idをUUID型に変換してroomID変数に保存
 	roomID, err := uuid.Parse(roomIDParam)
 	if err != nil {
@@ -30,7 +30,7 @@ func SeatCreateHandler(c *gin.Context) {
 	if err != nil {
 		if err.Error() == "room not found" {
 			c.JSON(http.StatusNotFound, responses.ErrorResponse{
-				Message: err.Error(), 
+				Message: err.Error(),
 			})
 		} else {
 			c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
@@ -39,9 +39,9 @@ func SeatCreateHandler(c *gin.Context) {
 		}
 		return
 	}
-	
+
 	c.JSON(http.StatusOK, responses.SeatCreateResponse{
-		Message: "seat create successful", 
+		Message: "seat create successful",
 		Seat: responses.SeatInfo{
 			RoomID:     seat.RoomID,
 			SeatNumber: seat.SeatNumber,

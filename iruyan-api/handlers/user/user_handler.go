@@ -16,7 +16,7 @@ import (
 
 // ユーザー画面表示
 func UserPageHandler(c *gin.Context) {
-	userIDParam := c.Param("user_id")
+	userIDParam := c.Param("userId")
 	// user_idをuint型に変換してuserID変数に保存
 	userIDUint64, err := strconv.ParseUint(userIDParam, 10, 32)
 	if err != nil {
@@ -49,22 +49,22 @@ func UserPageHandler(c *gin.Context) {
 	// ユーザが存在する場合は200を返す
 	c.JSON(http.StatusOK, gin.H{
 		"message": "User page accessed successfully",
-		"user_id": userID,
+		"userId": userID,
 	})
 }
 
 // ユーザーの削除
 func UserDeleteHandler(c *gin.Context) {
-	userID := c.Param("user_id")
+	userID := c.Param("userId")
 	c.JSON(http.StatusOK, gin.H{
 		"message": "User deleted successfully",
-		"user_id": userID,
+		"userId": userID,
 	})
 }
 
 // 1週間の作業日取得
 func WorkInfoHandler(c *gin.Context) {
-	userIDParam := c.Param("user_id")
+	userIDParam := c.Param("userId")
 
 	// user_idをuint型に変換してuserID変数に保存
 	userIDUint64, err := strconv.ParseUint(userIDParam, 10, 32)
@@ -128,10 +128,10 @@ func WorkInfoHandler(c *gin.Context) {
 
 // 一緒に居た時間
 func TogetherTimeHandler(c *gin.Context) {
-	userID := c.Param("user_id")
+	userID := c.Param("userId")
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Together time accessed successfully",
-		"user_id": userID,
+		"userId": userID,
 	})
 }
 
@@ -144,7 +144,7 @@ func RankingHandler(c *gin.Context) {
 
 // タスク内容の更新
 func TaskHandler(c *gin.Context) {
-	userIDParam := c.Param("user_id")
+	userIDParam := c.Param("userId")
 	task := c.PostForm("task")
 
 	// user_idをuint型に変換してuserID変数に保存
@@ -204,7 +204,7 @@ func TaskHandler(c *gin.Context) {
 
 // 直近5回分の作業時間を取得
 func GetRecentLog(c *gin.Context) {
-	userIDParam := c.Param("user_id")
+	userIDParam := c.Param("userId")
 	// user_idをuint型に変換してuserID変数に保存
 	userIDUint64, err := strconv.ParseUint(userIDParam, 10, 32)
 	if err != nil {

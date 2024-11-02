@@ -37,7 +37,7 @@ func LoginPageHandler(c *gin.Context) {
 // @Failure 401 {object} responses.ErrorResponse
 // @Router /login [post]
 func LoginHandler(c *gin.Context) {
-	iruyanID := c.PostForm("iruyanID")
+	iruyanID := c.PostForm("iruyanId")
 	password := c.PostForm("password")
 
 	var user models.User
@@ -93,9 +93,9 @@ func RegisterPageHandler(c *gin.Context) {
 // @Failure 500 {object} responses.ErrorResponse
 // @Router /register [post]
 func RegisterHandler(c *gin.Context) {
-	iruyanID := c.PostForm("iruyanID")
+	iruyanID := c.PostForm("iruyanId")
 	password := c.PostForm("password")
-	name := c.PostForm("name")
+	name := c.PostForm("userName")
 	email := c.PostForm("email")
 
 	errorHandler := errorhandler.ErrorHandler{}
@@ -134,7 +134,7 @@ func RegisterHandler(c *gin.Context) {
 // @Failure 404 {object} responses.ErrorResponse
 // @Router /logout [post]
 func LogoutHandler(c *gin.Context) {
-	iruyanID := c.PostForm("iruyanID")
+	iruyanID := c.PostForm("iruyanId")
 
 	// エラーハンドラをインスタンス化
 	errorHandler := errorhandler.ErrorHandler{}

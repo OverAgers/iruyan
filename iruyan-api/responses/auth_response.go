@@ -20,7 +20,7 @@ type LogoutSuccessResponse struct {
 
 // UserInfo ユーザー情報のレスポンス
 type UserInfo struct {
-	IruyanID string `json:"iruyan_id"`
-	Name     string `json:"name"`
+	IruyanID string `json:"iruyanId"`
+	Name     string `json:"userName"`
 	Email    string `json:"email"`
 }

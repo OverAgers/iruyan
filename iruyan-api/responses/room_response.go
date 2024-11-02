@@ -14,61 +14,61 @@ type RoomListResponse struct {
 
 // RoomDetail ルーム情報の詳細
 type RoomDetail struct {
-	RoomID   string       `json:"room_id"`
-	RoomName string       `json:"room_name"`
+	RoomID   string       `json:"roomId"`
+	RoomName string       `json:"roomName"`
 	Seats    []SeatDetail `json:"seats"`
 }
 
 // SeatDetail シート情報の詳細
 type SeatDetail struct {
-	SeatID     string `json:"seat_id"`
-	RoomID     string `json:"room_id"`
-	SeatNumber int    `json:"seat_number"`
+	SeatID     string `json:"seatId"`
+	RoomID     string `json:"roomId"`
+	SeatNumber int    `json:"seatNumber"`
 }
 
 // RoomCreateResponse Room作成成功時のレスポンス
 type RoomCreateResponse struct {
 	Message  string    `json:"message"`
-	RoomID   uuid.UUID `json:"room_id"`
-	RoomName string    `json:"room_name"`
+	RoomID   uuid.UUID `json:"roomId"`
+	RoomName string    `json:"roomName"`
 }
 
 // RoomResponse 単一のルーム詳細を含むレスポンス
 type RoomResponse struct {
 	Message string     `json:"message"`
-	RoomID  string     `json:"room_id"`
+	RoomID  string     `json:"roomId"`
 	Room    RoomDetail `json:"room"`
 }
 
 // RoomDetailResponse Room詳細表示のレスポンス
 type RoomDetailResponse struct {
 	Message string `json:"message"`
-	RoomID  string `json:"room_id"`
+	RoomID  string `json:"roomId"`
 }
 
 // RoomActionResponse Room入室・退室の成功レスポンス
 type RoomActionResponse struct {
 	Message string `json:"message"`
-	RoomID  string `json:"room_id"`
+	RoomID  string `json:"roomId"`
 }
 
 // EnterRoomResponse - Room入室時のレスポンス
 type EnterRoomResponse struct {
 	Message		string		`json:"message"`
-	RoomID		string		`json:"room_id"`
-	RoomName	string		`json:"room_name"`
-	UserID		string		`json:"user_id"`
-	EntryTime	time.Time	`json:"entry_time"`
+	RoomID		string		`json:"roomId"`
+	RoomName	string		`json:"roomName"`
+	UserID		string		`json:"userId"`
+	EntryTime	time.Time	`json:"entryTime"`
 	Task		string		`json:"task"`
 }
 
 // LeaveRoomResponse - Room退室時のレスポンス
 type LeaveRoomResponse struct {
 	Message     string        `json:"message"`
-	RoomID      string        `json:"room_id"`
-	RoomName    string        `json:"room_name"`
-	UserID      string        `json:"user_id"`
-	EntryTime   time.Time     `json:"entry_time"`
-	LeavingTime time.Time     `json:"leaving_time"`
+	RoomID      string        `json:"roomId"`
+	RoomName    string        `json:"roomName"`
+	UserID      string        `json:"userId"`
+	EntryTime   time.Time     `json:"entryTime"`
+	LeavingTime time.Time     `json:"leavingTime"`
 	Duration    time.Duration `json:"duration"` // 滞在時間
 }
