@@ -28,7 +28,6 @@ function UserPage() {
     <Box
       sx={{
         position: "relative",
-        height: "100vh",
         bgcolor: "#F7F4ED",
         backgroundImage: "url('/bg-image/bg_user.jpg')",
         backgroundSize: "cover",
@@ -46,10 +45,10 @@ function UserPage() {
       <Box
         display={"flex"}
         justifyContent={"center"}
-        alignItems={"flex-end"}
+        alignItems={"flex-start"}
         pt={20}
         sx={{
-          gap: "10%",
+          gap: "7%",
         }}
       >
         <Box
@@ -59,7 +58,7 @@ function UserPage() {
             flexDirection: "column",
             alignItems: "flex-start",
             gap: "44px",
-            width: "fit-content",
+            width: "40%",
           }}
         >
           <Box
@@ -68,13 +67,13 @@ function UserPage() {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              gap: "53px",
+              gap: "20px",
             }}
           >
             <Avatar
               alt="User Avatar"
               src="/path/to/profile-image.jpg"
-              sx={{ width: 240, height: 240, mb: 2 }}
+              sx={{ width: 230, height: 230, mb: 2 }}
             />
             <Box
               sx={{
@@ -262,7 +261,7 @@ function UserPage() {
             display: "flex",
             flexDirection: "column",
             alignItems: "flex-start",
-            width: "fit-content",
+            width: "35%",
           }}
         >
           <Typography align="center" sx={{ fontSize: "25px" }}>
