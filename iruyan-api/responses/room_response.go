@@ -54,11 +54,12 @@ type RoomActionResponse struct {
 
 // EnterRoomResponse - Room入室時のレスポンス
 type EnterRoomResponse struct {
-	Message   string    `json:"message"`
-	RoomID    string    `json:"room_id"`
-	RoomName  string    `json:"room_name"`
-	UserID    string    `json:"user_id"`
-	EntryTime time.Time `json:"entry_time"`
+	Message		string		`json:"message"`
+	RoomID		string		`json:"room_id"`
+	RoomName	string		`json:"room_name"`
+	UserID		string		`json:"user_id"`
+	EntryTime	time.Time	`json:"entry_time"`
+	Task		string		`json:"task"`
 }
 
 // LeaveRoomResponse - Room退室時のレスポンス

@@ -174,6 +174,7 @@ func GetRoomHandler(c *gin.Context) {
 func EnterRoomHandler(c *gin.Context) {
 	roomID := c.Param("room_id")
 	userIDStr := c.PostForm("user_id")
+	task := c.PostForm("task")
 
 	// ユーザーIDを文字列からuintに変換
 	userIDUint, err := strconv.ParseUint(userIDStr, 10, 32)
@@ -195,13 +196,13 @@ func EnterRoomHandler(c *gin.Context) {
 	}
 
 	// WorkTimeに入室情報を記録
-	workTime, err := worktime.RecordEntry(userID, roomID)
+	workTime, err := worktime.RecordEntry(userID, roomID, task)
 	if err != nil {
 		if err.Error() == "user not found" {
 			c.JSON(http.StatusNotFound, responses.ErrorResponse{
 				Message: "User not found",
 			})
-		} else if err.Error() == "user is already in the room" {
+		} else if err.Error() == "User is already in the room" {
 			c.JSON(http.StatusBadRequest, responses.ErrorResponse{
 				Message: "User is already in the room",
 			})
@@ -215,11 +216,12 @@ func EnterRoomHandler(c *gin.Context) {
 
 	// 成功時のレスポンスとしてWorkTime情報を返す
 	c.JSON(http.StatusOK, responses.EnterRoomResponse{
-		Message:   "Room entry recorded successfully",
-		RoomID:    workTime.RoomID.String(),
-		RoomName:  room.Name,
-		UserID:    fmt.Sprintf("%d", workTime.UserID),
-		EntryTime: workTime.EntryTime,
+		Message:	"Room entry recorded successfully",
+		RoomID:		workTime.RoomID.String(),
+		RoomName:	room.Name,
+		UserID:		fmt.Sprintf("%d", workTime.UserID),
+		EntryTime:	workTime.EntryTime,
+		Task:		task,
 	})
 }
 
