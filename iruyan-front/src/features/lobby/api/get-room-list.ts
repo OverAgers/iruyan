@@ -7,12 +7,12 @@ export const getRoomListSchema = z.object({
   message: z.string(),
   rooms: z.array(
     z.object({
-      roomId: z.string().uuid(),
+      room_id: z.string(),
       roomName: z.string(),
       seats: z.array(
         z.object({
-          seatId: z.string().uuid(),
-          roomId: z.string().uuid(),
+          seatID: z.string(),
+          roomID: z.string(),
           seatNumber: z.number(),
         })
       ),
@@ -28,11 +28,11 @@ export default function useGetRoomList() {
 
   const fetcher = useCallback(
     async (url: string): Promise<GetRoomListRequest> => {
+      console.log("データ取得中:", url);
       try {
         const res = await axios.get(url);
-        const data = getRoomListSchema.parse(res.data);
-        console.log("データ取得成功:", data);
-        return data;
+        console.log("データ取得成功:", res.data);
+        return res.data;
       } catch (error: any) {
         if (axios.isAxiosError(error)) {
           throw new Error(
@@ -52,14 +52,9 @@ export default function useGetRoomList() {
     []
   );
 
-  const { data, error, isLoading } = useSWR<GetRoomListRequest, Error>(
+  const { data, error, isLoading, mutate } = useSWR<GetRoomListRequest, Error>(
     requestURL,
-    fetcher,
-    {
-      revalidateOnFocus: true,
-      dedupingInterval: 60000,
-    }
-  );
+    fetcher,);
 
-  return { data, error, isLoading };
+  return { data, error, isLoading, mutate };
 }
