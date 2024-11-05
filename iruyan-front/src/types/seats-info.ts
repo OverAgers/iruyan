@@ -3,7 +3,7 @@ export type SeatsInfo = {
   roomId: string;
   seatNumber: number;
   isVacant: boolean;
-  iruyanID?: string;
+  iruyanId?: string;
   name?: string;
   image?: string;
   note?: string;

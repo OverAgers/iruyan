@@ -6,12 +6,12 @@ import useSWR from "swr";
 
 export const getWeeklyWorkSchema = z.object({
   message: z.string(),
-  work_info: z.array(
+  workInfo: z.array(
     z.object({
       date: z.string(),
-      duration: z.string(), 
-      rest: z.string(), 
-      task: z.string(), 
+      duration: z.string(),
+      rest: z.string(),
+      task: z.string(),
     })
   ),
 });
@@ -19,13 +19,13 @@ export const getWeeklyWorkSchema = z.object({
 export type GetWeeklyWorkRequest = z.infer<typeof getWeeklyWorkSchema>;
 
 // カスタムフック
-export default function useGetWeeklyWork(user_id: string, room_id: string) {
-  const requestURL = `http://localhost:8080/user/${user_id}/work_info`;
+export default function useGetWeeklyWork(userId: string, roomId: string) {
+  const requestURL = `http://localhost:8080/user/${userId}/work_info`;
 
   const fetcher = useCallback(
     async (url: string) => {
       try {
-        const res = await axios.get(url, { params: { room_id: room_id} });
+        const res = await axios.get(url, { params: { roomId: roomId} });
         const data = getWeeklyWorkSchema.parse(res.data);
         console.log("data", data);
         return data;
@@ -35,7 +35,7 @@ export default function useGetWeeklyWork(user_id: string, room_id: string) {
         );
       }
     },
-    [room_id]
+    [roomId]
   );
 
   const { data, error, isLoading } = useSWR(requestURL, fetcher);

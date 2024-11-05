@@ -70,7 +70,7 @@ export default function Lobby() {
   // ユーザー更新ハンドラー
   const handleUpdateUser = async () => {
     if (roomList.data) {
-      const list = roomList.data.rooms[0].room_id;
+      const list = roomList.data.rooms[0].roomId;
 
       if (list) {
         setRoomId(list);
@@ -83,7 +83,7 @@ export default function Lobby() {
       //   task: taskInput,
       // };
       try {
-        await roomEntry.entry({ user_id: currentUser.iruyanID, room_id: list });
+        await roomEntry.entry({ userId: currentUser.iruyanId, roomId: list });
         if (list) {
           window.location.href = `/rooms/:${list}`;
         }

@@ -45,8 +45,8 @@ export default function UserRegisterForm({ onSuccess }: Props) {
       <AuthInputText
         label="ユーザーID"
         placeholder="ユーザーID"
-        onChange={(e) => setValue("iruyanID", e.target.value)}
-        error={errors.iruyanID}
+        onChange={(e) => setValue("iruyanId", e.target.value)}
+        error={errors.iruyanId}
       />
       <AuthInputText
         label="ユーザー名（表示名）"

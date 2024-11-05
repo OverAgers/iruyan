@@ -7,12 +7,12 @@ export const getRoomListSchema = z.object({
   message: z.string(),
   rooms: z.array(
     z.object({
-      room_id: z.string(),
+      roomId: z.string(),
       roomName: z.string(),
       seats: z.array(
         z.object({
-          seatID: z.string(),
-          roomID: z.string(),
+          seatId: z.string(),
+          roomId: z.string(),
           seatNumber: z.number(),
         })
       ),

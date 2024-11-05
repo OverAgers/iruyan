@@ -9,23 +9,23 @@ export const getwithFriendTimeSchema = z.object({
 
 export type GetWeeklyWorkRequest = z.infer<typeof getwithFriendTimeSchema >;
 
-export default function useGetWithFriendTime(user_id: string, room_id: string) {
-  const requestURL = `http://localhost:8080/user/${user_id}/together`;
+export default function useGetWithFriendTime(userId: string, roomId: string) {
+  const requestURL = `http://localhost:8080/user/${userId}/together`;
 
   const fetcher = useCallback(
     async (url: string) => {
       try {
-        const res = await axios.get(url, { params: { room_id: room_id} });
+        const res = await axios.get(url, { params: { roomId: roomId} });
         const data = getwithFriendTimeSchema .parse(res.data);
         console.log("data", data);
         return data;
-      } catch (error: any) {
+      } catch (error) {
         throw new Error(
           `友達と過ごした時間情報取得エラー: ${error.response?.data?.message || error.message}`
         );
       }
     },
-    [room_id]
+    [roomId]
   );
 
   const { data, error, isLoading } = useSWR(requestURL, fetcher);

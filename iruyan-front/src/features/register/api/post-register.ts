@@ -6,7 +6,7 @@ import useSWRMutation from "swr/mutation";
 import z from "zod";
 
 export const postRegisterSchema = z.object({
-  iruyanID: z.string(),
+  iruyanId: z.string(),
   name: z.string(),
   email: z.string(),
   password: z.string(),
@@ -29,7 +29,7 @@ export default function UsePostRegisterRequest() {
         console.log("res", res.data);
         const data = res.data.user;
         const userInfo: UserInfo = {
-          iruyanID: data.iruyanID,
+          iruyanId: data.iruyanId,
           name: data.name,
           email: data.email,
           status: "idle",

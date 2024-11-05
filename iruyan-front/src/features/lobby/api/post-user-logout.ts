@@ -5,7 +5,7 @@ import { z } from "zod";
 import { UserInfo } from "@/types/user-info";
 
 export const postLogoutSchema = z.object({
-  iruyanID: z.string(),
+  iruyanId: z.string(),
 });
 
 export type PostLogoutRequest = z.infer<typeof postLogoutSchema>;

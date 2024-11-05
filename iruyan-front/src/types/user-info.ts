@@ -1,7 +1,7 @@
 export type StatusType = "working" | "resting" | "idle";
 
 export type UserInfo = {
-  iruyanID: string;
+  iruyanId: string;
   name: string;
   email: string;
   avatarUrl?: string;

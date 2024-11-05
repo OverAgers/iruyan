@@ -5,7 +5,7 @@ import z from "zod";
 import { UserInfo } from "@/types/user-info";
 
 export const postLoginSchema = z.object({
-  iruyanID: z.string().min(1, "入力してください"),
+  iruyanId: z.string().min(1, "入力してください"),
   password: z.string().min(1, "入力してください"),
 });
 
@@ -23,7 +23,7 @@ export default function UseLoginRequest() {
         });
         const data = res.data.user;
         const userInfo: UserInfo = {
-          iruyanID: data.iruyanID,
+          iruyanId: data.iruyanId,
           name: data.name,
           email: data.email,
           status: "idle",

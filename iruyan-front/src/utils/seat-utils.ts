@@ -15,7 +15,7 @@ export const occupySeat = (
         ...seat,
         isVacant: false,
         name: userInfo.name,
-        iruyanID: userInfo.iruyanID,
+        iruyanId: userInfo.iruyanId,
         image: userInfo.avatarUrl || "",
         note: userInfo.note || "",
         task: userInfo.task || "",
@@ -36,7 +36,7 @@ export const vacateSeat = (seats: SeatsInfo[], seatId: string): SeatsInfo[] => {
         isVacant: true,
         name: "空席",
         image: "",
-        iruyanID: "",
+        iruyanId: "",
         note: "",
         task: "",
       };

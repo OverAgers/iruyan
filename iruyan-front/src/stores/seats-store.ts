@@ -40,7 +40,7 @@ const useSeatStore = create<SeatStore>((set) => ({
   moveSeat: (newSeatId, userInfo) => {
     set((state) => {
       const currentSeat = state.seats.find(
-        (seat) => seat.iruyanID === userInfo.iruyanID && !seat.isVacant
+        (seat) => seat.iruyanId === userInfo.iruyanId && !seat.isVacant
       );
 
       let updatedSeats = state.seats;

@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const registerFormSchema = z
   .object({
-    iruyanID: z
+    iruyanId: z
       .string()
       .min(6, "6文字以上で入力してください")
       .regex(

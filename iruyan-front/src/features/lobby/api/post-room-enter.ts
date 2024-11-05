@@ -5,8 +5,8 @@ import { z } from "zod";
 import { UserInfo } from "@/types/user-info";
 
 export const postRoomEnterSchema = z.object({
-  user_id: z.string(),
-  room_id: z.string(),
+  userId: z.string(),
+  roomId: z.string(),
 });
 
 export type PostRoomEnterRequest = z.infer<typeof postRoomEnterSchema>;
@@ -18,9 +18,9 @@ export default function usePostRoomEnterRequest() {
   const fetcher = useCallback(
     async (url: string, { arg }: { arg: PostRoomEnterRequest }) => {
       try {
-        const idurl = `${BASE_URL}/${arg.room_id}/enter/${arg.user_id}`;
+        const idurl = `${BASE_URL}/${arg.roomId}/enter/${arg.userId}`;
         // const validatedData = postRoomEnterSchema.parse(arg);
-        const response = await axios.post(idurl, arg.user_id);
+        const response = await axios.post(idurl, arg.userId);
         console.log("入室成功:", response.data);
         return response.data;
       } catch (error: any) {
