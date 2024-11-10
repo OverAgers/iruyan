@@ -11,12 +11,13 @@ type Props = {
   onSubmit: (data: RegisterForm) => void;
 };
 
-export default function UseRegisterForm({ onSubmit }: Props) {
+export default function useRegisterForm({ onSubmit }: Props) {
   const {
     register,
     handleSubmit,
     setValue,
     watch,
+    getValues,
     formState: { errors },
   } = useForm<RegisterForm>({
     resolver: zodResolver(registerFormSchema),
@@ -28,6 +29,7 @@ export default function UseRegisterForm({ onSubmit }: Props) {
     setValue,
     watch,
     errors,
+    getValues,
     handleFormSubmit: handleSubmit(onSubmit),
   };
 }

@@ -14,7 +14,7 @@ export const postRegisterRequestSchema = z.object({
 export const postRegisterResponseSchema = z.object({
   message: z.string(),
   user: z.object({
-    iruyanId: z.string().uuid(),
+    iruyanId: z.string(),
     userName: z.string(),
     email: z.string().email(),
   }),
@@ -23,27 +23,30 @@ export const postRegisterResponseSchema = z.object({
 export type PostRegisterRequest = z.infer<typeof postRegisterRequestSchema>;
 export type PostRegisterResponse = z.infer<typeof postRegisterResponseSchema>;
 
-export default function UsePostRegisterRequest(Props: PostRegisterRequest) {
-  const baseURL = process.env.NEXT_PUBLIC_API_URL;
+export default function usePostRegisterRequest() {
+  const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL || '';
   const requestURL = baseURL + '/register';
 
-  const fetcher = useCallback(() => {
-    return axios
-      .post(requestURL, Props, {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-      })
-      .then(async (res) => {
-        const result = res.data;
-        return postRegisterResponseSchema.parse(result);
-      })
-      .catch((error) => {
-        throw error;
-      });
-  }, [Props, requestURL]);
+  const fetcher = useCallback(
+    (url: string, { arg }: { arg: PostRegisterRequest }) => {
+      return axios
+        .post(url, arg, {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+        })
+        .then(async (res) => {
+          const result = res.data;
+          return postRegisterResponseSchema.parse(result);
+        })
+        .catch((error) => {
+          throw error;
+        });
+    },
+    []
+  );
 
-  const { data, error, isMutating } = useSWRMutation(requestURL, fetcher);
+  const { data, error, isMutating, trigger } = useSWRMutation(requestURL, fetcher);
 
-  return { data, error, isMutating };
+  return { data, error, isMutating, trigger };
 }

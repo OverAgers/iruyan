@@ -2,43 +2,33 @@
 
 import MainButton from '@/components/ui/button/main-button';
 import AuthInputText from '@/components/ui/input/authorization-input-text';
-import UseRegisterForm from '@/features/register/hooks/use-register-hooks';
-import { RegisterForm } from '@/schema/register-form-schema';
-import { useState } from 'react';
-import { UserInfo } from '@/types/user-info';
-import UsePostRegisterRequest from '../api/post-register';
+import useRegisterForm from '@/features/register/hooks/use-register-hooks';
+import usePostRegisterRequest from '../api/post-register';
 import useUserStore from '@/stores/user-store';
 
 type Props = {
-  onSuccess: (data: UserInfo) => void;
+  onSuccess: () => void;
 };
 
 export default function UserRegisterForm({ onSuccess }: Props) {
   const setUser = useUserStore((state) => state.setUser);
-  const [errorMessage, setErrorMessage] = useState('');
+  const { isMutating, error, trigger } = usePostRegisterRequest();
+    const { errors, setValue, handleFormSubmit, getValues } = useRegisterForm({onSubmit});
 
-  const {
-    register: registerUser,
-    isLoading,
-    error: registerError,
-  } = UsePostRegisterRequest();
-
-  async function onSubmit(formData: RegisterForm): Promise<void> {
+  async function onSubmit(): Promise<void> {
     try {
-      const { passwordConfirm, ...dataToSubmit } = formData;
-      const userData = await registerUser(dataToSubmit);
-      setUser(userData);
-      onSuccess(userData);
+      const {passwordConfirm, ...formData} = getValues();
+      const userData = await trigger(formData);
+      if (userData) {
+        setUser(userData.user);
+        onSuccess();
+      }
     } catch (error: any) {
-      console.error('登録に失敗しました', error);
-      setErrorMessage(error.message || '登録に失敗しました');
-      alert(errorMessage || '登録に失敗しました');
+      const message = error.message || '登録に失敗しました';
+      console.error('登録に失敗しました', message);
+      alert(message);
     }
   }
-
-  const { errors, setValue, handleFormSubmit } = UseRegisterForm({
-    onSubmit,
-  });
 
   return (
     <form className="flex-col" onSubmit={handleFormSubmit}>
@@ -51,8 +41,8 @@ export default function UserRegisterForm({ onSuccess }: Props) {
       <AuthInputText
         label="ユーザー名（表示名）"
         placeholder="ユーザー名"
-        onChange={(e) => setValue('name', e.target.value)}
-        error={errors.name}
+        onChange={(e) => setValue('userName', e.target.value)}
+        error={errors.userName}
       />
       <AuthInputText
         label="メールアドレス"
@@ -77,10 +67,10 @@ export default function UserRegisterForm({ onSuccess }: Props) {
       <div>
         <MainButton
           component="button"
-          title={isLoading ? '登録中...' : '新規登録'}
+          title={isMutating? '登録中...' : '新規登録'}
           type="submit"
           fullWidth={true}
-          disabled={isLoading}
+          disabled={isMutating}
         />
       </div>
     </form>
