@@ -2,59 +2,45 @@ import axios from "axios";
 import { useCallback } from "react";
 import useSWRMutation from "swr/mutation";
 import z from "zod";
-import { UserInfo } from "@/types/user-info";
 
-export const postLoginSchema = z.object({
-  iruyanId: z.string().min(1, "入力してください"),
-  password: z.string().min(1, "入力してください"),
+export const postLoginRequestSchema = z.object({
+  iruyanId: z.string(),
+  password: z.string(),
 });
 
-export type PostLoginRequest = z.infer<typeof postLoginSchema>;
+export const postLoginResponseSchema = z.object({
+  message: z.string(),
+  user: z.object({
+    iruyanId: z.string().uuid(),
+    userName: z.string(),
+    email: z.string().email(),
+  }),
+});
 
-export default function UseLoginRequest() {
-  const requestURL = `http://localhost:8080/login`;
+export type PostLoginRequest = z.infer<typeof postLoginRequestSchema>;
+export type PostLoginResponse = z.infer<typeof postLoginResponseSchema>;
 
-  const fetcher = useCallback(
-    async (url: string, { arg }: { arg: PostLoginRequest }) => {
-      try {
-        const request = postLoginSchema.parse(arg);
-        const res = await axios.post(url, request, {
-          headers: { "Content-Type": "application/x-www-form-urlencoded" }
-        });
-        const data = res.data.user;
-        const userInfo: UserInfo = {
-          iruyanId: data.iruyanId,
-          name: data.name,
-          email: data.email,
-          status: "idle",
-          workTime: 0,
-          restTime: 0,
-          startTime: 0
-        }
-        return userInfo;
-      } catch (error: any) {
-        throw new Error(
-          `ログインエラー: ${error.response?.data?.message || error.message}`
-        );
-      }
-    },
-    []
-  );
+export default function UseLoginRequest(Props: PostLoginRequest) {
+  const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL || "";
+  const requestURL = baseURL + "/login";
 
-  const {
-    data,
-    error,
-    isMutating: isLoading,
-    trigger,
-  } = useSWRMutation<UserInfo, any, string, PostLoginRequest>(
-    requestURL,
-    fetcher
-  );
+  const fetcher = useCallback(() => {
+    return axios
+      .post(requestURL, Props, {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+      })
+      .then(async (res) => {
+        const result = res.data;
+        return postLoginResponseSchema.parse(result);
+      })
+      .catch((error) => {
+        throw error;
+      });
+  }, [Props, requestURL]);
 
-  const login = async (loginData: PostLoginRequest): Promise<UserInfo> => {
-    const userData = await trigger(loginData);
-    return userData;
-  };
+  const { data, error, isMutating } = useSWRMutation(requestURL, fetcher);
 
-  return { data, error, isLoading, login };
+  return { data, error, isMutating };
 }

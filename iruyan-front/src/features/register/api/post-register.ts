@@ -1,62 +1,49 @@
-import { UserInfo } from "@/types/user-info";
 import axios from "axios";
 import { useCallback } from "react";
 import useSWRMutation from "swr/mutation";
 
 import z from "zod";
 
-export const postRegisterSchema = z.object({
+export const postRegisterRequestSchema = z.object({
   iruyanId: z.string(),
-  name: z.string(),
+  userName: z.string(),
   email: z.string(),
   password: z.string(),
 });
 
-export type PostRegisterRequest = z.infer<typeof postRegisterSchema>;
+export const postRegisterResponseSchema = z.object({
+  message: z.string(),
+  user: z.object({
+    iruyanId: z.string().uuid(),
+    userName: z.string(),
+    email: z.string().email(),
+  }),
+});
 
-export default function UsePostRegisterRequest() {
-  // const requestURL = `${process.env.NEXT_PUBLIC_API_URL}/login`;
-  const requestURL = `http://localhost:8080/register`;
+export type PostRegisterRequest = z.infer<typeof postRegisterRequestSchema>;
+export type PostRegisterResponse = z.infer<typeof postRegisterResponseSchema>;
 
-  const fetcher = useCallback(
-    async (url: string, { arg }: { arg: PostRegisterRequest }) => {
-      const request = postRegisterSchema.parse(arg);
-      try {
-        console.log("request", request);
-        const res = await axios.post(url, request, {
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        });
-        console.log("res", res.data);
-        const data = res.data.user;
-        const userInfo: UserInfo = {
-          iruyanId: data.iruyanId,
-          name: data.name,
-          email: data.email,
-          status: "idle",
-          workTime: 0,
-          restTime: 0,
-          startTime: 0,
-        };
-        return userInfo;
-      } catch (error: any) {
-        throw new Error(
-          error.response?.data?.message || `登録エラー: ${error.message}`
-        );
-      }
-    },
-    []
-  );
+export default function UsePostRegisterRequest(Props: PostRegisterRequest) {
+  const baseURL = process.env.NEXT_PUBLIC_API_URL;
+  const requestURL = baseURL + "/register";
 
-  const {
-    data,
-    error,
-    isMutating: isLoading,
-    trigger,
-  } = useSWRMutation<UserInfo, any, string, PostRegisterRequest>(requestURL, fetcher);
+  const fetcher = useCallback(() => {
+    return axios
+      .post(requestURL, Props, {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+      })
+      .then(async (res) => {
+        const result = res.data;
+        return postRegisterResponseSchema.parse(result);
+      })
+      .catch((error) => {
+        throw error;
+      });
+  }, [Props, requestURL]);
 
-  const register = (registerData: PostRegisterRequest) => {
-    return trigger(registerData);
-  };
+  const { data, error, isMutating } = useSWRMutation(requestURL, fetcher);
 
-  return { data, error, isLoading, register };
+  return { data, error, isMutating };
 }

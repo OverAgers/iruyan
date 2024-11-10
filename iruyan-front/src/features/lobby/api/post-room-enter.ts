@@ -2,57 +2,35 @@ import axios from "axios";
 import { useCallback } from "react";
 import useSWRMutation from "swr/mutation";
 import { z } from "zod";
-import { UserInfo } from "@/types/user-info";
 
 export const postRoomEnterSchema = z.object({
-  userId: z.string(),
-  roomId: z.string(),
+  iruyanId: z.string().uuid(),
+  task: z.string(),
 });
 
 export type PostRoomEnterRequest = z.infer<typeof postRoomEnterSchema>;
 
-export default function usePostRoomEnterRequest() {
-  const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
-  // const requestURL = `${BASE_URL}/${roomId}/enter`;
+export default function usePostRoomEnterRequest(Props: PostRoomEnterRequest, roomId: string) {
+  const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL || "";
+  const requestURL = baseURL +  `/rooms/${roomId}/enter`;
 
-  const fetcher = useCallback(
-    async (url: string, { arg }: { arg: PostRoomEnterRequest }) => {
-      try {
-        const idurl = `${BASE_URL}/${arg.roomId}/enter/${arg.userId}`;
-        // const validatedData = postRoomEnterSchema.parse(arg);
-        const response = await axios.post(idurl, arg.userId);
-        console.log("入室成功:", response.data);
-        return response.data;
-      } catch (error: any) {
-        if (axios.isAxiosError(error)) {
-          // throw new Error(
-          //   `入室エラー: ${error.response?.data?.message || error.message}`
-          // );
-        } else if (error instanceof z.ZodError) {
-          throw new Error(
-            `入力エラー: ${error.errors.map((e) => e.message).join(", ")}`
-          );
-        } else {
-          throw new Error(`未知のエラーが発生しました: ${error.message}`);
-        }
-      }
-    },
-    []
-  );
+  const fetcher = useCallback(() => {
+    return axios
+      .post(requestURL, Props, {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+      })
+      .then(async (res) => {
+        const result = res.data;
+        return postRoomEnterSchema.parse(result);
+      })
+      .catch((error) => {
+        throw error;
+      });
+  }, [requestURL, Props]);
 
-  const {
-    data,
-    error,
-    isMutating: isLoading,
-    trigger,
-  } = useSWRMutation<UserInfo, Error, string, PostRoomEnterRequest>(
-    BASE_URL,
-    fetcher
-  );
+  const { data, error, isMutating } = useSWRMutation(requestURL, fetcher);
 
-  const entry = async (requestData: PostRoomEnterRequest): Promise<UserInfo> => {
-    return await trigger(requestData);
-  };
-
-  return { data, error, isLoading, entry };
+  return { data, error, isMutating};
 }
