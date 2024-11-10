@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 import {
   Box,
   Typography,
@@ -9,65 +9,65 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-} from "@mui/material";
-import SubButton from "@/components/ui/button/sub-button";
-import { BarChart } from "@mui/x-charts/BarChart";
+} from '@mui/material';
+import SubButton from '@/components/ui/button/sub-button';
+import { BarChart } from '@mui/x-charts/BarChart';
 
 function UserPage() {
   const chartData = [
-    { day: "月", hours: 4 },
-    { day: "火", hours: 3 },
-    { day: "水", hours: 5 },
-    { day: "木", hours: 7 },
-    { day: "金", hours: 3 },
-    { day: "土", hours: 1 },
-    { day: "日", hours: 0 },
+    { day: '月', hours: 4 },
+    { day: '火', hours: 3 },
+    { day: '水', hours: 5 },
+    { day: '木', hours: 7 },
+    { day: '金', hours: 3 },
+    { day: '土', hours: 1 },
+    { day: '日', hours: 0 },
   ];
 
   return (
     <Box
       sx={{
-        position: "relative",
-        bgcolor: "#F7F4ED",
+        position: 'relative',
+        bgcolor: '#F7F4ED',
         backgroundImage: "url('/bg-image/bg_user.jpg')",
-        backgroundSize: "cover",
+        backgroundSize: 'cover',
       }}
     >
       <SubButton
         title="ノートを閉じる"
         size="lg"
         sx={{
-          position: "absolute",
-          top: "37px",
-          left: "63px",
+          position: 'absolute',
+          top: '37px',
+          left: '63px',
         }}
       />
       <Box
-        display={"flex"}
-        justifyContent={"center"}
-        alignItems={"flex-start"}
+        display={'flex'}
+        justifyContent={'center'}
+        alignItems={'flex-start'}
         pt={20}
         sx={{
-          gap: "7%",
+          gap: '7%',
         }}
       >
         <Box
           sx={{
-            textAlign: "center",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "flex-start",
-            gap: "44px",
-            width: "40%",
+            textAlign: 'center',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'flex-start',
+            gap: '44px',
+            width: '40%',
           }}
         >
           <Box
             sx={{
-              textAlign: "center",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "20px",
+              textAlign: 'center',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '20px',
             }}
           >
             <Avatar
@@ -77,83 +77,83 @@ function UserPage() {
             />
             <Box
               sx={{
-                textAlign: "center",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "flex-start",
-                gap: "10px",
+                textAlign: 'center',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'flex-start',
+                gap: '10px',
               }}
             >
-              <Typography variant="h5" sx={{ fontSize: "48px" }}>
+              <Typography variant="h5" sx={{ fontSize: '48px' }}>
                 ほしょ
               </Typography>
-              <Typography sx={{ fontSize: "25px" }}>
+              <Typography sx={{ fontSize: '25px' }}>
                 ・居る連チャン: 5Days
               </Typography>
-              <Typography sx={{ fontSize: "25px" }}>
+              <Typography sx={{ fontSize: '25px' }}>
                 ・累計集中時間: 120h
               </Typography>
             </Box>
           </Box>
           <Box
             sx={{
-              textAlign: "center",
-              display: "flex",
-              alignItems: "flex-start",
-              justifyContent: "center",
-              gap: "53px",
+              textAlign: 'center',
+              display: 'flex',
+              alignItems: 'flex-start',
+              justifyContent: 'center',
+              gap: '53px',
             }}
           >
             <Box
               sx={{
-                textAlign: "center",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "flex-start",
-                width: "fit-content",
-                gap: "18px",
+                textAlign: 'center',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'flex-start',
+                width: 'fit-content',
+                gap: '18px',
               }}
             >
-              <Typography align="center" sx={{ fontSize: "25px" }}>
+              <Typography align="center" sx={{ fontSize: '25px' }}>
                 一緒に居た常連さん
               </Typography>
               <Box
                 sx={{
-                  textAlign: "center",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "flex-start",
-                  width: "100%",
-                  gap: "18px",
+                  textAlign: 'center',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'flex-start',
+                  width: '100%',
+                  gap: '18px',
                 }}
               >
                 {[...Array(5)].map((_, index) => (
                   <Box
                     key={index}
                     sx={{
-                      display: "flex",
-                      alignItems: "center",
+                      display: 'flex',
+                      alignItems: 'center',
                       mt: 1,
-                      width: "100%",
-                      gap: "1vw",
+                      width: '100%',
+                      gap: '1vw',
                     }}
                   >
-                    <Box sx={{ position: "relative", display: "inline-block" }}>
+                    <Box sx={{ position: 'relative', display: 'inline-block' }}>
                       <Box
                         sx={{
-                          position: "absolute",
+                          position: 'absolute',
                           top: -15,
                           left: 0,
-                          backgroundColor: "#d4a373",
-                          color: "#fff",
-                          width: "31px",
-                          height: "31px",
-                          borderRadius: "50%",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          fontSize: "16px",
-                          fontWeight: "bold",
+                          backgroundColor: '#d4a373',
+                          color: '#fff',
+                          width: '31px',
+                          height: '31px',
+                          borderRadius: '50%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '16px',
+                          fontWeight: 'bold',
                           zIndex: 1,
                         }}
                       >
@@ -167,13 +167,13 @@ function UserPage() {
                     </Box>
                     <Box
                       sx={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        gap: "3vw",
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        gap: '3vw',
                       }}
                     >
-                      <Typography sx={{ fontSize: "20px" }}>ほしょ</Typography>
-                      <Typography sx={{ fontSize: "20px" }}>3.4h</Typography>
+                      <Typography sx={{ fontSize: '20px' }}>ほしょ</Typography>
+                      <Typography sx={{ fontSize: '20px' }}>3.4h</Typography>
                     </Box>
                   </Box>
                 ))}
@@ -181,54 +181,54 @@ function UserPage() {
             </Box>
             <Box
               sx={{
-                textAlign: "center",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "flex-start",
-                width: "fit-content",
-                gap: "18px",
+                textAlign: 'center',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'flex-start',
+                width: 'fit-content',
+                gap: '18px',
               }}
             >
-              <Typography align="center" sx={{ fontSize: "25px" }}>
+              <Typography align="center" sx={{ fontSize: '25px' }}>
                 今週の集中ランキング
               </Typography>
               <Box
                 sx={{
-                  textAlign: "center",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "flex-start",
-                  width: "100%",
-                  gap: "18px",
+                  textAlign: 'center',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'flex-start',
+                  width: '100%',
+                  gap: '18px',
                 }}
               >
                 {[...Array(5)].map((_, index) => (
                   <Box
                     key={index}
                     sx={{
-                      display: "flex",
-                      alignItems: "center",
+                      display: 'flex',
+                      alignItems: 'center',
                       mt: 1,
-                      width: "100%",
-                      gap: "1vw",
+                      width: '100%',
+                      gap: '1vw',
                     }}
                   >
-                    <Box sx={{ position: "relative", display: "inline-block" }}>
+                    <Box sx={{ position: 'relative', display: 'inline-block' }}>
                       <Box
                         sx={{
-                          position: "absolute",
+                          position: 'absolute',
                           top: -15,
                           left: 0,
-                          backgroundColor: "#d4a373",
-                          color: "#fff",
-                          width: "31px",
-                          height: "31px",
-                          borderRadius: "50%",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          fontSize: "16px",
-                          fontWeight: "bold",
+                          backgroundColor: '#d4a373',
+                          color: '#fff',
+                          width: '31px',
+                          height: '31px',
+                          borderRadius: '50%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '16px',
+                          fontWeight: 'bold',
                           zIndex: 1,
                         }}
                       >
@@ -242,13 +242,13 @@ function UserPage() {
                     </Box>
                     <Box
                       sx={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        gap: "3vw",
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        gap: '3vw',
                       }}
                     >
-                      <Typography sx={{ fontSize: "20px" }}>ほしょ</Typography>
-                      <Typography sx={{ fontSize: "20px" }}>3.4h</Typography>
+                      <Typography sx={{ fontSize: '20px' }}>ほしょ</Typography>
+                      <Typography sx={{ fontSize: '20px' }}>3.4h</Typography>
                     </Box>
                   </Box>
                 ))}
@@ -258,16 +258,16 @@ function UserPage() {
         </Box>
         <Box
           sx={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "flex-start",
-            width: "35%",
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'flex-start',
+            width: '35%',
           }}
         >
-          <Typography align="center" sx={{ fontSize: "25px" }}>
+          <Typography align="center" sx={{ fontSize: '25px' }}>
             ご来店記録
           </Typography>
-          <TableContainer sx={{ minWidth: "40vw" }}>
+          <TableContainer sx={{ minWidth: '40vw' }}>
             <Table>
               <TableHead>
                 <TableRow>
@@ -294,14 +294,14 @@ function UserPage() {
               series={[
                 {
                   data: chartData.map((item) => item.hours),
-                  color: "#D3AE6F",
+                  color: '#D3AE6F',
                 },
               ]}
               height={400}
               xAxis={[
                 {
                   data: chartData.map((item) => item.day),
-                  scaleType: "band",
+                  scaleType: 'band',
                 },
               ]}
               margin={{ top: 61, bottom: 30, left: 40, right: 10 }}

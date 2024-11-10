@@ -1,7 +1,7 @@
-import axios from "axios";
-import { useCallback } from "react";
-import useSWRMutation from "swr/mutation";
-import { z } from "zod";
+import axios from 'axios';
+import { useCallback } from 'react';
+import useSWRMutation from 'swr/mutation';
+import { z } from 'zod';
 
 export const postCreateRoomRequestSchema = z.object({
   userName: z.string(),
@@ -14,17 +14,19 @@ export const postCreateRoomResponseSchema = z.object({
 });
 
 export type PostCreateRoomRequest = z.infer<typeof postCreateRoomRequestSchema>;
-export type PostCreateRoomResponse = z.infer<typeof postCreateRoomResponseSchema>;
+export type PostCreateRoomResponse = z.infer<
+  typeof postCreateRoomResponseSchema
+>;
 
 export default function usePostCreateRoomRequest(Props: PostCreateRoomRequest) {
-  const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL || "";
-  const requestURL = baseURL + "/rooms";
+  const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL || '';
+  const requestURL = baseURL + '/rooms';
 
   const fetcher = useCallback(() => {
     return axios
       .post(requestURL, Props.userName, {
         headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
+          'Content-Type': 'application/x-www-form-urlencoded',
         },
       })
       .then(async (res) => {
@@ -36,6 +38,9 @@ export default function usePostCreateRoomRequest(Props: PostCreateRoomRequest) {
       });
   }, [Props.userName, requestURL]);
 
-  const { data, error, isMutating } = useSWRMutation<PostCreateRoomRequest, Error>(requestURL, fetcher);
+  const { data, error, isMutating } = useSWRMutation<
+    PostCreateRoomRequest,
+    Error
+  >(requestURL, fetcher);
   return { data, error, isMutating };
 }

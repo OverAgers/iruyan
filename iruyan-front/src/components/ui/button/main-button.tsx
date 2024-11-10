@@ -1,22 +1,22 @@
-import Button from "@mui/joy/Button";
+import Button from '@mui/joy/Button';
 
 type Props = {
   title: string;
-  type: "submit" | "button" | "reset" | undefined;
+  type: 'submit' | 'button' | 'reset' | undefined;
   fullWidth?: boolean;
   maxWidth?: string;
   width?: string;
   onClick?: () => void;
   disabled?: boolean;
   component:
-    | "a"
-    | "button"
-    | "div"
-    | "span"
-    | "label"
-    | "input"
-    | "select"
-    | "textarea";
+    | 'a'
+    | 'button'
+    | 'div'
+    | 'span'
+    | 'label'
+    | 'input'
+    | 'select'
+    | 'textarea';
 };
 
 export default function MainButton(Props: Props) {
@@ -29,13 +29,13 @@ export default function MainButton(Props: Props) {
       onClick={Props.onClick}
       disabled={Props.disabled}
       sx={{
-        backgroundColor: "#7A8764",
-        fontWeight: "bold",
+        backgroundColor: '#7A8764',
+        fontWeight: 'bold',
         p: 2,
         maxWidth: Props.maxWidth,
         width: Props.width,
-        "&:active": {
-          backgroundColor: "#353A2B",
+        '&:active': {
+          backgroundColor: '#353A2B',
         },
       }}
     >

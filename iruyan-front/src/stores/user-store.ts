@@ -1,7 +1,7 @@
-import { create } from "zustand";
-import { persist } from "zustand/middleware";
-import { UserInfo, StatusType } from "@/types/user-info";
-import { incrementTime } from "@/utils/increment-time";
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+import { UserInfo, StatusType } from '@/types/user-info';
+import { incrementTime } from '@/utils/increment-time';
 
 type UserStore = {
   currentUser: UserInfo | null;
@@ -157,7 +157,7 @@ const useUserStore = create<UserStore>()(
       },
     }),
     {
-      name: "user-store", // ストレージのキー名
+      name: 'user-store', // ストレージのキー名
     }
   )
 );

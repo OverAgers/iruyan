@@ -1,8 +1,8 @@
-import axios from "axios";
-import { useCallback } from "react";
-import useSWRMutation from "swr/mutation";
+import axios from 'axios';
+import { useCallback } from 'react';
+import useSWRMutation from 'swr/mutation';
 
-import z from "zod";
+import z from 'zod';
 
 export const postRegisterRequestSchema = z.object({
   iruyanId: z.string(),
@@ -25,13 +25,13 @@ export type PostRegisterResponse = z.infer<typeof postRegisterResponseSchema>;
 
 export default function UsePostRegisterRequest(Props: PostRegisterRequest) {
   const baseURL = process.env.NEXT_PUBLIC_API_URL;
-  const requestURL = baseURL + "/register";
+  const requestURL = baseURL + '/register';
 
   const fetcher = useCallback(() => {
     return axios
       .post(requestURL, Props, {
         headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
+          'Content-Type': 'application/x-www-form-urlencoded',
         },
       })
       .then(async (res) => {

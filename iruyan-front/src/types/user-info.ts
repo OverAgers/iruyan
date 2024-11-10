@@ -1,4 +1,4 @@
-export type StatusType = "working" | "resting" | "idle";
+export type StatusType = 'working' | 'resting' | 'idle';
 
 export type UserInfo = {
   iruyanId: string;

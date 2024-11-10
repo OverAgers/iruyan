@@ -1,8 +1,8 @@
 // src/stores/seat-store.ts
-import { create } from "zustand";
-import { SeatsInfo } from "@/types/seats-info";
-import { UserInfo } from "@/types/user-info";
-import { occupySeat, vacateSeat } from "@/utils/seat-utils";
+import { create } from 'zustand';
+import { SeatsInfo } from '@/types/seats-info';
+import { UserInfo } from '@/types/user-info';
+import { occupySeat, vacateSeat } from '@/utils/seat-utils';
 
 export type SeatStore = {
   seats: SeatsInfo[];
@@ -12,16 +12,16 @@ export type SeatStore = {
 };
 
 const initialSeats: SeatsInfo[] = [
-  { seatId: "1", roomId: "aaa", seatNumber: 1, isVacant: true },
-  { seatId: "2", roomId: "aaa", seatNumber: 2, isVacant: true },
-  { seatId: "3", roomId: "aaa", seatNumber: 3, isVacant: true },
-  { seatId: "4", roomId: "aaa", seatNumber: 4, isVacant: true },
-  { seatId: "5", roomId: "aaa", seatNumber: 5, isVacant: true },
-  { seatId: "6", roomId: "aaa", seatNumber: 6, isVacant: true },
-  { seatId: "7", roomId: "aaa", seatNumber: 7, isVacant: true },
-  { seatId: "8", roomId: "aaa", seatNumber: 8, isVacant: true },
-  { seatId: "9", roomId: "aaa", seatNumber: 9, isVacant: true },
-  { seatId: "10", roomId: "aaa", seatNumber: 10, isVacant: true },
+  { seatId: '1', roomId: 'aaa', seatNumber: 1, isVacant: true },
+  { seatId: '2', roomId: 'aaa', seatNumber: 2, isVacant: true },
+  { seatId: '3', roomId: 'aaa', seatNumber: 3, isVacant: true },
+  { seatId: '4', roomId: 'aaa', seatNumber: 4, isVacant: true },
+  { seatId: '5', roomId: 'aaa', seatNumber: 5, isVacant: true },
+  { seatId: '6', roomId: 'aaa', seatNumber: 6, isVacant: true },
+  { seatId: '7', roomId: 'aaa', seatNumber: 7, isVacant: true },
+  { seatId: '8', roomId: 'aaa', seatNumber: 8, isVacant: true },
+  { seatId: '9', roomId: 'aaa', seatNumber: 9, isVacant: true },
+  { seatId: '10', roomId: 'aaa', seatNumber: 10, isVacant: true },
 ];
 
 const useSeatStore = create<SeatStore>((set) => ({

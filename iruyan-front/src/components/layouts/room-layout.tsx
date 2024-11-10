@@ -1,6 +1,6 @@
-import { Typography } from "@mui/joy";
-import { Grid2 } from "@mui/material";
-import Sidebar from "@/features/sidebar/components/sidebar";
+import { Typography } from '@mui/joy';
+import { Grid2 } from '@mui/material';
+import Sidebar from '@/features/sidebar/components/sidebar';
 
 type Props = {
   children: React.ReactNode;
@@ -11,25 +11,25 @@ export default function RoomLayout({ children }: Props) {
     <Grid2
       container
       sx={{
-        height: "100vh",
+        height: '100vh',
         backgroundImage: "url('/bg-image/bg_room.jpg')",
-        backgroundSize: "cover",
+        backgroundSize: 'cover',
       }}
-      justifyContent={"space-between"}
-      bgcolor={"#3C2800"}
+      justifyContent={'space-between'}
+      bgcolor={'#3C2800'}
     >
       <Grid2 container size={7}>
-        <Grid2 container justifyContent={"space-between"} width={"100%"}>
+        <Grid2 container justifyContent={'space-between'} width={'100%'}>
           <Grid2 padding={4}>
-            <Typography level="title-md" textColor={"#F7F4ED"}>
+            <Typography level="title-md" textColor={'#F7F4ED'}>
               IRUYAN
             </Typography>
-            <Typography level="h3" textColor={"#F7F4ED"}>
+            <Typography level="h3" textColor={'#F7F4ED'}>
               居る家ん
             </Typography>
           </Grid2>
           <Grid2 padding={4} size={9}>
-              {/* <Typography>通知</Typography> */}
+            {/* <Typography>通知</Typography> */}
           </Grid2>
         </Grid2>
         <Grid2>{children}</Grid2>

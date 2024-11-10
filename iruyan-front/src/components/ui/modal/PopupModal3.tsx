@@ -1,10 +1,10 @@
-import * as React from "react";
-import Button from "@mui/joy/Button";
-import Modal from "@mui/joy/Modal";
-import Typography from "@mui/joy/Typography";
-import Sheet from "@mui/joy/Sheet";
-import ModalClose from "@mui/joy/ModalClose";
-import MainButton from "@/components/ui/button/main-button";
+import * as React from 'react';
+import Button from '@mui/joy/Button';
+import Modal from '@mui/joy/Modal';
+import Typography from '@mui/joy/Typography';
+import Sheet from '@mui/joy/Sheet';
+import ModalClose from '@mui/joy/ModalClose';
+import MainButton from '@/components/ui/button/main-button';
 
 export default function PopupModal3() {
   const [open, setOpen] = React.useState<boolean>(false);
@@ -18,21 +18,21 @@ export default function PopupModal3() {
         aria-describedby="modal-desc"
         open={open}
         onClose={() => setOpen(false)}
-        sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}
+        sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}
       >
         <Sheet
           variant="outlined"
           sx={{
-            width: "50%",
+            width: '50%',
             maxWidth: 641,
-            borderRadius: "16px",
-            align: "center",
+            borderRadius: '16px',
+            align: 'center',
             p: 2,
-            boxShadow: "lg",
-            border: "13px solid #D3AE6F", // 枠線を指定
-            display: "flex",
-            flexDirection: "column", // 縦に要素を並べる
-            alignItems: "center", // 横方向の中央揃え
+            boxShadow: 'lg',
+            border: '13px solid #D3AE6F', // 枠線を指定
+            display: 'flex',
+            flexDirection: 'column', // 縦に要素を並べる
+            alignItems: 'center', // 横方向の中央揃え
             paddingTop: 4,
             paddingBottom: 4,
           }}
@@ -44,9 +44,9 @@ export default function PopupModal3() {
             textColor="inherit"
             fontSize={36}
             sx={{
-              fontWeight: "lg",
+              fontWeight: 'lg',
               mb: 1,
-              color: "#3C2800",
+              color: '#3C2800',
             }}
           >
             お疲れ様でした！
@@ -57,10 +57,10 @@ export default function PopupModal3() {
             fontSize={20}
             sx={{
               mb: 1,
-              color: "#3C2800",
+              color: '#3C2800',
               paddingTop: 4,
               paddingBottom: 4,
-              textAlign: "center",
+              textAlign: 'center',
             }}
           >
             1時間30分の作業、お見事です！

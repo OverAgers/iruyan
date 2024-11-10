@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import React, { useState, useRef, useEffect } from "react";
-import { Box, Typography, Button, Modal } from "@mui/joy";
-import TextField from "@mui/material/TextField";
-import CameraIcon from "@mui/icons-material/CameraAlt";
-import MainButton from "@/components/ui/button/main-button";
-import SubButton from "@/components/ui/button/sub-button";
-import useUserStore from "@/stores/user-store";
-import Webcam from "react-webcam";
-import useGetRoomList from "@/features/lobby/api/get-room-list";
-import usePostRoomEnterRequest from "@/features/lobby/api/post-room-enter";
+import React, { useState, useRef, useEffect } from 'react';
+import { Box, Typography, Button, Modal } from '@mui/joy';
+import TextField from '@mui/material/TextField';
+import CameraIcon from '@mui/icons-material/CameraAlt';
+import MainButton from '@/components/ui/button/main-button';
+import SubButton from '@/components/ui/button/sub-button';
+import useUserStore from '@/stores/user-store';
+import Webcam from 'react-webcam';
+import useGetRoomList from '@/features/lobby/api/get-room-list';
+import usePostRoomEnterRequest from '@/features/lobby/api/post-room-enter';
 // import usePostLogoutRequest from "@/features/lobby/api/post-user-logout";
-import usePostRoomRequest from "@/features/lobby/api/post-room";
+import usePostRoomRequest from '@/features/lobby/api/post-room';
 
 export default function Lobby() {
   // ユーザー情報の取得
@@ -30,10 +30,10 @@ export default function Lobby() {
 
   // ステートの定義
   const [roomId, setRoomId] = useState<string>(
-    "25e6a8db-b950-4d67-a46a-afb5b637575a"
+    '25e6a8db-b950-4d67-a46a-afb5b637575a'
   );
-  const [taskInput, setTaskInput] = useState<string>(currentUser?.task || "");
-  const [noteInput, setNoteInput] = useState<string>(currentUser?.note || "");
+  const [taskInput, setTaskInput] = useState<string>(currentUser?.task || '');
+  const [noteInput, setNoteInput] = useState<string>(currentUser?.note || '');
   const [isCameraOpen, setIsCameraOpen] = useState<boolean>(false);
 
   const webcamRef = useRef<Webcam>(null);
@@ -46,20 +46,20 @@ export default function Lobby() {
   // 初期化用 useEffect
   useEffect(() => {
     // console.log("Initial userInfo:", localStorage.getItem("user-store"));
-    const userInfo = localStorage.getItem("user-store");
+    const userInfo = localStorage.getItem('user-store');
     if (!userInfo) {
       console.log(
-        "ユーザー情報が存在しないため、ログインページにリダイレクトします。"
+        'ユーザー情報が存在しないため、ログインページにリダイレクトします。'
       );
-      window.location.href = "/login";
+      window.location.href = '/login';
       return;
     }
     try {
       // 部屋の作成
-      postRoom.createRoom({ name: "mokumoku" });
-      console.log("部屋の作成が成功しました。");
+      postRoom.createRoom({ name: 'mokumoku' });
+      console.log('部屋の作成が成功しました。');
     } catch (error) {
-      console.error("初期化中にエラーが発生しました:", error);
+      console.error('初期化中にエラーが発生しました:', error);
     }
   }, []); // 関数を依存配列に追加
   // ログイン確認
@@ -74,7 +74,7 @@ export default function Lobby() {
 
       if (list) {
         setRoomId(list);
-        console.log("aaa", roomId);
+        console.log('aaa', roomId);
       }
       setTask(taskInput);
       setNote(noteInput);
@@ -88,7 +88,7 @@ export default function Lobby() {
           window.location.href = `/rooms/:${list}`;
         }
       } catch (error) {
-        console.error("部屋へのエントリーに失敗しました:", error);
+        console.error('部屋へのエントリーに失敗しました:', error);
       }
     }
   };
@@ -97,9 +97,9 @@ export default function Lobby() {
     // try {
     console.log(currentUser);
     // await logout.logout({ iruyanID: currentUser.iruyanID });
-    localStorage.removeItem("user-store");
+    localStorage.removeItem('user-store');
     clearUser();
-    window.location.href = "/login";
+    window.location.href = '/login';
     // } catch (error) {
     // console.error("ログアウトに失敗しました:", error);
     // }
@@ -118,13 +118,13 @@ export default function Lobby() {
   return (
     <Box
       sx={{
-        position: "relative",
-        display: "flex",
-        alignItems: "flex-end",
-        justifyContent: "center",
-        height: "100vh",
+        position: 'relative',
+        display: 'flex',
+        alignItems: 'flex-end',
+        justifyContent: 'center',
+        height: '100vh',
         backgroundImage: "url('/bg-image/bg_lobby.jpg')",
-        backgroundSize: "cover",
+        backgroundSize: 'cover',
       }}
     >
       <SubButton
@@ -132,49 +132,49 @@ export default function Lobby() {
         size="lg"
         onClick={handleLogout}
         sx={{
-          position: "absolute",
-          top: "37px",
-          right: "200px",
+          position: 'absolute',
+          top: '37px',
+          right: '200px',
         }}
       />
       <SubButton
         title="来店記録"
         size="lg"
-        onClick={() => (window.location.href = "/user")}
+        onClick={() => (window.location.href = '/user')}
         sx={{
-          position: "absolute",
-          top: "37px",
-          right: "41px",
+          position: 'absolute',
+          top: '37px',
+          right: '41px',
         }}
       />
       <Box
-        display={"flex"}
-        flexDirection={"column"}
-        alignItems={"center"}
+        display={'flex'}
+        flexDirection={'column'}
+        alignItems={'center'}
         mb={20}
       >
-        <Typography level="h4" sx={{ mb: 1, fontSize: "48px" }}>
+        <Typography level="h4" sx={{ mb: 1, fontSize: '48px' }}>
           ご案内用紙
         </Typography>
-        <Typography level="h4" sx={{ mb: 3, color: "text.secondary" }}>
+        <Typography level="h4" sx={{ mb: 3, color: 'text.secondary' }}>
           {currentUser?.name}さん、ごゆっくりどうぞ
         </Typography>
         <Box
           sx={{
-            display: "flex",
-            justifyContent: "center",
-            gap: "8%",
-            width: "100%",
+            display: 'flex',
+            justifyContent: 'center',
+            gap: '8%',
+            width: '100%',
             maxWidth: 840,
           }}
         >
           <Box
             sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              bgcolor: "background.default",
-              flexDirection: "column",
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              bgcolor: 'background.default',
+              flexDirection: 'column',
               mr: 2,
             }}
           >
@@ -182,14 +182,14 @@ export default function Lobby() {
             <Button
               variant="plain"
               sx={{
-                width: "240px",
-                height: "240px",
-                borderRadius: "50%",
-                bgcolor: "white",
-                color: "text.primary",
+                width: '240px',
+                height: '240px',
+                borderRadius: '50%',
+                bgcolor: 'white',
+                color: 'text.primary',
                 boxShadow: 1,
-                "&:hover": {
-                  bgcolor: "#f0f0f0",
+                '&:hover': {
+                  bgcolor: '#f0f0f0',
                 },
               }}
               onClick={() => setIsCameraOpen(true)}
@@ -199,10 +199,10 @@ export default function Lobby() {
                   src={currentUser.avatarUrl}
                   alt="Avatar"
                   style={{
-                    width: "100%",
-                    height: "100%",
-                    borderRadius: "50%",
-                    objectFit: "cover",
+                    width: '100%',
+                    height: '100%',
+                    borderRadius: '50%',
+                    objectFit: 'cover',
                   }}
                 />
               ) : (
@@ -212,19 +212,19 @@ export default function Lobby() {
           </Box>
           <Box
             sx={{
-              display: "flex",
-              alignItems: "flex-start",
-              justifyContent: "center",
-              flexDirection: "column",
-              gap: "44px",
+              display: 'flex',
+              alignItems: 'flex-start',
+              justifyContent: 'center',
+              flexDirection: 'column',
+              gap: '44px',
             }}
           >
             <Box
               sx={{
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "flex-start",
-                width: "30vw",
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'flex-start',
+                width: '30vw',
               }}
             >
               <Typography level="h4" sx={{ mb: 1 }}>
@@ -236,17 +236,17 @@ export default function Lobby() {
                 value={taskInput}
                 onChange={(e) => setTaskInput(e.target.value)}
                 sx={{
-                  bgcolor: "white",
-                  width: "100%",
+                  bgcolor: 'white',
+                  width: '100%',
                 }}
               />
             </Box>
             <Box
               sx={{
-                display: "flex",
-                justifyContent: "center",
-                flexDirection: "column",
-                width: "30vw",
+                display: 'flex',
+                justifyContent: 'center',
+                flexDirection: 'column',
+                width: '30vw',
               }}
             >
               <Typography level="h4" sx={{ mb: 1 }}>
@@ -258,8 +258,8 @@ export default function Lobby() {
                 value={noteInput}
                 onChange={(e) => setNoteInput(e.target.value)}
                 sx={{
-                  bgcolor: "white",
-                  width: "100%",
+                  bgcolor: 'white',
+                  width: '100%',
                 }}
               />
             </Box>
@@ -270,7 +270,7 @@ export default function Lobby() {
           type="button"
           maxWidth="240px"
           width="50%"
-          component={"div"}
+          component={'div'}
           onClick={handleUpdateUser}
           disabled={roomList.isLoading}
         />
@@ -283,18 +283,18 @@ export default function Lobby() {
       >
         <Box
           sx={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            width: { xs: "90%", sm: 400 },
-            bgcolor: "background.paper",
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: { xs: '90%', sm: 400 },
+            bgcolor: 'background.paper',
             borderRadius: 2,
             boxShadow: 24,
             p: 4,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
           }}
         >
           <Typography
@@ -310,11 +310,11 @@ export default function Lobby() {
             ref={webcamRef}
             screenshotFormat="image/jpeg"
             videoConstraints={{
-              facingMode: "user",
+              facingMode: 'user',
             }}
-            style={{ width: "100%", borderRadius: "8px" }}
+            style={{ width: '100%', borderRadius: '8px' }}
           />
-          <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
+          <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
             <Button color="primary" onClick={handleCapture}>
               撮影
             </Button>

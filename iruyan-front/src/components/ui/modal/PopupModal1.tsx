@@ -1,10 +1,10 @@
-import * as React from "react";
-import Button from "@mui/joy/Button";
-import Modal from "@mui/joy/Modal";
-import Typography from "@mui/joy/Typography";
-import Sheet from "@mui/joy/Sheet";
-import ModalClose from "@mui/joy/ModalClose";
-import MainButton from "@/components/ui/button/main-button";
+import * as React from 'react';
+import Button from '@mui/joy/Button';
+import Modal from '@mui/joy/Modal';
+import Typography from '@mui/joy/Typography';
+import Sheet from '@mui/joy/Sheet';
+import ModalClose from '@mui/joy/ModalClose';
+import MainButton from '@/components/ui/button/main-button';
 
 export default function PopupModal1() {
   const [open, setOpen] = React.useState<boolean>(false);
@@ -18,27 +18,26 @@ export default function PopupModal1() {
         aria-describedby="modal-desc"
         open={open}
         onClose={() => setOpen(false)}
-        sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}
+        sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}
       >
         <Sheet
           variant="outlined"
           sx={{
-            width: "50%",
+            width: '50%',
             maxWidth: 641,
-            borderRadius: "16px",
-            align: "center",
+            borderRadius: '16px',
+            align: 'center',
             p: 2,
-            boxShadow: "lg",
-            border: "13px solid #D3AE6F", // 枠線を指定
-            display: "flex",
-            flexDirection: "column", // 縦に要素を並べる
-            alignItems: "center", // 横方向の中央揃え
+            boxShadow: 'lg',
+            border: '13px solid #D3AE6F', // 枠線を指定
+            display: 'flex',
+            flexDirection: 'column', // 縦に要素を並べる
+            alignItems: 'center', // 横方向の中央揃え
             paddingTop: 4,
             paddingBottom: 4,
-            gap: 2
+            gap: 2,
           }}
         >
-
           <Typography
             component="h2"
             id="modal-title"
@@ -46,10 +45,10 @@ export default function PopupModal1() {
             textColor="inherit"
             fontSize={36}
             sx={{
-              fontWeight: "lg",
+              fontWeight: 'lg',
               mb: 1,
-              color: "#3C2800",
-              textAlign: "center",
+              color: '#3C2800',
+              textAlign: 'center',
             }}
           >
             🔥鬼集中🔥
@@ -65,10 +64,15 @@ export default function PopupModal1() {
           <Button
             variant="plain"
             color="neutral"
-            sx={{ fontSize: 18, color: "#3C2800", paddingTop: 4, paddingButtom: "0px"}}
+            sx={{
+              fontSize: 18,
+              color: '#3C2800',
+              paddingTop: 4,
+              paddingButtom: '0px',
+            }}
             onClick={() => setOpen(false)}
           >
-              × 閉じる
+            × 閉じる
           </Button>
         </Sheet>
       </Modal>

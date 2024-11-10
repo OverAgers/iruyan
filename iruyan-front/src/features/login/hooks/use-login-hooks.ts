@@ -1,8 +1,8 @@
-import { useForm } from "react-hook-form";
+import { useForm } from 'react-hook-form';
 
-import { zodResolver } from "@hookform/resolvers/zod";
+import { zodResolver } from '@hookform/resolvers/zod';
 
-import { LoginForm, loginFormSchema } from "@/schema/login-form-schema";
+import { LoginForm, loginFormSchema } from '@/schema/login-form-schema';
 
 type Props = {
   onSubmit: (data: LoginForm) => void;
@@ -17,7 +17,7 @@ export default function UseLoginForm({ onSubmit }: Props) {
     formState: { errors },
   } = useForm<LoginForm>({
     resolver: zodResolver(loginFormSchema),
-    mode: "onBlur",
+    mode: 'onBlur',
   });
   return {
     register,

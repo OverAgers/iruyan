@@ -1,7 +1,7 @@
-import axios from "axios";
-import { useCallback } from "react";
-import useSWRMutation from "swr/mutation";
-import z from "zod";
+import axios from 'axios';
+import { useCallback } from 'react';
+import useSWRMutation from 'swr/mutation';
+import z from 'zod';
 
 export const postLoginRequestSchema = z.object({
   iruyanId: z.string(),
@@ -21,14 +21,14 @@ export type PostLoginRequest = z.infer<typeof postLoginRequestSchema>;
 export type PostLoginResponse = z.infer<typeof postLoginResponseSchema>;
 
 export default function UseLoginRequest(Props: PostLoginRequest) {
-  const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL || "";
-  const requestURL = baseURL + "/login";
+  const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL || '';
+  const requestURL = baseURL + '/login';
 
   const fetcher = useCallback(() => {
     return axios
       .post(requestURL, Props, {
         headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
+          'Content-Type': 'application/x-www-form-urlencoded',
         },
       })
       .then(async (res) => {

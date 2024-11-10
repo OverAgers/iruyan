@@ -1,8 +1,7 @@
-import axios from "axios";
-import { useCallback } from "react";
-import z from "zod";
-import useSWR from "swr";
-
+import axios from 'axios';
+import { useCallback } from 'react';
+import z from 'zod';
+import useSWR from 'swr';
 
 export const getWeeklyWorkSchema = z.object({
   message: z.string(),
@@ -25,9 +24,9 @@ export default function useGetWeeklyWork(userId: string, roomId: string) {
   const fetcher = useCallback(
     async (url: string) => {
       try {
-        const res = await axios.get(url, { params: { roomId: roomId} });
+        const res = await axios.get(url, { params: { roomId: roomId } });
         const data = getWeeklyWorkSchema.parse(res.data);
-        console.log("data", data);
+        console.log('data', data);
         return data;
       } catch (error: any) {
         throw new Error(

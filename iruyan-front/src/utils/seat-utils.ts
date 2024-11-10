@@ -1,6 +1,6 @@
 // src/utils/seatUtils.ts
-import { SeatsInfo } from "@/types/seats-info";
-import { UserInfo } from "@/types/user-info";
+import { SeatsInfo } from '@/types/seats-info';
+import { UserInfo } from '@/types/user-info';
 
 export const occupySeat = (
   seats: SeatsInfo[],
@@ -16,9 +16,9 @@ export const occupySeat = (
         isVacant: false,
         name: userInfo.name,
         iruyanId: userInfo.iruyanId,
-        image: userInfo.avatarUrl || "",
-        note: userInfo.note || "",
-        task: userInfo.task || "",
+        image: userInfo.avatarUrl || '',
+        note: userInfo.note || '',
+        task: userInfo.task || '',
       };
     }
     return seat;
@@ -34,11 +34,11 @@ export const vacateSeat = (seats: SeatsInfo[], seatId: string): SeatsInfo[] => {
       return {
         ...seat,
         isVacant: true,
-        name: "空席",
-        image: "",
-        iruyanId: "",
-        note: "",
-        task: "",
+        name: '空席',
+        image: '',
+        iruyanId: '',
+        note: '',
+        task: '',
       };
     }
     return seat;

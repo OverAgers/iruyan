@@ -1,5 +1,5 @@
-import { FormControl, FormHelperText, FormLabel, Input } from "@mui/joy";
-import { FieldError } from "react-hook-form";
+import { FormControl, FormHelperText, FormLabel, Input } from '@mui/joy';
+import { FieldError } from 'react-hook-form';
 
 type Props = {
   label: string;
@@ -8,14 +8,14 @@ type Props = {
   defaultValue?: string;
   endDecorator?: React.ReactNode;
   error: FieldError | undefined;
-  type?: "text" | "password";
+  type?: 'text' | 'password';
 };
 
 export default function AuthInputText(Props: Props) {
   return (
     <FormControl error={Props.error != null} sx={{ mb: 2 }}>
       <FormLabel
-        sx={{ mb: 0.5, fontSize: "lg", fontWeight: "bold", color: "#3C2800" }}
+        sx={{ mb: 0.5, fontSize: 'lg', fontWeight: 'bold', color: '#3C2800' }}
       >
         {Props.label}
       </FormLabel>
@@ -27,9 +27,9 @@ export default function AuthInputText(Props: Props) {
         endDecorator={Props.endDecorator}
         fullWidth={true}
         sx={{
-          border: "none",
-          borderRadius: "8px",
-          boxShadow: "none",
+          border: 'none',
+          borderRadius: '8px',
+          boxShadow: 'none',
         }}
       />
       {Props.error != null ? (

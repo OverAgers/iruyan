@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import { useRouter } from "next/navigation";
-import AuthLayout from "@/components/layouts/auth-layout";
-import UserRegisterForm from "@/features/register/components/user-register-form";
-import { UserInfo } from "@/types/user-info";
+import { useRouter } from 'next/navigation';
+import AuthLayout from '@/components/layouts/auth-layout';
+import UserRegisterForm from '@/features/register/components/user-register-form';
+import { UserInfo } from '@/types/user-info';
 
 export default function RegisterPage() {
   const router = useRouter();
 
   const onSuccess = (data: UserInfo) => {
-    router.push("/lobby");
+    router.push('/lobby');
   };
 
   return (

@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from 'react';
 
-type TimerMode = "work" | "break";
+type TimerMode = 'work' | 'break';
 
 interface UseTimerProps {
   initialWorkTime?: number; // 秒単位
@@ -14,7 +14,7 @@ export function useTimer({
 }: UseTimerProps & { onTick?: () => void }) {
   const [timeLeft, setTimeLeft] = useState(initialWorkTime);
   const [isRunning, setIsRunning] = useState(false);
-  const [mode, setMode] = useState<TimerMode>("work");
+  const [mode, setMode] = useState<TimerMode>('work');
   const [totalWorkTime, setTotalWorkTime] = useState(initialWorkTime);
   const [totalBreakTime, setTotalBreakTime] = useState(initialBreakTime);
   const timerId = useRef<NodeJS.Timeout | null>(null);
@@ -46,7 +46,7 @@ export function useTimer({
   }, [isRunning, onTick]);
 
   const reset = () => {
-    setTimeLeft(mode === "work" ? totalWorkTime : totalBreakTime);
+    setTimeLeft(mode === 'work' ? totalWorkTime : totalBreakTime);
     setIsRunning(false);
   };
 
@@ -59,15 +59,15 @@ export function useTimer({
   };
 
   const switchMode = () => {
-    const newMode = mode === "work" ? "break" : "work";
+    const newMode = mode === 'work' ? 'break' : 'work';
     setMode(newMode);
-    const newTime = newMode === "work" ? totalWorkTime : totalBreakTime;
+    const newTime = newMode === 'work' ? totalWorkTime : totalBreakTime;
     setTimeLeft(newTime);
     setIsRunning(false);
   };
 
   const adjustTime = (adjustment: number) => {
-    if (mode === "work") {
+    if (mode === 'work') {
       setTotalWorkTime((prevTotal) => {
         const newTotal = Math.max(300, prevTotal + adjustment);
         if (!isRunning) {
@@ -86,7 +86,7 @@ export function useTimer({
     }
   };
 
-  const totalTime = mode === "work" ? totalWorkTime : totalBreakTime;
+  const totalTime = mode === 'work' ? totalWorkTime : totalBreakTime;
   const progress = ((totalTime - timeLeft) / totalTime) * 100;
 
   return {

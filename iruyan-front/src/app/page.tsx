@@ -1,18 +1,18 @@
 'use client';
 
-import { useEffect } from "react";
+import { useEffect } from 'react';
 
 function App() {
   useEffect(() => {
     // ユーザー情報を取得（例としてローカルストレージを使用）
-    const userInfo = localStorage.getItem("user-store");
+    const userInfo = localStorage.getItem('user-store');
 
-    if (userInfo === "") {
+    if (userInfo === '') {
       // ユーザー情報がある場合は '/lobby' にリダイレクト
-      window.location.href = "/lobby";
+      window.location.href = '/lobby';
     } else {
       // ユーザー情報がない場合は '/login' にリダイレクト
-      window.location.href = "/login";
+      window.location.href = '/login';
     }
   }, []);
 

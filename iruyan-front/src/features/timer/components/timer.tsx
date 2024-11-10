@@ -1,9 +1,9 @@
-import { Box, Typography, LinearProgress, IconButton } from "@mui/joy";
-import SubButton from "@/components/ui/button/sub-button";
-import AddIcon from "@mui/icons-material/Add";
-import RemoveIcon from "@mui/icons-material/Remove";
-import { useTimer } from "@/hooks/timer-hooks";
-import { FormatTime } from "@/utils/format-time";
+import { Box, Typography, LinearProgress, IconButton } from '@mui/joy';
+import SubButton from '@/components/ui/button/sub-button';
+import AddIcon from '@mui/icons-material/Add';
+import RemoveIcon from '@mui/icons-material/Remove';
+import { useTimer } from '@/hooks/timer-hooks';
+import { FormatTime } from '@/utils/format-time';
 
 export default function Timer() {
   const {
@@ -20,7 +20,7 @@ export default function Timer() {
   } = useTimer({ initialWorkTime: 1500, initialBreakTime: 300 });
 
   return (
-    <Box sx={{ p: 2, borderRadius: "8px", backgroundColor: "#f3f0e9" }}>
+    <Box sx={{ p: 2, borderRadius: '8px', backgroundColor: '#f3f0e9' }}>
       <Box
         display="flex"
         justifyContent="space-between"
@@ -32,7 +32,7 @@ export default function Timer() {
         </Typography>
         <Box textAlign="right">
           <Typography fontSize="14px">
-            {mode === "work" ? "集中モード" : "休憩モード"}
+            {mode === 'work' ? '集中モード' : '休憩モード'}
           </Typography>
           <Typography fontSize="14px">
             設定時間: {Math.floor(totalTime / 60)}分
@@ -62,19 +62,19 @@ export default function Timer() {
         </IconButton>
       </Box>
       <Box display="flex" justifyContent="space-around" mb={2}>
-        <SubButton title={"リセット"} size={"lg"} onClick={reset} />
+        <SubButton title={'リセット'} size={'lg'} onClick={reset} />
         {isRunning ? (
-          <SubButton title={"ストップ"} size={"lg"} onClick={stop} />
+          <SubButton title={'ストップ'} size={'lg'} onClick={stop} />
         ) : (
-          <SubButton title={"スタート"} size={"lg"} onClick={start} />
+          <SubButton title={'スタート'} size={'lg'} onClick={start} />
         )}
       </Box>
       <Box display="flex" justifyContent="center">
         <SubButton
           title={
-            mode === "work" ? "休憩モードに切り替え" : "集中モードに切り替え"
+            mode === 'work' ? '休憩モードに切り替え' : '集中モードに切り替え'
           }
-          size={"lg"}
+          size={'lg'}
           onClick={switchMode}
         />
       </Box>

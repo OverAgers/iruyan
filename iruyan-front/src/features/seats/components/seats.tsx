@@ -1,8 +1,8 @@
-import React from "react";
-import SeatCard from "@/components/ui/card/seat-card";
-import { Box, Grid2, Typography } from "@mui/material";
-import useSeatStore from "@/stores/seats-store";
-import useUserStore from "@/stores/user-store";
+import React from 'react';
+import SeatCard from '@/components/ui/card/seat-card';
+import { Box, Grid2, Typography } from '@mui/material';
+import useSeatStore from '@/stores/seats-store';
+import useUserStore from '@/stores/user-store';
 
 export default function Seats() {
   const currentUser = useUserStore((state) => state.currentUser);
@@ -21,7 +21,7 @@ export default function Seats() {
       if (seat && seat.name === currentUser.name) {
         useSeatStore.getState().leaveSeat(seatId);
       } else {
-        alert("この席は他のユーザーが使用中です");
+        alert('この席は他のユーザーが使用中です');
       }
     }
   };
