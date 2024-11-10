@@ -3,33 +3,36 @@
 import useUserStore from '@/stores/user-store';
 import MainButton from '@/components/ui/button/main-button';
 import AuthInputText from '@/components/ui/input/authorization-input-text';
-import UseLoginForm from '@/features/login/hooks/use-login-hooks';
-import UseLoginRequest, {
-  PostLoginRequest,
-} from '@/features/login/api/post-login';
+import useLoginForm from '@/features/login/hooks/use-login-hooks';
+import usePostLoginRequest from '@/features/login/api/post-login';
 import { LoginForm } from '@/schema/login-form-schema';
+import { useEffect } from 'react';
 
 type Props = {
-  onSuccess?: (data: LoginForm) => void;
+  onSuccess: () => void;
 };
 
 export default function UserLoginForm({ onSuccess }: Props) {
   const setUser = useUserStore((state) => state.setUser);
+  const {isMutating, error, trigger} = usePostLoginRequest();
   const {
     errors,
     setValue,
-    onSubmit: handleFormSubmit,
-  } = UseLoginForm({
+    getValues,
+    handleFormSubmit,
+  } = useLoginForm({
     onSubmit,
   });
-  const { isLoading, login } = UseLoginRequest();
 
-  async function onSubmit(formData: LoginForm) {
+  async function onSubmit() {
     try {
-      const userData = await login(formData as PostLoginRequest);
-      setUser(userData);
+      const formData = getValues();
+      const userData = await trigger(formData);
+      if (userData) {
+        setUser(userData.user);
+      }
       if (onSuccess) {
-        onSuccess(formData);
+        onSuccess();
       }
     } catch (error) {
       console.error('ログインに失敗しました', error);
@@ -62,7 +65,7 @@ export default function UserLoginForm({ onSuccess }: Props) {
           title="入店する"
           type="submit"
           fullWidth={true}
-          disabled={isLoading}
+          disabled={isMutating}
         />
       </div>
     </form>

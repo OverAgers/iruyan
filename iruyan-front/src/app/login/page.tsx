@@ -2,22 +2,13 @@
 
 import AuthLayout from '@/components/layouts/auth-layout';
 import UserLoginForm from '@/features/login/components/user-login-form';
-import { useEffect } from 'react';
-import UsePostLoginRequest from '@/features/login/api/post-login';
-import { LoginForm } from '@/schema/login-form-schema';
+import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
-  const { data, login } = UsePostLoginRequest();
-
-  const onSuccess = (data: LoginForm) => {
-    login(data);
+  const router = useRouter();
+  const onSuccess = () => {
+    router.push('/lobby');
   };
-
-  useEffect(() => {
-    if (data) {
-      window.location.href = '/lobby';
-    }
-  }, [data]);
 
   return (
     <AuthLayout>

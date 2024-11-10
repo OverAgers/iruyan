@@ -8,12 +8,13 @@ type Props = {
   onSubmit: (data: LoginForm) => void;
 };
 
-export default function UseLoginForm({ onSubmit }: Props) {
+export default function useLoginForm({ onSubmit }: Props) {
   const {
     register,
     handleSubmit,
     setValue,
     watch,
+    getValues,
     formState: { errors },
   } = useForm<LoginForm>({
     resolver: zodResolver(loginFormSchema),
@@ -25,6 +26,7 @@ export default function UseLoginForm({ onSubmit }: Props) {
     setValue,
     watch,
     errors,
-    onSubmit: handleSubmit(onSubmit),
+    getValues,
+    handleFormSubmit: handleSubmit(onSubmit),
   };
 }
