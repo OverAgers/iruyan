@@ -2,10 +2,7 @@ import { useForm } from 'react-hook-form';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 
-import {
-  RegisterForm,
-  registerFormSchema,
-} from '@/schema/register-form-schema';
+import { RegisterForm, registerFormSchema } from '@/schema/register-form-schema';
 
 type Props = {
   onSubmit: (data: RegisterForm) => void;

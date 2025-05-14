@@ -31,10 +31,7 @@ export default function Seats() {
       <Grid2 container spacing={2}>
         {seats.map((seat) => (
           <Grid2 key={seat.seatId}>
-            <SeatCard
-              {...seat}
-              onClick={() => handleSeatClick(seat.seatId, seat.isVacant)}
-            />
+            <SeatCard {...seat} onClick={() => handleSeatClick(seat.seatId, seat.isVacant)} />
           </Grid2>
         ))}
       </Grid2>

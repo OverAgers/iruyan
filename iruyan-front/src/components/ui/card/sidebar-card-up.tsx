@@ -60,16 +60,14 @@ export default function SidebarCardUp() {
     // return data;
 
     // ダミーデータを返す
-    return new Promise<{ cumulativeTime: number; consecutiveDays: number }>(
-      (resolve) => {
-        setTimeout(() => {
-          resolve({
-            cumulativeTime: 3600, // 例: 1時間（秒単位）
-            consecutiveDays: 3, // 例: 3日連続
-          });
-        }, 500);
-      }
-    );
+    return new Promise<{ cumulativeTime: number; consecutiveDays: number }>((resolve) => {
+      setTimeout(() => {
+        resolve({
+          cumulativeTime: 3600, // 例: 1時間（秒単位）
+          consecutiveDays: 3, // 例: 3日連続
+        });
+      }, 500);
+    });
   };
 
   return (
@@ -82,11 +80,7 @@ export default function SidebarCardUp() {
       }}
     >
       <Box>
-        <Box
-          justifyContent={'space-between'}
-          display={'flex'}
-          alignItems={'center'}
-        >
+        <Box justifyContent={'space-between'} display={'flex'} alignItems={'center'}>
           <Box display={'flex'} alignItems={'center'}>
             <Avatar src={avatarUrl} />
             <Typography ml={2}>{name}</Typography>
@@ -94,9 +88,7 @@ export default function SidebarCardUp() {
           <SubButton title="来店記録" link="/user" size="lg" />
         </Box>
         <List marker="disc" size="sm">
-          <ListItem>
-            入店時間: {entryTime ? entryTime.toLocaleTimeString() : '未設定'}
-          </ListItem>
+          <ListItem>入店時間: {entryTime ? entryTime.toLocaleTimeString() : '未設定'}</ListItem>
           <ListItem>累計集中時間: {FormatTime(cumulativeTime)}</ListItem>
           <ListItem>連続入室日数: {consecutiveDays}日</ListItem>
         </List>
@@ -113,11 +105,7 @@ export default function SidebarCardUp() {
               value={task}
               onChange={(e) => setTask(e.target.value)}
             />
-            <Button
-              color="success"
-              sx={{ borderRadius: 1, padding: '6px 12px' }}
-              onClick={handleUpdateTask}
-            >
+            <Button color="success" sx={{ borderRadius: 1, padding: '6px 12px' }} onClick={handleUpdateTask}>
               更新
             </Button>
           </Box>
@@ -135,11 +123,7 @@ export default function SidebarCardUp() {
               value={note}
               onChange={(e) => setNote(e.target.value)}
             />
-            <Button
-              color="success"
-              sx={{ borderRadius: 1, padding: '6px 12px' }}
-              onClick={handleUpdateNote}
-            >
+            <Button color="success" sx={{ borderRadius: 1, padding: '6px 12px' }} onClick={handleUpdateNote}>
               OK
             </Button>
           </Box>

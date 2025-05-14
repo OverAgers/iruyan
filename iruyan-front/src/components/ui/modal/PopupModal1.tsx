@@ -53,13 +53,7 @@ export default function PopupModal1() {
           >
             🔥鬼集中🔥
           </Typography>
-          <MainButton
-            component="button"
-            title="受付に戻る"
-            type="button"
-            maxWidth="342px"
-            width="50%"
-          />
+          <MainButton component="button" title="受付に戻る" type="button" maxWidth="342px" width="50%" />
           {/* 下部に配置されたModalClose */}
           <Button
             variant="plain"

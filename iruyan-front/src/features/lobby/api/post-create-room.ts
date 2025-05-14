@@ -14,33 +14,31 @@ export const postCreateRoomResponseSchema = z.object({
 });
 
 export type PostCreateRoomRequest = z.infer<typeof postCreateRoomRequestSchema>;
-export type PostCreateRoomResponse = z.infer<
-  typeof postCreateRoomResponseSchema
->;
+export type PostCreateRoomResponse = z.infer<typeof postCreateRoomResponseSchema>;
 
-export default function usePostCreateRoomRequest(Props: PostCreateRoomRequest) {
+export default function usePostCreateRoomRequest() {
   const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL || '';
   const requestURL = baseURL + '/rooms';
 
-  const fetcher = useCallback(() => {
-    return axios
-      .post(requestURL, Props.userName, {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-      })
-      .then(async (res) => {
-        const result = res.data;
-        return postCreateRoomRequestSchema.parse(result);
-      })
-      .catch((error) => {
-        throw error;
-      });
-  }, [Props.userName, requestURL]);
+  const fetcher = useCallback(
+    (url: string, { arg }: { arg: PostCreateRoomRequest }) => {
+      return axios
+        .post(url, arg, {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+        })
+        .then(async (res) => {
+          const result = res.data;
+          return postCreateRoomRequestSchema.parse(result);
+        })
+        .catch((error) => {
+          throw error;
+        });
+    },
+    [requestURL]
+  );
 
-  const { data, error, isMutating } = useSWRMutation<
-    PostCreateRoomRequest,
-    Error
-  >(requestURL, fetcher);
-  return { data, error, isMutating };
+  const { data, error, isMutating, trigger } = useSWRMutation<PostCreateRoomRequest, Error>(requestURL, fetcher);
+  return { data, error, isMutating, trigger };
 }

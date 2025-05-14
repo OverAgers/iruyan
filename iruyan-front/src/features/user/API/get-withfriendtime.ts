@@ -20,9 +20,7 @@ export default function useGetWithFriendTime(userId: string, roomId: string) {
         console.log('data', data);
         return data;
       } catch (error) {
-        throw new Error(
-          `友達と過ごした時間情報取得エラー: ${error.response?.data?.message || error.message}`
-        );
+        throw new Error(`友達と過ごした時間情報取得エラー: ${error.response?.data?.message || error.message}`);
       }
     },
     [roomId]

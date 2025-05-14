@@ -42,10 +42,7 @@ export default function useGetRoomList() {
       });
   }, [requestURL]);
 
-  const { data, error, isLoading, mutate } = useSWR<GetRoomListRequest, Error>(
-    requestURL,
-    fetcher
-  );
+  const { data, error, isLoading, mutate } = useSWR<GetRoomListRequest, Error>(requestURL, fetcher);
 
   return { data, error, isLoading, mutate };
 }

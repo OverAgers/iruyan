@@ -14,13 +14,8 @@ type Props = {
 
 export default function UserLoginForm({ onSuccess }: Props) {
   const setUser = useUserStore((state) => state.setUser);
-  const {isMutating, error, trigger} = usePostLoginRequest();
-  const {
-    errors,
-    setValue,
-    getValues,
-    handleFormSubmit,
-  } = useLoginForm({
+  const { isMutating, error, trigger } = usePostLoginRequest();
+  const { errors, setValue, getValues, handleFormSubmit } = useLoginForm({
     onSubmit,
   });
 
@@ -60,13 +55,7 @@ export default function UserLoginForm({ onSuccess }: Props) {
         type="password"
       />
       <div>
-        <MainButton
-          component="button"
-          title="入店する"
-          type="submit"
-          fullWidth={true}
-          disabled={isMutating}
-        />
+        <MainButton component="button" title="入店する" type="submit" fullWidth={true} disabled={isMutating} />
       </div>
     </form>
   );

@@ -6,37 +6,20 @@ import { useTimer } from '@/hooks/timer-hooks';
 import { FormatTime } from '@/utils/format-time';
 
 export default function Timer() {
-  const {
-    timeLeft,
-    isRunning,
-    mode,
-    totalTime,
-    progress,
-    reset,
-    stop,
-    start,
-    switchMode,
-    adjustTime,
-  } = useTimer({ initialWorkTime: 1500, initialBreakTime: 300 });
+  const { timeLeft, isRunning, mode, totalTime, progress, reset, stop, start, switchMode, adjustTime } = useTimer({
+    initialWorkTime: 1500,
+    initialBreakTime: 300,
+  });
 
   return (
     <Box sx={{ p: 2, borderRadius: '8px', backgroundColor: '#f3f0e9' }}>
-      <Box
-        display="flex"
-        justifyContent="space-between"
-        alignItems="center"
-        mb={2}
-      >
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
         <Typography fontSize="32px" fontWeight="bold" color="primary">
           {FormatTime(timeLeft)}
         </Typography>
         <Box textAlign="right">
-          <Typography fontSize="14px">
-            {mode === 'work' ? '集中モード' : '休憩モード'}
-          </Typography>
-          <Typography fontSize="14px">
-            設定時間: {Math.floor(totalTime / 60)}分
-          </Typography>
+          <Typography fontSize="14px">{mode === 'work' ? '集中モード' : '休憩モード'}</Typography>
+          <Typography fontSize="14px">設定時間: {Math.floor(totalTime / 60)}分</Typography>
         </Box>
       </Box>
       <LinearProgress determinate value={progress} sx={{ mb: 3 }} />
@@ -71,9 +54,7 @@ export default function Timer() {
       </Box>
       <Box display="flex" justifyContent="center">
         <SubButton
-          title={
-            mode === 'work' ? '休憩モードに切り替え' : '集中モードに切り替え'
-          }
+          title={mode === 'work' ? '休憩モードに切り替え' : '集中モードに切り替え'}
           size={'lg'}
           onClick={switchMode}
         />

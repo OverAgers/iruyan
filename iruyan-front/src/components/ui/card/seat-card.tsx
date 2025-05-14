@@ -14,14 +14,7 @@ type SeatCardProps = {
   onClick: () => void;
 };
 
-const SeatCard: React.FC<SeatCardProps> = ({
-  isVacant,
-  name,
-  image,
-  note,
-  task,
-  onClick,
-}) => {
+const SeatCard: React.FC<SeatCardProps> = ({ isVacant, name, image, note, task, onClick }) => {
   return (
     <Card
       sx={{

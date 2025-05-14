@@ -67,13 +67,7 @@ export default function PopupModal2() {
           >
             1時間30分の作業を記録します。
           </Typography>
-          <MainButton
-            component="button"
-            title="受付に戻る"
-            type="button"
-            maxWidth="342px"
-            width="50%"
-          />
+          <MainButton component="button" title="受付に戻る" type="button" maxWidth="342px" width="50%" />
           {/* 下部に配置されたModalClose */}
           <Button
             variant="plain"

@@ -8,15 +8,7 @@ type Props = {
   width?: string;
   onClick?: () => void;
   disabled?: boolean;
-  component:
-    | 'a'
-    | 'button'
-    | 'div'
-    | 'span'
-    | 'label'
-    | 'input'
-    | 'select'
-    | 'textarea';
+  component: 'a' | 'button' | 'div' | 'span' | 'label' | 'input' | 'select' | 'textarea';
 };
 
 export default function MainButton(Props: Props) {

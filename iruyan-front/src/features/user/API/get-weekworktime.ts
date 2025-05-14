@@ -29,9 +29,7 @@ export default function useGetWeeklyWork(userId: string, roomId: string) {
         console.log('data', data);
         return data;
       } catch (error: any) {
-        throw new Error(
-          `作業情報取得エラー: ${error.response?.data?.message || error.message}`
-        );
+        throw new Error(`作業情報取得エラー: ${error.response?.data?.message || error.message}`);
       }
     },
     [roomId]

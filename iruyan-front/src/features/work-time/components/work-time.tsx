@@ -6,13 +6,7 @@ import useUserStore from '@/stores/user-store';
 import { useTimer } from '@/hooks/timer-hooks';
 
 export default function WorkTime() {
-  const {
-    currentUser,
-    setStatus,
-    incrementWorkTime,
-    incrementRestTime,
-    clearUser,
-  } = useUserStore();
+  const { currentUser, setStatus, incrementWorkTime, incrementRestTime, clearUser } = useUserStore();
 
   const { isRunning, mode, stop, start, switchMode } = useTimer({
     initialWorkTime: 1500,
@@ -61,22 +55,11 @@ export default function WorkTime() {
   return (
     <>
       <Box display="flex" flexDirection="column" alignItems="center" mb={3}>
-        <Box
-          display="flex"
-          justifyContent="space-between"
-          width="100%"
-          mb={1}
-          alignItems="center"
-        >
+        <Box display="flex" justifyContent="space-between" width="100%" mb={1} alignItems="center">
           <Typography level="body-md">累計作業時間</Typography>
           <Typography level="h1">{FormatTime(currentUser.workTime)}</Typography>
         </Box>
-        <Box
-          display="flex"
-          justifyContent="space-between"
-          width="100%"
-          alignItems="center"
-        >
+        <Box display="flex" justifyContent="space-between" width="100%" alignItems="center">
           <Typography level="body-md">累計休憩時間</Typography>
           <Typography level="h2">{FormatTime(currentUser.restTime)}</Typography>
         </Box>

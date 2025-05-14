@@ -14,11 +14,7 @@ type Props = {
 export default function AuthInputText(Props: Props) {
   return (
     <FormControl error={Props.error != null} sx={{ mb: 2 }}>
-      <FormLabel
-        sx={{ mb: 0.5, fontSize: 'lg', fontWeight: 'bold', color: '#3C2800' }}
-      >
-        {Props.label}
-      </FormLabel>
+      <FormLabel sx={{ mb: 0.5, fontSize: 'lg', fontWeight: 'bold', color: '#3C2800' }}>{Props.label}</FormLabel>
       <Input
         placeholder={Props.placeholder}
         onChange={Props.onChange}
@@ -32,9 +28,7 @@ export default function AuthInputText(Props: Props) {
           boxShadow: 'none',
         }}
       />
-      {Props.error != null ? (
-        <FormHelperText>{Props.error.message}</FormHelperText>
-      ) : null}
+      {Props.error != null ? <FormHelperText>{Props.error.message}</FormHelperText> : null}
     </FormControl>
   );
 }

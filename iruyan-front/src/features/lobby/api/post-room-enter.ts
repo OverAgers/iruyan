@@ -10,30 +10,30 @@ export const postRoomEnterSchema = z.object({
 
 export type PostRoomEnterRequest = z.infer<typeof postRoomEnterSchema>;
 
-export default function usePostRoomEnterRequest(
-  Props: PostRoomEnterRequest,
-  roomId: string
-) {
+export default function usePostRoomEnterRequest(Props: PostRoomEnterRequest, roomId: string) {
   const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL || '';
   const requestURL = baseURL + `/rooms/${roomId}/enter`;
 
-  const fetcher = useCallback(() => {
-    return axios
-      .post(requestURL, Props, {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-      })
-      .then(async (res) => {
-        const result = res.data;
-        return postRoomEnterSchema.parse(result);
-      })
-      .catch((error) => {
-        throw error;
-      });
-  }, [requestURL, Props]);
+  const fetcher = useCallback(
+    (url: string, { arg }: { arg: PostRoomEnterRequest }) => {
+      return axios
+        .post(url, arg, {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+        })
+        .then(async (res) => {
+          const result = res.data;
+          return postRoomEnterSchema.parse(result);
+        })
+        .catch((error) => {
+          throw error;
+        });
+    },
+    [requestURL, Props]
+  );
 
-  const { data, error, isMutating } = useSWRMutation(requestURL, fetcher);
+  const { data, error, isMutating, trigger } = useSWRMutation(requestURL, fetcher);
 
-  return { data, error, isMutating };
+  return { data, error, isMutating, trigger };
 }

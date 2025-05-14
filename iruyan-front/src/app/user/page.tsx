@@ -70,11 +70,7 @@ function UserPage() {
               gap: '20px',
             }}
           >
-            <Avatar
-              alt="User Avatar"
-              src="/path/to/profile-image.jpg"
-              sx={{ width: 230, height: 230, mb: 2 }}
-            />
+            <Avatar alt="User Avatar" src="/path/to/profile-image.jpg" sx={{ width: 230, height: 230, mb: 2 }} />
             <Box
               sx={{
                 textAlign: 'center',
@@ -87,12 +83,8 @@ function UserPage() {
               <Typography variant="h5" sx={{ fontSize: '48px' }}>
                 ほしょ
               </Typography>
-              <Typography sx={{ fontSize: '25px' }}>
-                ・居る連チャン: 5Days
-              </Typography>
-              <Typography sx={{ fontSize: '25px' }}>
-                ・累計集中時間: 120h
-              </Typography>
+              <Typography sx={{ fontSize: '25px' }}>・居る連チャン: 5Days</Typography>
+              <Typography sx={{ fontSize: '25px' }}>・累計集中時間: 120h</Typography>
             </Box>
           </Box>
           <Box
@@ -159,11 +151,7 @@ function UserPage() {
                       >
                         {index + 1}
                       </Box>
-                      <Avatar
-                        alt="Friend Avatar"
-                        src="/path/to/profile-image.jpg"
-                        sx={{ width: 69, height: 69 }}
-                      />
+                      <Avatar alt="Friend Avatar" src="/path/to/profile-image.jpg" sx={{ width: 69, height: 69 }} />
                     </Box>
                     <Box
                       sx={{
@@ -234,11 +222,7 @@ function UserPage() {
                       >
                         {index + 1}
                       </Box>
-                      <Avatar
-                        alt="Friend Avatar"
-                        src="/path/to/profile-image.jpg"
-                        sx={{ width: 69, height: 69 }}
-                      />
+                      <Avatar alt="Friend Avatar" src="/path/to/profile-image.jpg" sx={{ width: 69, height: 69 }} />
                     </Box>
                     <Box
                       sx={{

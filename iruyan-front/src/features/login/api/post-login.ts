@@ -24,24 +24,21 @@ export default function usePostLoginRequest() {
   const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL || '';
   const requestURL = baseURL + '/login';
 
-  const fetcher = useCallback(
-    (url: string, { arg }: { arg: PostLoginRequest }) => {
-      return axios
-        .post(url, arg, {
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-          },
-        })
-        .then(async (res) => {
-          const result = res.data;
-          return postLoginResponseSchema.parse(result);
-        })
-        .catch((error) => {
-          throw error;
-        });
-    },
-    []
-  );
+  const fetcher = useCallback((url: string, { arg }: { arg: PostLoginRequest }) => {
+    return axios
+      .post(url, arg, {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      })
+      .then(async (res) => {
+        const result = res.data;
+        return postLoginResponseSchema.parse(result);
+      })
+      .catch((error) => {
+        throw error;
+      });
+  }, []);
 
   const { data, error, isMutating, trigger } = useSWRMutation(requestURL, fetcher);
 

@@ -27,12 +27,7 @@ export default function AuthLayout({ children }: Props) {
         <SubButton title={changeButtonTitle} link={changeLink} size="lg" />
       </Grid2>
       <Grid2 container size={5}>
-        <Grid2
-          container
-          flexDirection={'column'}
-          justifyContent={'center'}
-          size={12}
-        >
+        <Grid2 container flexDirection={'column'} justifyContent={'center'} size={12}>
           <Typography variant="subtitle2" textAlign={'center'}>
             IRUYAN
           </Typography>

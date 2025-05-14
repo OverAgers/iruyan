@@ -2,11 +2,7 @@
 import { SeatsInfo } from '@/types/seats-info';
 import { UserInfo } from '@/types/user-info';
 
-export const occupySeat = (
-  seats: SeatsInfo[],
-  seatId: string,
-  userInfo: UserInfo
-): SeatsInfo[] => {
+export const occupySeat = (seats: SeatsInfo[], seatId: string, userInfo: UserInfo): SeatsInfo[] => {
   let isChanged = false;
   const updatedSeats = seats.map((seat) => {
     if (seat.seatId === seatId && seat.isVacant) {
