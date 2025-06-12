@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { useCallback } from "react";
 import z from "zod";
 import useSWR from "swr";
@@ -20,8 +20,9 @@ export default function useGetWithFriendTime(userId: string, roomId: string) {
         console.log("data", data);
         return data;
       } catch (error) {
+        const err = error as AxiosError<{ message?: string }>;
         throw new Error(
-          `友達と過ごした時間情報取得エラー: ${error.response?.data?.message || error.message}`
+          `友達と過ごした時間情報取得エラー: ${err.response?.data?.message || err.message}`
         );
       }
     },

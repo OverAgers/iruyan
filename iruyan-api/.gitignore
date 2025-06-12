@@ -24,3 +24,6 @@ vendor/
 # Docker related files
 docker-compose.override.yml
 .env
+
+# go-task キャッシュ
+.task/

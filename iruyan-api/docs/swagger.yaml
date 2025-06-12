@@ -5,7 +5,34 @@ definitions:
       message:
         type: string
     type: object
+  responses.LeaveRoomResponseSwagger:
+    properties:
+      duration:
+        description: e.g., "1h2m3s"
+        type: string
+      entryTime:
+        description: ISO8601表記想定
+        type: string
+      leavingTime:
+        description: ISO8601表記想定
+        type: string
+      message:
+        type: string
+      roomId:
+        type: string
+      roomName:
+        type: string
+      userId:
+        type: string
+    type: object
   responses.LoginSuccessResponse:
+    properties:
+      message:
+        type: string
+      user:
+        $ref: '#/definitions/responses.UserInfo'
+    type: object
+  responses.LogoutSuccessResponse:
     properties:
       message:
         type: string
@@ -23,34 +50,61 @@ definitions:
     properties:
       message:
         type: string
-      room_id:
+      roomId:
         type: string
     type: object
   responses.RoomCreateResponse:
     properties:
       message:
         type: string
-      room_id:
+      roomId:
         type: string
-      room_name:
+      roomName:
         type: string
+    type: object
+  responses.RoomDetail:
+    properties:
+      roomId:
+        type: string
+      roomName:
+        type: string
+      seats:
+        items:
+          $ref: '#/definitions/responses.SeatDetail'
+        type: array
     type: object
   responses.RoomDetailResponse:
     properties:
       message:
         type: string
-      room_id:
+      roomId:
         type: string
+    type: object
+  responses.RoomListResponse:
+    properties:
+      message:
+        type: string
+      rooms:
+        items:
+          $ref: '#/definitions/responses.RoomDetail'
+        type: array
+    type: object
+  responses.SeatDetail:
+    properties:
+      roomId:
+        type: string
+      seatId:
+        type: string
+      seatNumber:
+        type: integer
     type: object
   responses.UserInfo:
     properties:
       email:
         type: string
-      name:
+      iruyanId:
         type: string
-      task:
-        type: string
-      username:
+      userName:
         type: string
     type: object
 host: localhost:8080
@@ -79,12 +133,12 @@ paths:
     post:
       consumes:
       - application/x-www-form-urlencoded
-      description: Authenticates the user based on username and password
+      description: Authenticates the user based on iruyanID and password
       parameters:
       - default: johndoe
-        description: Username
+        description: IruyanID
         in: formData
-        name: username
+        name: iruyanID
         required: true
         type: string
       - default: pass1234
@@ -107,6 +161,36 @@ paths:
       summary: User login
       tags:
       - auth
+  /logout:
+    post:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: Logs out the user based on provided IruyanID
+      parameters:
+      - default: johndoe
+        description: IruyanID
+        in: formData
+        name: iruyanID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.LogoutSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+      summary: User logout
+      tags:
+      - auth
   /register:
     get:
       description: Displays the registration page with a message
@@ -126,9 +210,9 @@ paths:
       description: Registers a new user with the provided details
       parameters:
       - default: johndoe
-        description: Username
+        description: IruyanID
         in: formData
-        name: username
+        name: iruyanID
         required: true
         type: string
       - default: pass1234
@@ -168,6 +252,18 @@ paths:
       tags:
       - auth
   /rooms:
+    get:
+      description: Retrieves a list of rooms, each with associated seat information
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.RoomListResponse'
+      summary: Get list of rooms with seats
+      tags:
+      - rooms
     post:
       consumes:
       - application/x-www-form-urlencoded
@@ -219,47 +315,78 @@ paths:
       summary: Get room details
       tags:
       - room
-  /rooms/{room_id}/enter:
+  /rooms/{room_id}/enter/{user_id}:
     post:
-      description: Allows a user to enter a specific room
+      consumes:
+      - application/json
+      description: Records the entry time of a user entering a specific room and stores
+        the entry information in WorkTime.
       parameters:
       - description: Room ID
         in: path
         name: room_id
         required: true
         type: string
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: string
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Entered the room successfully
           schema:
             $ref: '#/definitions/responses.RoomActionResponse'
         "404":
-          description: Not Found
+          description: Room not found
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+        "500":
+          description: Failed to record entry to the room
           schema:
             $ref: '#/definitions/responses.ErrorResponse'
       summary: Enter a room
       tags:
       - room
   /rooms/{room_id}/leave:
-    delete:
-      description: Allows a user to leave a specific room
+    post:
+      description: Allows a user to leave a specific room and records the leaving
+        time
       parameters:
       - description: Room ID
         in: path
         name: room_id
         required: true
         type: string
+      - description: User ID
+        in: formData
+        name: user_id
+        required: true
+        type: string
+      - description: Duration (e.g., 1h2m3s)
+        in: formData
+        name: duration
+        required: true
+        type: string
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Left the room successfully
           schema:
-            $ref: '#/definitions/responses.RoomActionResponse'
+            $ref: '#/definitions/responses.LeaveRoomResponseSwagger'
+        "400":
+          description: Invalid duration format or other validation errors
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
         "404":
-          description: Not Found
+          description: Room or user not found
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+        "500":
+          description: Failed to record leaving time
           schema:
             $ref: '#/definitions/responses.ErrorResponse'
       summary: Leave a room
