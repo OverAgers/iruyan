@@ -33,7 +33,7 @@
                 }
             },
             "post": {
-                "description": "Authenticates the user based on username and password",
+                "description": "Authenticates the user based on iruyanID and password",
                 "consumes": [
                     "application/x-www-form-urlencoded"
                 ],
@@ -48,8 +48,8 @@
                     {
                         "type": "string",
                         "default": "johndoe",
-                        "description": "Username",
-                        "name": "username",
+                        "description": "IruyanID",
+                        "name": "iruyanID",
                         "in": "formData",
                         "required": true
                     },
@@ -71,6 +71,51 @@
                     },
                     "401": {
                         "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/logout": {
+            "post": {
+                "description": "Logs out the user based on provided IruyanID",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "User logout",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "johndoe",
+                        "description": "IruyanID",
+                        "name": "iruyanID",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.LogoutSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/responses.ErrorResponse"
                         }
@@ -113,8 +158,8 @@
                     {
                         "type": "string",
                         "default": "johndoe",
-                        "description": "Username",
-                        "name": "username",
+                        "description": "IruyanID",
+                        "name": "iruyanID",
                         "in": "formData",
                         "required": true
                     },
@@ -166,6 +211,24 @@
             }
         },
         "/rooms": {
+            "get": {
+                "description": "Retrieves a list of rooms, each with associated seat information",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "rooms"
+                ],
+                "summary": "Get list of rooms with seats",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.RoomListResponse"
+                        }
+                    }
+                }
+            },
             "post": {
                 "description": "Creates a room with the provided name",
                 "consumes": [
@@ -244,9 +307,12 @@
                 }
             }
         },
-        "/rooms/{room_id}/enter": {
+        "/rooms/{room_id}/enter/{user_id}": {
             "post": {
-                "description": "Allows a user to enter a specific room",
+                "description": "Records the entry time of a user entering a specific room and stores the entry information in WorkTime.",
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -261,17 +327,30 @@
                         "name": "room_id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Entered the room successfully",
                         "schema": {
                             "$ref": "#/definitions/responses.RoomActionResponse"
                         }
                     },
                     "404": {
-                        "description": "Not Found",
+                        "description": "Room not found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to record entry to the room",
                         "schema": {
                             "$ref": "#/definitions/responses.ErrorResponse"
                         }
@@ -280,8 +359,8 @@
             }
         },
         "/rooms/{room_id}/leave": {
-            "delete": {
-                "description": "Allows a user to leave a specific room",
+            "post": {
+                "description": "Allows a user to leave a specific room and records the leaving time",
                 "produces": [
                     "application/json"
                 ],
@@ -296,17 +375,43 @@
                         "name": "room_id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "user_id",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Duration (e.g., 1h2m3s)",
+                        "name": "duration",
+                        "in": "formData",
+                        "required": true
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Left the room successfully",
                         "schema": {
-                            "$ref": "#/definitions/responses.RoomActionResponse"
+                            "$ref": "#/definitions/responses.LeaveRoomResponseSwagger"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid duration format or other validation errors",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
                         }
                     },
                     "404": {
-                        "description": "Not Found",
+                        "description": "Room or user not found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to record leaving time",
                         "schema": {
                             "$ref": "#/definitions/responses.ErrorResponse"
                         }
@@ -324,7 +429,47 @@
                 }
             }
         },
+        "responses.LeaveRoomResponseSwagger": {
+            "type": "object",
+            "properties": {
+                "duration": {
+                    "description": "e.g., \"1h2m3s\"",
+                    "type": "string"
+                },
+                "entryTime": {
+                    "description": "ISO8601表記想定",
+                    "type": "string"
+                },
+                "leavingTime": {
+                    "description": "ISO8601表記想定",
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "roomId": {
+                    "type": "string"
+                },
+                "roomName": {
+                    "type": "string"
+                },
+                "userId": {
+                    "type": "string"
+                }
+            }
+        },
         "responses.LoginSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/responses.UserInfo"
+                }
+            }
+        },
+        "responses.LogoutSuccessResponse": {
             "type": "object",
             "properties": {
                 "message": {
@@ -352,7 +497,7 @@
                 "message": {
                     "type": "string"
                 },
-                "room_id": {
+                "roomId": {
                     "type": "string"
                 }
             }
@@ -363,11 +508,28 @@
                 "message": {
                     "type": "string"
                 },
-                "room_id": {
+                "roomId": {
                     "type": "string"
                 },
-                "room_name": {
+                "roomName": {
                     "type": "string"
+                }
+            }
+        },
+        "responses.RoomDetail": {
+            "type": "object",
+            "properties": {
+                "roomId": {
+                    "type": "string"
+                },
+                "roomName": {
+                    "type": "string"
+                },
+                "seats": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.SeatDetail"
+                    }
                 }
             }
         },
@@ -377,8 +539,36 @@
                 "message": {
                     "type": "string"
                 },
-                "room_id": {
+                "roomId": {
                     "type": "string"
+                }
+            }
+        },
+        "responses.RoomListResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "rooms": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.RoomDetail"
+                    }
+                }
+            }
+        },
+        "responses.SeatDetail": {
+            "type": "object",
+            "properties": {
+                "roomId": {
+                    "type": "string"
+                },
+                "seatId": {
+                    "type": "string"
+                },
+                "seatNumber": {
+                    "type": "integer"
                 }
             }
         },
@@ -388,13 +578,10 @@
                 "email": {
                     "type": "string"
                 },
-                "name": {
+                "iruyanId": {
                     "type": "string"
                 },
-                "task": {
-                    "type": "string"
-                },
-                "username": {
+                "userName": {
                     "type": "string"
                 }
             }

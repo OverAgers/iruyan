@@ -8,8 +8,8 @@ WORKDIR /app
 RUN apk add --no-cache git
 
 # air と swagのインストール
-RUN go install github.com/air-verse/air@latest \
-  && go install github.com/swaggo/swag/cmd/swag@latest
+RUN go install github.com/cosmtrek/air@v1.40.4 \
+  && go install github.com/swaggo/swag/cmd/swag@v1.8.12
 
 # ローカルのソースコードをコンテナにコピー
 COPY . .

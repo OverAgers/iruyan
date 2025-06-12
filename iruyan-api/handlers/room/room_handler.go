@@ -216,12 +216,12 @@ func EnterRoomHandler(c *gin.Context) {
 
 	// 成功時のレスポンスとしてWorkTime情報を返す
 	c.JSON(http.StatusOK, responses.EnterRoomResponse{
-		Message:	"Room entry recorded successfully",
-		RoomID:		workTime.RoomID.String(),
-		RoomName:	room.Name,
-		UserID:		fmt.Sprintf("%d", workTime.UserID),
-		EntryTime:	workTime.EntryTime,
-		Task:		task,
+		Message:   "Room entry recorded successfully",
+		RoomID:    workTime.RoomID.String(),
+		RoomName:  room.Name,
+		UserID:    fmt.Sprintf("%d", workTime.UserID),
+		EntryTime: workTime.EntryTime,
+		Task:      task,
 	})
 }
 
@@ -233,7 +233,7 @@ func EnterRoomHandler(c *gin.Context) {
 // @Param room_id path string true "Room ID"
 // @Param user_id formData string true "User ID"
 // @Param duration formData string true "Duration (e.g., 1h2m3s)"
-// @Success 200 {object} responses.LeaveRoomResponse "Left the room successfully"
+// @Success 200 {object} responses.LeaveRoomResponseSwagger "Left the room successfully"
 // @Failure 400 {object} responses.ErrorResponse "Invalid duration format or other validation errors"
 // @Failure 404 {object} responses.ErrorResponse "Room or user not found"
 // @Failure 500 {object} responses.ErrorResponse "Failed to record leaving time"
@@ -419,8 +419,8 @@ func TakeSeatHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Seated successfully",
-		"roomId": roomID,
-		"seatId": seatNumber,
+		"roomId":  roomID,
+		"seatId":  seatNumber,
 	})
 }
 
@@ -514,7 +514,7 @@ func LeaveSeatHandler(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message":     "Left the seat successfully",
+		"message":    "Left the seat successfully",
 		"roomId":     roomID,
 		"seatNumber": seatNumber,
 	})
