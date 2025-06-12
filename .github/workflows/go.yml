@@ -5,24 +5,34 @@ name: Go
 
 on:
   push:
-    branches: [ "staging" ]
+    branches: ["staging"]
   pull_request:
-    branches: [ "staging" ]
+    branches: ["staging"]
 
 jobs:
-
   build:
     runs-on: ubuntu-latest
+
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Set up Go
-      uses: actions/setup-go@v4
-      with:
-        go-version: '1.20'
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.23"
 
-    - name: Build
-      run: go build -v ./...
+      - name: Install golangci-lint
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.57.2
 
-    - name: Test
-      run: go test -v ./...
+      - name: Run Linter
+        working-directory: ./iruyan-api
+        run: golangci-lint run ./...
+
+      - name: Build
+        working-directory: ./iruyan-api
+        run: go build -v ./...
+
+      - name: Test
+        working-directory: ./iruyan-api
+        run: go test -v ./...
