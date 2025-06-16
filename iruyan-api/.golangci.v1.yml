@@ -7,6 +7,7 @@ linters:
 
 linters-settings:
   revive:
+    config: .revive.toml
     confidence: 0.8
     severity: warning
 

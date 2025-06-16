@@ -1,0 +1,11 @@
+ignoreGeneratedHeader = false
+
+[rule.blank-imports]
+[rule.context-as-argument]
+[rule.dot-imports]
+[rule.error-strings]
+[rule.exported]
+[rule.if-return]
+[rule.increment-decrement]
+[rule.receiver-naming] # ← receiver命名チェック
+  severity = "warning"
