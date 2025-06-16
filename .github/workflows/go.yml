@@ -1,0 +1,45 @@
+name: Go
+
+on:
+  push:
+    branches: ["staging"]
+  pull_request:
+    branches: ["staging"]
+
+env:
+  WORKING_DIRECTORY: ./iruyan-api
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Golang
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: ${{ env.WORKING_DIRECTORY }}/go.mod
+          cache: true
+          cache-dependency-path: |
+            **/go.mod
+            **/go.sum
+
+      - name: Lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: v1.64.8
+          working-directory: ${{ env.WORKING_DIRECTORY }}
+          args: --timeout=5m --out-format=colored-line-number
+
+      - name: Build
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: |
+          echo "🔨 Building..."
+          go build -v ./...
+
+      - name: Test
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+        run: |
+          echo "🧪 Running tests..."
+          go test -v -failfast ./...
