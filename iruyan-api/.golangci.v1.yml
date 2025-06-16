@@ -7,15 +7,31 @@ linters:
 
 linters-settings:
   revive:
-    config: .revive.toml
-    confidence: 0.8
-    severity: warning
+    confidence: 0.5 # しきい値を下げて警告を多く拾う
+    severity: error # 警告レベルを warning → error に上げる
+    rules:
+      - name: var-naming
+        arguments:
+          allow-leading-underscore: false
+          allow-underscores: false
+      - name: if-return
+      - name: indent-error-flow
+      - name: unexported-return
+      - name: early-return
+      - name: exported
+      - name: time-naming
+      - name: unused-parameter
+      - name: context-as-argument
+      - name: bare-return
+      - name: confusing-naming
 
-  gofmt:
-    simplify: true
+  errcheck:
+    check-type-assertions: true # 型アサーションの無視もチェック対象に
+    check-blank: true # `err := ...` のような無視されたエラーも対象
 
-  goimports:
-    local-prefixes: github.com/OverAgers/iruyan
+  staticcheck:
+    checks: ["all"] # すべての staticcheck チェックを有効化
 
 run:
   timeout: 5m
+  tests: true # テストコードも含めてチェック
