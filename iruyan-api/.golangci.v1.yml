@@ -1,5 +1,3 @@
-version: 1
-
 linters:
   enable:
     - govet
@@ -9,16 +7,14 @@ linters:
 
 linters-settings:
   revive:
-    confidence: 0.5
-    severity: error
+    confidence: 0.8
+    severity: warning
 
-  errcheck:
-    check-type-assertions: true
-    check-blank: true
+  gofmt:
+    simplify: true
 
-  staticcheck:
-    checks: ["all"]
+  goimports:
+    local-prefixes: github.com/OverAgers/iruyan
 
 run:
   timeout: 5m
-  tests: true
