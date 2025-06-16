@@ -27,7 +27,7 @@ jobs:
         with:
           version: v2.1.6 # v2 系を明示的に指定
           working-directory: ${{ env.WORKING_DIRECTORY }}
-          args: --timeout=5m --output.checkstyle.path stdout
+          args: --timeout=5m
 
       - name: Build
         working-directory: ${{ env.WORKING_DIRECTORY }}
