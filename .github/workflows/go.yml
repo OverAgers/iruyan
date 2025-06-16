@@ -22,15 +22,16 @@ jobs:
           go-version-file: ${{ env.WORKING_DIRECTORY }}/go.mod
           cache: true
           cache-dependency-path: |
-            **/go.sum
             **/go.mod
+            **/go.sum
 
+      # ✅ Lint step using golangci-lint-action
       - name: Lint
         uses: golangci/golangci-lint-action@v3
         with:
-          version: v1.57.2
+          version: latest
           working-directory: ${{ env.WORKING_DIRECTORY }}
-          args: --out-format=colored-line-number --timeout=5m
+          args: --timeout=5m --out-format=colored-line-number
 
       - name: Build
         working-directory: ${{ env.WORKING_DIRECTORY }}
