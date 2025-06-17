@@ -1,3 +1,5 @@
+// Package user provides HTTP handlers related to user operations such as viewing
+// profiles, retrieving work logs, updating tasks, and ranking functionality.
 package user
 
 import (

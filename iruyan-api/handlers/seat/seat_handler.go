@@ -1,11 +1,12 @@
+// Package seat provides handlers and functions for managing seats in rooms.
 package seat
 
 import (
 	"errors"
-	"net/http"
 	"iruyan-api/infrastructure"
 	"iruyan-api/models"
 	"iruyan-api/responses"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -48,7 +49,6 @@ func SeatCreateHandler(c *gin.Context) {
 		},
 	})
 }
-
 
 func CreateSeat(tx *gorm.DB, roomID uuid.UUID) (*models.Seat, error) {
 	// room_idが有効であるか（Room DBに存在するか）確認

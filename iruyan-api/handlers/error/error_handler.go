@@ -1,3 +1,5 @@
+// Package errorhandler provides centralized error response utilities
+// for handling common HTTP errors such as 400, 401, 403, 404, and 500.
 package errorhandler
 
 import (

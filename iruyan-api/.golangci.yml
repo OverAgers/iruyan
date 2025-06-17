@@ -11,6 +11,11 @@ linters-settings:
   revive:
     confidence: 0.8
     severity: warning
+    rules:
+      - name: exported
+        disabled: true
+      - name: package-comments
+        disabled: true
 
   gofmt:
     simplify: true

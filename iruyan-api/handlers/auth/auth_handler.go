@@ -1,3 +1,5 @@
+// Package auth provides HTTP handlers for user authentication,
+// including login, registration, and logout functionality.
 package auth
 
 import (

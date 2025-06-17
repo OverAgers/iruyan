@@ -1,4 +1,5 @@
-// handlers/worktime/worktime_handler.go
+// Package worktime provides functions for handling work time records such as
+// recording entry times, retrieving recent logs, and calculating logs for the past week.
 package worktime
 
 import (
