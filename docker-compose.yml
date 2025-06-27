@@ -14,7 +14,7 @@ services:
     depends_on:
       - backend
       - db
-    command: yarn dev
+    command: pnpm run dev
 
   backend:
     container_name: iruyan-api
