@@ -5,6 +5,7 @@ import (
 	"iruyan-api/infrastructure"
 	"iruyan-api/middleware"
 	"iruyan-api/routes"
+	"log"
 
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -49,5 +50,7 @@ func main() {
 	routes.RegisterSeatRoutes(router)
 
 	// サーバー起動
-	router.Run(":8080")
+	if err := router.Run(":8080"); err != nil {
+		log.Fatalf("failed to start server: %v", err)
+	}
 }

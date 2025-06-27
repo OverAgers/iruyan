@@ -1,34 +1,32 @@
-// user_response.go
+// Package responses provides response types for API endpoints related to user activity logs.
 package responses
 
 import (
 	"time"
 )
 
-// WorkTimeLog - 入室記録の情報を保持する型（DBの1行に該当）
+// WorkTimeLog holds a single record of entry and exit times with duration.
 type WorkTimeLog struct {
-	EntryTime   time.Time		`json:"entryTime"`
-	LeavingTime time.Time      	`json:"leavingTime"`
-	Duration    time.Duration  	`json:"duration"`
+	EntryTime   time.Time     `json:"entryTime"`
+	LeavingTime time.Time     `json:"leavingTime"`
+	Duration    time.Duration `json:"duration"`
 }
 
-
-// GetRecentWorktimeLogResponse - Room退室時のレスポンス
+// GetRecentLogResponse is the response returned when a user exits a room.
 type GetRecentLogResponse struct {
-	Message		string	`json:"message"`
-	UserID		string	`json:"userId"`
-	WorkTimeLog	[]WorkTimeLog	`json:"workTimeLog"`
+	Message     string        `json:"message"`
+	UserID      string        `json:"userId"`
+	WorkTimeLog []WorkTimeLog `json:"workTimeLog"`
 }
 
-
-// 1日分の作業ログレスポンス
+// DailyWorkLogResponse represents the work log summary for a single day.
 type DailyWorkLogResponse struct {
-	Date  string `json:"date"`
-	Hours time.Duration   `json:"hours"`
+	Date  string        `json:"date"`
+	Hours time.Duration `json:"hours"`
 }
 
-// 1週間分の作業ログレスポンス
+// WorkLogForLastWeekResponse contains the daily work logs for the past week for a specific user.
 type WorkLogForLastWeekResponse struct {
-	UserID      uint                   `json:"userId"`
+	UserID    uint                   `json:"userId"`
 	DailyLogs []DailyWorkLogResponse `json:"dailyLogs"`
 }

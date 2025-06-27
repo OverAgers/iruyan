@@ -8,10 +8,10 @@ import (
 
 func RegisterUserRoutes(router *gin.Engine) {
 	// ユーザー画面
-	router.GET("/user/:user_id", user.UserPageHandler)
+	router.GET("/user/:user_id", user.PageHandler)
 
 	// ユーザーの削除
-	router.POST("/user/:user_id/delete", user.UserDeleteHandler)
+	router.POST("/user/:user_id/delete", user.DeleteHandler)
 
 	// 1週間の作業日取得
 	router.GET("/user/:user_id/work_info", user.WorkInfoHandler)
@@ -24,7 +24,7 @@ func RegisterUserRoutes(router *gin.Engine) {
 
 	// 直近5回分の作業時間を取得
 	router.GET("/user/:user_id/recent_log", user.GetRecentLog)
-	
+
 	// タスクの更新
 	router.POST("/user/:user_id/task", user.TaskHandler)
 }

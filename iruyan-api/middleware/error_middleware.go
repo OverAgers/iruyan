@@ -1,3 +1,4 @@
+// Package middleware provides Gin middleware functions for error recovery handling.
 package middleware
 
 import (

@@ -1,3 +1,5 @@
+// Package room provides HTTP handlers for managing rooms,
+// including creation, listing, entry/exit operations, and seat assignments.
 package room
 
 import (

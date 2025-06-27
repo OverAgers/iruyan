@@ -1,3 +1,5 @@
+// Package errorhandler provides centralized error response utilities
+// for handling common HTTP errors such as 400, 401, 403, 404, and 500.
 package errorhandler
 
 import (
@@ -31,27 +33,27 @@ func (e *ErrorHandler) ErrorResponse(c *gin.Context, statusCode int, message str
 	})
 }
 
-// メソッド: BadRequest (400)
+// BadRequest handles HTTP 400 Bad Request errors.
 func (e *ErrorHandler) BadRequest(c *gin.Context, message string) {
 	e.ErrorResponse(c, http.StatusBadRequest, message)
 }
 
-// メソッド: Unauthorized (401)
+// Unauthorized handles HTTP 401 Unauthorized errors.
 func (e *ErrorHandler) Unauthorized(c *gin.Context, message string) {
 	e.ErrorResponse(c, http.StatusUnauthorized, message)
 }
 
-// メソッド: Forbidden (403)
+// Forbidden handles HTTP 403 Forbidden errors.
 func (e *ErrorHandler) Forbidden(c *gin.Context, message string) {
 	e.ErrorResponse(c, http.StatusForbidden, message)
 }
 
-// メソッド: NotFoundError (404)
+// NotFoundError handles HTTP 404 Not Found errors.
 func (e *ErrorHandler) NotFoundError(c *gin.Context, message string) {
 	e.ErrorResponse(c, http.StatusNotFound, message)
 }
 
-// メソッド: InternalServerError (500)
+// InternalServerError handles HTTP 500 Internal Server Error.
 func (e *ErrorHandler) InternalServerError(c *gin.Context, message string) {
 	e.ErrorResponse(c, http.StatusInternalServerError, message)
 }

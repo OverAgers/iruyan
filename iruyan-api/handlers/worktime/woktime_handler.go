@@ -1,4 +1,5 @@
-// handlers/worktime/worktime_handler.go
+// Package worktime provides functions for handling work time records such as
+// recording entry times, retrieving recent logs, and calculating logs for the past week.
 package worktime
 
 import (
@@ -24,7 +25,7 @@ func RecordEntry(userID uint, roomID string, task string) (*models.WorkTime, err
 	if err := infrastructure.DB.
 		Where("user_id = ? AND room_id = ? AND leaving_time IS NULL", userID, roomID).
 		First(&activeEntry).Error; err == nil {
-		return nil, fmt.Errorf("User is already in the room")
+		return nil, fmt.Errorf("user is already in the room")
 	} else if err != gorm.ErrRecordNotFound {
 		return nil, err // その他のエラーが発生した場合は返す
 	}
@@ -34,10 +35,10 @@ func RecordEntry(userID uint, roomID string, task string) (*models.WorkTime, err
 
 	// WorkTimeレコードの作成
 	workTime := &models.WorkTime{
-		UserID:		userID,
-		RoomID:		uuid.MustParse(roomID),
-		Task:		task,
-		EntryTime:	entryTime,
+		UserID:    userID,
+		RoomID:    uuid.MustParse(roomID),
+		Task:      task,
+		EntryTime: entryTime,
 	}
 
 	// WorkTimeをデータベースに保存
