@@ -1,0 +1,28 @@
+version: "3"
+
+tasks:
+  default:
+    desc: "タスク一覧を表示する"
+    cmds:
+      - task --list
+
+  run:
+    desc: "Dockerコンテナを起動する"
+    cmds:
+      - docker-compose up -d
+
+  run-api:
+    desc: "バックエンド と DB を起動"
+    cmds:
+      - docker compose up -d db
+      - docker compose up -d backend
+
+  down:
+    desc: "Dockerコンテナを停止する"
+    cmds:
+      - docker-compose down
+
+  clean:
+    desc: "Dockerのボリュームを削除する"
+    cmds:
+      - docker-compose down -v
