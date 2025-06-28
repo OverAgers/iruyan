@@ -25,7 +25,7 @@ import (
 // @Tags room
 // @Accept x-www-form-urlencoded
 // @Produce json
-// @Param name formData string true "Room Name"
+// @Param roomName formData string true "Room Name" default(RoomA)
 // @Success 200 {object} responses.RoomCreateResponse
 // @Failure 400 {object} responses.ErrorResponse
 // @Failure 500 {object} responses.ErrorResponse
@@ -120,10 +120,10 @@ func GetRoomsHandler(c *gin.Context) {
 // @Description Retrieves the details of a specific room
 // @Tags room
 // @Produce json
-// @Param room_id path string true "Room ID"
+// @Param roomId path string true "Room ID"
 // @Success 200 {object} responses.RoomDetailResponse
 // @Failure 404 {object} responses.ErrorResponse
-// @Router /rooms/{room_id} [get]
+// @Router /rooms/{roomId} [get]
 func GetRoomHandler(c *gin.Context) {
 	roomID := c.Param("roomId")
 
@@ -167,26 +167,25 @@ func GetRoomHandler(c *gin.Context) {
 // @Tags room
 // @Accept json
 // @Produce json
-// @Param room_id path string true "Room ID"
-// @Param user_id path string true "User ID"
+// @Param roomId path string true "Room ID"
+// @Param iruyanId path string true "Iruyan ID" default(johndoe)
 // @Success 200 {object} responses.RoomActionResponse "Entered the room successfully"
 // @Failure 404 {object} responses.ErrorResponse "Room not found"
 // @Failure 500 {object} responses.ErrorResponse "Failed to record entry to the room"
-// @Router /rooms/{room_id}/enter/{user_id} [post]
+// @Router /rooms/{roomId}/enter/{iruyanId} [post]
 func EnterRoomHandler(c *gin.Context) {
 	roomID := c.Param("roomId")
-	userIDStr := c.PostForm("userId")
+	iruyanID := c.Param("iruyanId")
 	task := c.PostForm("task")
 
-	// ユーザーIDを文字列からuintに変換
-	userIDUint, err := strconv.ParseUint(userIDStr, 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, responses.ErrorResponse{
-			Message: "Invalid user ID format",
+	// ユーザーをデータベースから取得
+	var user models.User
+	if err := user.FindByIruyanID(infrastructure.DB, iruyanID); err != nil {
+		c.JSON(http.StatusNotFound, responses.ErrorResponse{
+			Message: "User not found",
 		})
 		return
 	}
-	userID := uint(userIDUint)
 
 	var room models.Room
 	// ルームが存在するか確認
@@ -198,13 +197,13 @@ func EnterRoomHandler(c *gin.Context) {
 	}
 
 	// WorkTimeに入室情報を記録
-	workTime, err := worktime.RecordEntry(userID, roomID, task)
+	workTime, err := worktime.RecordEntry(user.ID, roomID, task)
 	if err != nil {
 		if err.Error() == "user not found" {
 			c.JSON(http.StatusNotFound, responses.ErrorResponse{
 				Message: "User not found",
 			})
-		} else if err.Error() == "User is already in the room" {
+		} else if err.Error() == "user is already in the room" {
 			c.JSON(http.StatusBadRequest, responses.ErrorResponse{
 				Message: "User is already in the room",
 			})
@@ -232,28 +231,18 @@ func EnterRoomHandler(c *gin.Context) {
 // @Description Allows a user to leave a specific room and records the leaving time
 // @Tags room
 // @Produce json
-// @Param room_id path string true "Room ID"
-// @Param user_id formData string true "User ID"
-// @Param duration formData string true "Duration (e.g., 1h2m3s)"
+// @Param roomId path string true "Room ID"
+// @Param iruyanId formData string true "Iruyan ID" default(johndoe)
+// @Param duration formData string true "Duration (e.g., 1h2m3s)" default(1h2m3s)
 // @Success 200 {object} responses.LeaveRoomResponseSwagger "Left the room successfully"
 // @Failure 400 {object} responses.ErrorResponse "Invalid duration format or other validation errors"
 // @Failure 404 {object} responses.ErrorResponse "Room or user not found"
 // @Failure 500 {object} responses.ErrorResponse "Failed to record leaving time"
-// @Router /rooms/{room_id}/leave [post]
+// @Router /rooms/{roomId}/leave [post]
 func LeaveRoomHandler(c *gin.Context) {
 	roomID := c.Param("roomId")
-	userIDStr := c.PostForm("userId")
+	iruyanID := c.PostForm("iruyanId")
 	durationStr := c.PostForm("duration") // DurationをPostFormで取得
-
-	// ユーザーIDをuintに変換
-	userIDUint, err := strconv.ParseUint(userIDStr, 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, responses.ErrorResponse{
-			Message: "Invalid user ID format",
-		})
-		return
-	}
-	userID := uint(userIDUint)
 
 	// Durationをtime.Duration型に変換
 	duration, err := time.ParseDuration(durationStr)
@@ -273,9 +262,9 @@ func LeaveRoomHandler(c *gin.Context) {
 		return
 	}
 
-	// ユーザーが存在するか確認
+	// ユーザーをデータベースから取得
 	var user models.User
-	if err := infrastructure.DB.First(&user, userID).Error; err != nil {
+	if err := user.FindByIruyanID(infrastructure.DB, iruyanID); err != nil {
 		c.JSON(http.StatusNotFound, responses.ErrorResponse{
 			Message: "User not found",
 		})
@@ -283,7 +272,7 @@ func LeaveRoomHandler(c *gin.Context) {
 	}
 
 	// WorkTimeテーブルから最新の入室記録を取得（LeavingTimeがNULLのレコードを取得）
-	workTime, err := worktime.GetLatestEntry(userID, roomID)
+	workTime, err := worktime.GetLatestEntry(user.ID, roomID)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusBadRequest, responses.ErrorResponse{

@@ -7,6 +7,6 @@ import (
 )
 
 func RegisterSeatRoutes(router *gin.Engine) {
-    // シート作成
-    router.POST("/rooms/:room_id/seats", seat.SeatCreateHandler)
+	// シート作成
+	router.POST("/rooms/:roomId/seats", seat.SeatCreateHandler)
 }
