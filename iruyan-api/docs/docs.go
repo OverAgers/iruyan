@@ -55,8 +55,8 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "default": "johndoe",
-                        "description": "IruyanID",
-                        "name": "iruyanID",
+                        "description": "Iruyan ID",
+                        "name": "iruyanId",
                         "in": "formData",
                         "required": true
                     },
@@ -102,8 +102,8 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "default": "johndoe",
-                        "description": "IruyanID",
-                        "name": "iruyanID",
+                        "description": "Iruyan ID",
+                        "name": "iruyanId",
                         "in": "formData",
                         "required": true
                     }
@@ -165,8 +165,8 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "default": "johndoe",
-                        "description": "IruyanID",
-                        "name": "iruyanID",
+                        "description": "Iruyan ID",
+                        "name": "iruyanId",
                         "in": "formData",
                         "required": true
                     },
@@ -182,7 +182,7 @@ const docTemplate = `{
                         "type": "string",
                         "default": "John Doe",
                         "description": "Name",
-                        "name": "name",
+                        "name": "userName",
                         "in": "formData",
                         "required": true
                     },
@@ -251,8 +251,9 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
+                        "default": "RoomA",
                         "description": "Room Name",
-                        "name": "name",
+                        "name": "roomName",
                         "in": "formData",
                         "required": true
                     }
@@ -279,7 +280,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/rooms/{room_id}": {
+        "/rooms/{roomId}": {
             "get": {
                 "description": "Retrieves the details of a specific room",
                 "produces": [
@@ -293,7 +294,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "description": "Room ID",
-                        "name": "room_id",
+                        "name": "roomId",
                         "in": "path",
                         "required": true
                     }
@@ -314,7 +315,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/rooms/{room_id}/enter/{user_id}": {
+        "/rooms/{roomId}/enter/{iruyanId}": {
             "post": {
                 "description": "Records the entry time of a user entering a specific room and stores the entry information in WorkTime.",
                 "consumes": [
@@ -331,14 +332,15 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "description": "Room ID",
-                        "name": "room_id",
+                        "name": "roomId",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "User ID",
-                        "name": "user_id",
+                        "default": "johndoe",
+                        "description": "Iruyan ID",
+                        "name": "iruyanId",
                         "in": "path",
                         "required": true
                     }
@@ -365,7 +367,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/rooms/{room_id}/leave": {
+        "/rooms/{roomId}/leave": {
             "post": {
                 "description": "Allows a user to leave a specific room and records the leaving time",
                 "produces": [
@@ -379,19 +381,21 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "description": "Room ID",
-                        "name": "room_id",
+                        "name": "roomId",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "User ID",
-                        "name": "user_id",
+                        "default": "johndoe",
+                        "description": "Iruyan ID",
+                        "name": "iruyanId",
                         "in": "formData",
                         "required": true
                     },
                     {
                         "type": "string",
+                        "default": "1h2m3s",
                         "description": "Duration (e.g., 1h2m3s)",
                         "name": "duration",
                         "in": "formData",

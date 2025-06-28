@@ -6,46 +6,50 @@ import (
 	"fmt"
 	"iruyan-api/infrastructure"
 	"iruyan-api/models"
+	"log"
 	"time"
 
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 )
 
 // RecordEntry - WorkTimeテーブルに入室情報を記録
-func RecordEntry(userID uint, roomID string, task string) (*models.WorkTime, error) {
-	// ユーザーが存在するか確認
-	var user models.User
-	if err := infrastructure.DB.First(&user, userID).Error; err != nil {
-		return nil, fmt.Errorf("user not found")
+func RecordEntry(userID uint, roomIDStr string, task string) (*models.WorkTime, error) {
+	log.Printf("[INFO] 入室処理開始 (user_id=%d, room_id=%s)", userID, roomIDStr)
+
+	// 文字列のUUIDをパース
+	roomID, err := uuid.Parse(roomIDStr)
+	if err != nil {
+		log.Printf("[ERROR] 無効なroomID形式: %s", roomIDStr)
+		return nil, fmt.Errorf("invalid room ID format")
 	}
 
-	// すでに入室しているか確認 (LeavingTimeがゼロのレコードをチェック)
-	var activeEntry models.WorkTime
-	if err := infrastructure.DB.
-		Where("user_id = ? AND room_id = ? AND leaving_time IS NULL", userID, roomID).
-		First(&activeEntry).Error; err == nil {
+	// 入室中かどうかを確認
+	var existing models.WorkTime
+	inRoom, err := existing.IsUserAlreadyInRoom(infrastructure.DB, userID, roomID)
+	if err != nil {
+		log.Printf("[ERROR] 入室確認に失敗 (user_id=%d, room_id=%s): %v", userID, roomID, err)
+		return nil, err
+	}
+	if inRoom {
+		log.Printf("[WARN] すでに入室中 (user_id=%d, room_id=%s)", userID, roomID)
 		return nil, fmt.Errorf("user is already in the room")
-	} else if err != gorm.ErrRecordNotFound {
-		return nil, err // その他のエラーが発生した場合は返す
 	}
 
-	// 入室時刻を現在時刻として取得
+	// 入室レコードを作成
 	entryTime := time.Now()
-
-	// WorkTimeレコードの作成
 	workTime := &models.WorkTime{
 		UserID:    userID,
-		RoomID:    uuid.MustParse(roomID),
+		RoomID:    roomID,
 		Task:      task,
 		EntryTime: entryTime,
 	}
 
-	// WorkTimeをデータベースに保存
 	if err := infrastructure.DB.Create(workTime).Error; err != nil {
+		log.Printf("[ERROR] WorkTime作成失敗 (user_id=%d, room_id=%s): %v", userID, roomID, err)
 		return nil, err
 	}
 
+	log.Printf("[INFO] 入室記録完了 (user_id=%d, room_id=%s, entry_time=%s)", userID, roomID, entryTime.Format(time.RFC3339))
 	return workTime, nil
 }
 

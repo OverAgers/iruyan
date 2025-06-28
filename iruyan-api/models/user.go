@@ -107,3 +107,15 @@ func (u *User) FindByID(db *gorm.DB, userID uint) error {
 	}
 	return nil
 }
+
+// FindByIruyanID - IruyanID を元に User を検索するメソッド
+func (u *User) FindByIruyanID(db *gorm.DB, iruyanID string) error {
+	err := db.Where("iruyan_id = ?", iruyanID).First(u).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return fmt.Errorf("user not found with iruyan_id: %s", iruyanID)
+		}
+		return fmt.Errorf("failed to find user by iruyan_id (%s): %w", iruyanID, err)
+	}
+	return nil
+}

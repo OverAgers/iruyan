@@ -33,7 +33,7 @@ func LoginPageHandler(c *gin.Context) {
 // @Tags auth
 // @Accept x-www-form-urlencoded
 // @Produce json
-// @Param iruyanID formData string true "IruyanID" default(johndoe)
+// @Param iruyanId formData string true "Iruyan ID" default(johndoe)
 // @Param password formData string true "Password" default(pass1234)
 // @Success 200 {object} responses.LoginSuccessResponse
 // @Failure 401 {object} responses.ErrorResponse
@@ -86,9 +86,9 @@ func RegisterPageHandler(c *gin.Context) {
 // @Tags auth
 // @Accept x-www-form-urlencoded
 // @Produce json
-// @Param iruyanID formData string true "IruyanID" default(johndoe)
+// @Param iruyanId formData string true "Iruyan ID" default(johndoe)
 // @Param password formData string true "Password" default(pass1234)
-// @Param name formData string true "Name" default(John Doe)
+// @Param userName formData string true "Name" default(John Doe)
 // @Param email formData string true "Email" default(johndoe@example.com)
 // @Success 200 {object} responses.RegisterSuccessResponse
 // @Failure 400 {object} responses.ErrorResponse
@@ -130,7 +130,7 @@ func RegisterHandler(c *gin.Context) {
 // @Tags auth
 // @Accept x-www-form-urlencoded
 // @Produce json
-// @Param iruyanID formData string true "IruyanID" default(johndoe)
+// @Param iruyanId formData string true "Iruyan ID" default(johndoe)
 // @Success 200 {object} responses.LogoutSuccessResponse
 // @Failure 400 {object} responses.ErrorResponse
 // @Failure 404 {object} responses.ErrorResponse

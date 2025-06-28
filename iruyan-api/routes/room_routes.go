@@ -14,17 +14,17 @@ func RegisterRoomRoutes(router *gin.Engine) {
 	router.POST("/rooms", room.CreateRoomHandler)
 
 	// Room表示
-	router.GET("/rooms/:room_id", room.GetRoomHandler)
+	router.GET("/rooms/:roomId", room.GetRoomHandler)
 
 	// Room入室
-	router.POST("/rooms/:room_id/enter", room.EnterRoomHandler)
+	router.POST("/rooms/:roomId/enter/:iruyanId", room.EnterRoomHandler)
 
 	// Room退室
-	router.POST("/rooms/:room_id/leave", room.LeaveRoomHandler)
+	router.POST("/rooms/:roomId/leave", room.LeaveRoomHandler)
 
 	// 着席
-	router.PATCH("/rooms/:room_id/:seat_number/take", room.TakeSeatHandler)
+	router.PATCH("/rooms/:roomId/:seatNumber/take", room.TakeSeatHandler)
 
 	// 離席
-	router.PATCH("/rooms/:room_id/:seat_number/leave", room.LeaveSeatHandler)
+	router.PATCH("/rooms/:roomId/:seatNumber/leave", room.LeaveSeatHandler)
 }
