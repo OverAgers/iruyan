@@ -23,8 +23,7 @@ export const getRoomListSchema = z.object({
 export type GetRoomListRequest = z.infer<typeof getRoomListSchema>;
 
 export default function useGetRoomList() {
-  const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL || "";
-  const requestURL = baseURL + "/rooms";
+  const requestURL = `${process.env.NEXT_PUBLIC_API_URL}/rooms`;
 
   const fetcher = useCallback(() => {
     return axios.get(requestURL, {

@@ -1,10 +1,9 @@
 import axios from "axios";
-import { useCallback } from "react";
 import useSWRMutation from "swr/mutation";
 import { z } from "zod";
 
 export const postCreateRoomRequestSchema = z.object({
-  userName: z.string(),
+  roomName: z.string(),
 });
 
 export const postCreateRoomResponseSchema = z.object({
@@ -16,26 +15,25 @@ export const postCreateRoomResponseSchema = z.object({
 export type PostCreateRoomRequest = z.infer<typeof postCreateRoomRequestSchema>;
 export type PostCreateRoomResponse = z.infer<typeof postCreateRoomResponseSchema>;
 
-export default function usePostCreateRoomRequest(Props: PostCreateRoomRequest) {
-  const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL || "";
-  const requestURL = baseURL + "/rooms";
+export default function usePostCreateRoomRequest() {
+  const requestURL = `${process.env.NEXT_PUBLIC_API_URL}/rooms`;
 
-  const fetcher = useCallback(() => {
-    return axios
-      .post(requestURL, Props.userName, {
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-      })
-      .then(async (res) => {
-        const result = res.data;
-        return postCreateRoomRequestSchema.parse(result);
-      })
-      .catch((error) => {
-        throw error;
-      });
-  }, [Props.userName, requestURL]);
+  const fetcher = async (
+    _: string,
+    { arg }: { arg: PostCreateRoomRequest }
+  ): Promise<PostCreateRoomResponse> => {
+    const res = await axios.post(requestURL, arg, {
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+    });
+    return postCreateRoomResponseSchema.parse(res.data);
+  };
 
-  const { data, error, isMutating } = useSWRMutation<PostCreateRoomRequest, Error>(requestURL, fetcher);
-  return { data, error, isMutating };
+  const { trigger, data, error, isMutating } = useSWRMutation(requestURL, fetcher);
+
+  // 外部から使いやすくするため trigger をラップ
+  const createRoom = (arg: PostCreateRoomRequest) => trigger(arg);
+
+  return { createRoom, data, error, isMutating };
 }
