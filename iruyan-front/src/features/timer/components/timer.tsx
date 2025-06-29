@@ -3,7 +3,7 @@ import SubButton from "@/components/ui/button/sub-button";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import { useTimer } from "@/hooks/timer-hooks";
-import { FormatTime } from "@/utils/format-time";
+import { formatTime } from "@/utils/time-utils";
 
 export default function Timer() {
   const {
@@ -28,7 +28,7 @@ export default function Timer() {
         mb={2}
       >
         <Typography fontSize="32px" fontWeight="bold" color="primary">
-          {FormatTime(timeLeft)}
+          {formatTime(timeLeft)}
         </Typography>
         <Box textAlign="right">
           <Typography fontSize="14px">

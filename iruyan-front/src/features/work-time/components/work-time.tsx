@@ -1,7 +1,7 @@
 import { Box, Typography } from "@mui/joy";
 import SubButton from "@/components/ui/button/sub-button";
 import { useEffect } from "react";
-import { FormatTime } from "@/utils/format-time";
+import { formatTime } from "@/utils/time-utils";
 import useUserStore from "@/stores/user-store";
 import { useTimer } from "@/hooks/timer-hooks";
 
@@ -70,7 +70,7 @@ export default function WorkTime() {
           alignItems="center"
         >
           <Typography level="body-md">累計作業時間</Typography>
-          <Typography level="h1">{FormatTime(currentUser.workTime)}</Typography>
+          <Typography level="h1">{formatTime(currentUser.workTime)}</Typography>
         </Box>
         <Box
           display="flex"
@@ -79,7 +79,7 @@ export default function WorkTime() {
           alignItems="center"
         >
           <Typography level="body-md">累計休憩時間</Typography>
-          <Typography level="h2">{FormatTime(currentUser.restTime)}</Typography>
+          <Typography level="h2">{formatTime(currentUser.restTime)}</Typography>
         </Box>
       </Box>
       <Box display="flex" justifyContent="space-around" mb={2}>

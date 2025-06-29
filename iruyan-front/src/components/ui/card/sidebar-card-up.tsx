@@ -3,7 +3,7 @@ import SubButton from "../button/sub-button";
 import { useEffect, useState } from "react";
 import { TextField } from "@mui/material";
 import useUserStore from "@/stores/user-store";
-import { FormatTime } from "@/utils/format-time";
+import { formatTime } from "@/utils/time-utils";
 
 export default function SidebarCardUp() {
   const { currentUser, setUser } = useUserStore();
@@ -97,7 +97,7 @@ export default function SidebarCardUp() {
           <ListItem>
             入店時間: {entryTime ? entryTime.toLocaleTimeString() : "未設定"}
           </ListItem>
-          <ListItem>累計集中時間: {FormatTime(cumulativeTime)}</ListItem>
+          <ListItem>累計集中時間: {formatTime(cumulativeTime)}</ListItem>
           <ListItem>連続入室日数: {consecutiveDays}日</ListItem>
         </List>
         <Box mb={2}>
