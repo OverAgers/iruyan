@@ -27,8 +27,19 @@ export default function UserRegisterForm({ onSuccess }: Props) {
     try {
       const { passwordConfirm, ...dataToSubmit } = formData;
       const userData = await registerUser(dataToSubmit);
-      setUser(userData);
-      onSuccess(userData);
+
+      const userInfo: UserInfo = {
+        iruyanId: userData.user.iruyanId,
+        name: userData.user.userName,
+        email: userData.user.email,
+        status: "idle", // 初期状態
+        workTime: 0,
+        restTime: 0,
+        startTime: Date.now(), // number型
+      };
+
+      setUser(userInfo);
+      onSuccess(userInfo);
     } catch (error: any) {
       console.error("登録に失敗しました", error);
       setErrorMessage(error.message || "登録に失敗しました");

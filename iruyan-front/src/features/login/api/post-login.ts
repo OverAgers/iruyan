@@ -1,46 +1,44 @@
 import axios from "axios";
-import { useCallback } from "react";
-import useSWRMutation from "swr/mutation";
-import z from "zod";
+import { useCallback, useState } from "react";
+import { z } from "zod";
+import { PostLoginRequest, postLoginRequestSchema, postLoginResponseSchema } from "@/schema/login-form-schema";
 
-export const postLoginRequestSchema = z.object({
-  iruyanId: z.string(),
-  password: z.string(),
-});
-
-export const postLoginResponseSchema = z.object({
-  message: z.string(),
-  user: z.object({
-    iruyanId: z.string().uuid(),
-    userName: z.string(),
-    email: z.string().email(),
-  }),
-});
-
-export type PostLoginRequest = z.infer<typeof postLoginRequestSchema>;
 export type PostLoginResponse = z.infer<typeof postLoginResponseSchema>;
+export type { PostLoginRequest } from "@/schema/login-form-schema";
 
-export default function UseLoginRequest(Props: PostLoginRequest) {
-  const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL || "";
-  const requestURL = baseURL + "/login";
+export default function usePostLoginRequest() {
+  const requestURL = `${process.env.NEXT_PUBLIC_API_URL}/login`;
 
-  const fetcher = useCallback(() => {
-    return axios
-      .post(requestURL, Props, {
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-      })
-      .then(async (res) => {
-        const result = res.data;
-        return postLoginResponseSchema.parse(result);
-      })
-      .catch((error) => {
-        throw error;
-      });
-  }, [Props, requestURL]);
+  const [data, setData] = useState<PostLoginResponse | null>(null);
+  const [error, setError] = useState<Error | null>(null);
+  const [isMutating, setIsMutating] = useState(false);
 
-  const { data, error, isMutating } = useSWRMutation(requestURL, fetcher);
+  const login = useCallback(async (props: PostLoginRequest) => {
+    setIsMutating(true);
+    try {
+      const res = await axios.post(
+        requestURL,
+        new URLSearchParams({
+          iruyanId: props.iruyanId,
+          password: props.password,
+        }),
+        {
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+        }
+      );
+      const result = postLoginResponseSchema.parse(res.data);
 
-  return { data, error, isMutating };
+      setData(result);
+      return result; // ← ★ ここを追加
+    } catch (err) {
+      setError(err as Error);
+      throw err; // ← ★ catch しても呼び出し元にエラーを伝える
+    } finally {
+      setIsMutating(false);
+    }
+  }, [requestURL]);
+
+  return { data, error, isMutating, login };
 }

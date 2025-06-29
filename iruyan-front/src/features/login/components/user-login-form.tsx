@@ -4,10 +4,9 @@ import useUserStore from "@/stores/user-store";
 import MainButton from "@/components/ui/button/main-button";
 import AuthInputText from "@/components/ui/input/authorization-input-text";
 import UseLoginForm from "@/features/login/hooks/use-login-hooks";
-import UseLoginRequest, {
-  PostLoginRequest,
-} from "@/features/login/api/post-login";
+import UseLoginRequest, { PostLoginRequest } from "@/features/login/api/post-login";
 import { LoginForm } from "@/schema/login-form-schema";
+import type { StatusType } from "@/types/user-info";
 
 type Props = {
   onSuccess?: (data: LoginForm) => void;
@@ -15,29 +14,45 @@ type Props = {
 
 export default function UserLoginForm({ onSuccess }: Props) {
   const setUser = useUserStore((state) => state.setUser);
-  const {
-    errors,
-    setValue,
-    onSubmit: handleFormSubmit,
-  } = UseLoginForm({
+  const { errors, setValue, onSubmit: handleFormSubmit } = UseLoginForm({
     onSubmit,
   });
-  const { isLoading, login } = UseLoginRequest();
+  const { isMutating, login } = UseLoginRequest();
 
   async function onSubmit(formData: LoginForm) {
     try {
       const userData = await login(formData as PostLoginRequest);
-      setUser(userData);
-      if (onSuccess) {
-        onSuccess(formData);
-      }
-    } catch (error) {
+
+      const userInfo = {
+        iruyanId: userData.user.iruyanId,
+        name: userData.user.userName, // ← APIのkeyに合わせる
+        email: userData.user.email,
+        status: "working" as StatusType,
+        workTime: 0,
+        restTime: 0,
+        startTime: Date.now(),
+      };
+
+      setUser(userInfo);
+
+      onSuccess?.(formData);
+    } catch (error: any) {
       console.error("ログインに失敗しました", error);
-      if (error instanceof Error) {
-        alert(error.message || "ログインに失敗しました");
+
+      // エラーの構造を見やすく出力
+      if (error?.response) {
+        console.log("🔴 error.response.data:", JSON.stringify(error.response.data, null, 2));
+      } else if (error?.message) {
+        console.log("🔴 error.message:", error.message);
       } else {
-        alert("ログインに失敗しました");
+        console.log("🔴 error (raw):", JSON.stringify(error, null, 2));
       }
+
+      const message =
+        error?.response?.data?.message ??
+        error?.message ??
+        "ログインに失敗しました。";
+      alert(message);
     }
   }
 
@@ -61,8 +76,8 @@ export default function UserLoginForm({ onSuccess }: Props) {
           component="button"
           title="入店する"
           type="submit"
-          fullWidth={true}
-          disabled={isLoading}
+          fullWidth
+          disabled={isMutating}
         />
       </div>
     </form>
