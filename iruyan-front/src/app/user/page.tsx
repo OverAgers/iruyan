@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import {
   Box,
@@ -30,12 +32,13 @@ function UserPage() {
         position: "relative",
         bgcolor: "#F7F4ED",
         backgroundImage: "url('/bg-image/bg_user.jpg')",
-        backgroundSize: "cover",
+        backgroundSize: "contain",
       }}
     >
       <SubButton
         title="ノートを閉じる"
         size="lg"
+        onClick={() => (window.location.href = "/lobby")}
         sx={{
           position: "absolute",
           top: "37px",
@@ -73,7 +76,7 @@ function UserPage() {
             <Avatar
               alt="User Avatar"
               src="/path/to/profile-image.jpg"
-              sx={{ width: 230, height: 230, mb: 2 }}
+              sx={{ width: 160, height: 160, mb: 2 }}
             />
             <Box
               sx={{
@@ -84,15 +87,37 @@ function UserPage() {
                 gap: "10px",
               }}
             >
-              <Typography variant="h5" sx={{ fontSize: "48px" }}>
+              <Typography variant="h5" sx={{ fontSize: "32px" }}>
                 ほしょ
               </Typography>
-              <Typography sx={{ fontSize: "25px" }}>
-                ・居る連チャン: 5Days
-              </Typography>
-              <Typography sx={{ fontSize: "25px" }}>
-                ・累計集中時間: 120h
-              </Typography>
+              <Box
+                sx={({
+                  display: "flex",
+                  alignItems: "baseline",
+                  gap: "16px"
+                })}
+              >
+                <Typography sx={({ fontSize: "16px" })}>
+                  居る連チャン
+                </Typography>
+                <Typography sx={{ fontSize: "20px" }}>
+                  5Days
+                </Typography>
+              </Box>
+              <Box
+                sx={({
+                  display: "flex",
+                  alignItems: "baseline",
+                  gap: "16px"
+                })}
+              >
+                <Typography sx={({ fontSize: "16px" })}>
+                  累計集中時間
+                </Typography>
+                <Typography sx={{ fontSize: "20px" }}>
+                  120h
+                </Typography>
+              </Box>
             </Box>
           </Box>
           <Box
@@ -114,7 +139,7 @@ function UserPage() {
                 gap: "18px",
               }}
             >
-              <Typography align="center" sx={{ fontSize: "25px" }}>
+              <Typography align="center" sx={{ fontSize: "16px" }}>
                 一緒に居た常連さん
               </Typography>
               <Box
@@ -142,8 +167,8 @@ function UserPage() {
                       <Box
                         sx={{
                           position: "absolute",
-                          top: -15,
-                          left: 0,
+                          top: -8,
+                          left: -8,
                           backgroundColor: "#d4a373",
                           color: "#fff",
                           width: "31px",
@@ -152,7 +177,7 @@ function UserPage() {
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
-                          fontSize: "16px",
+                          fontSize: "12px",
                           fontWeight: "bold",
                           zIndex: 1,
                         }}
@@ -162,7 +187,7 @@ function UserPage() {
                       <Avatar
                         alt="Friend Avatar"
                         src="/path/to/profile-image.jpg"
-                        sx={{ width: 69, height: 69 }}
+                        sx={{ width: 56, height: 56 }}
                       />
                     </Box>
                     <Box
@@ -189,7 +214,7 @@ function UserPage() {
                 gap: "18px",
               }}
             >
-              <Typography align="center" sx={{ fontSize: "25px" }}>
+              <Typography align="center" sx={{ fontSize: "16px" }}>
                 今週の集中ランキング
               </Typography>
               <Box
@@ -217,8 +242,8 @@ function UserPage() {
                       <Box
                         sx={{
                           position: "absolute",
-                          top: -15,
-                          left: 0,
+                          top: -8,
+                          left: -8,
                           backgroundColor: "#d4a373",
                           color: "#fff",
                           width: "31px",
@@ -227,7 +252,7 @@ function UserPage() {
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
-                          fontSize: "16px",
+                          fontSize: "12px",
                           fontWeight: "bold",
                           zIndex: 1,
                         }}
@@ -237,7 +262,7 @@ function UserPage() {
                       <Avatar
                         alt="Friend Avatar"
                         src="/path/to/profile-image.jpg"
-                        sx={{ width: 69, height: 69 }}
+                        sx={{ width: 56, height: 56 }}
                       />
                     </Box>
                     <Box
@@ -309,7 +334,7 @@ function UserPage() {
           </Box>
         </Box>
       </Box>
-    </Box>
+    </Box >
   );
 }
 
