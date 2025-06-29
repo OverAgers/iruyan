@@ -938,7 +938,8 @@
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "User ID",
+                        "default": "johndoe",
+                        "description": "Iruyan ID",
                         "name": "iruyanId",
                         "in": "query",
                         "required": true
@@ -989,7 +990,8 @@
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "User ID",
+                        "default": "johndoe",
+                        "description": "Iruyan ID",
                         "name": "iruyanId",
                         "in": "query",
                         "required": true

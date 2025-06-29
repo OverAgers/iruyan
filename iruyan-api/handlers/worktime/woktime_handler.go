@@ -139,6 +139,7 @@ func GetLatestEntryHandler(c *gin.Context) {
 	}
 
 	resp := responses.WorkTimeResponse{
+		IruyanID:    user.IruyanID,
 		RoomID:      workTime.RoomID,
 		Task:        workTime.Task,
 		EntryTime:   workTime.EntryTime,
@@ -154,7 +155,7 @@ func GetLatestEntryHandler(c *gin.Context) {
 // @Description Retrieves the most recent N work time records for a user
 // @Tags worktime
 // @Produce json
-// @Param iruyanId query string true "User ID"
+// @Param iruyanId query string true "Iruyan ID" default(johndoe)
 // @Param limit query int false "Number of records to return" default(5)
 // @Success 200 {array} responses.WorkTimeResponseSwagger
 // @Failure 400 {object} responses.ErrorResponse
@@ -198,6 +199,7 @@ func GetRecentLogsHandler(c *gin.Context) {
 	var result []responses.WorkTimeResponse
 	for _, wt := range workTimes {
 		result = append(result, responses.WorkTimeResponse{
+			IruyanID:    user.IruyanID,
 			RoomID:      wt.RoomID,
 			Task:        wt.Task,
 			EntryTime:   wt.EntryTime,
@@ -214,7 +216,7 @@ func GetRecentLogsHandler(c *gin.Context) {
 // @Description Retrieves all work time records from the past 7 days for a user
 // @Tags worktime
 // @Produce json
-// @Param iruyanId query string true "User ID"
+// @Param iruyanId query string true "Iruyan ID" default(johndoe)
 // @Success 200 {array} responses.WorkTimeResponseSwagger
 // @Failure 400 {object} responses.ErrorResponse
 // @Failure 500 {object} responses.ErrorResponse
@@ -251,6 +253,7 @@ func GetWeeklyLogsHandler(c *gin.Context) {
 	var result []responses.WorkTimeResponse
 	for _, wt := range workTimes {
 		result = append(result, responses.WorkTimeResponse{
+			IruyanID:    user.IruyanID,
 			RoomID:      wt.RoomID,
 			Task:        wt.Task,
 			EntryTime:   wt.EntryTime,

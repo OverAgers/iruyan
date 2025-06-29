@@ -821,7 +821,8 @@ paths:
     get:
       description: Retrieves the most recent N work time records for a user
       parameters:
-      - description: User ID
+      - default: johndoe
+        description: Iruyan ID
         in: query
         name: iruyanId
         required: true
@@ -855,7 +856,8 @@ paths:
     get:
       description: Retrieves all work time records from the past 7 days for a user
       parameters:
-      - description: User ID
+      - default: johndoe
+        description: Iruyan ID
         in: query
         name: iruyanId
         required: true

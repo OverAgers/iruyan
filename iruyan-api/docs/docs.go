@@ -945,7 +945,8 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "User ID",
+                        "default": "johndoe",
+                        "description": "Iruyan ID",
                         "name": "iruyanId",
                         "in": "query",
                         "required": true
@@ -996,7 +997,8 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "User ID",
+                        "default": "johndoe",
+                        "description": "Iruyan ID",
                         "name": "iruyanId",
                         "in": "query",
                         "required": true
