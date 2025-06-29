@@ -5,7 +5,9 @@ import (
 	"iruyan-api/infrastructure"
 	"iruyan-api/middleware"
 	"iruyan-api/routes"
+	roomInit "iruyan-api/usecase/room"
 	"log"
+	"os"
 
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -25,6 +27,15 @@ import (
 func main() {
 	// データベース初期化
 	infrastructure.InitDB()
+
+	// 部屋の初期化処理
+	roomName := os.Getenv("DEFAULT_ROOM_NAME")
+	if roomName == "" {
+		roomName = "General"
+	}
+	if err := roomInit.CreateRoomWithSeats(roomName, 10); err != nil {
+		log.Printf("⚠️  初期ルーム作成失敗: %v", err)
+	}
 
 	// Ginのルータを作成
 	router := gin.Default()
