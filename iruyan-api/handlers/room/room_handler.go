@@ -8,6 +8,7 @@ import (
 	"iruyan-api/infrastructure"
 	"iruyan-api/models"
 	"iruyan-api/responses"
+	"log"
 
 	"net/http"
 	"strconv"
@@ -348,6 +349,8 @@ func TakeSeatHandler(c *gin.Context) {
 	seatNumberParam := c.Param("seatNumber")
 	iruyanID := c.PostForm("iruyanId")
 
+	log.Printf("roomIDParam: %s, seatNumberParam: %s, iruyanID: %s", roomIDParam, seatNumberParam, iruyanID)
+
 	// room_idをUUID型に変換してroomID変数に保存
 	roomID, err := uuid.Parse(roomIDParam)
 	if err != nil {
@@ -447,6 +450,8 @@ func LeaveSeatHandler(c *gin.Context) {
 	seatNumberParam := c.Param("seatNumber")
 	iruyanID := c.PostForm("iruyanId")
 
+	log.Printf("roomIDParam: %d, seatNumberParam: %d, iruyanID: %d", roomIDParam, seatNumberParam, iruyanID)
+
 	// room_idをUUID型に変換してroomID変数に保存
 	roomID, err := uuid.Parse(roomIDParam)
 	if err != nil {
@@ -525,4 +530,60 @@ func LeaveSeatHandler(c *gin.Context) {
 		"roomId":     roomID,
 		"seatNumber": seatNumber,
 	})
+}
+
+// GetSeatedUsersInRoomHandler godoc
+// @Summary Get seated users in a specific room
+// @Description Returns a list of users currently seated in the given room
+// @Tags room
+// @Produce json
+// @Param roomId path string true "Room ID"
+// @Success 200 {array} responses.SeatStatusResponse
+// @Failure 500 {object} responses.ErrorResponse
+// @Router /rooms/{roomId}/seats/status [get]
+func GetSeatedUsersInRoomHandler(c *gin.Context) {
+	roomIDParam := c.Param("roomId")
+
+	roomID, err := uuid.Parse(roomIDParam)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, responses.ErrorResponse{
+			Message: "Invalid roomID format",
+		})
+		return
+	}
+
+	var workTimes []models.WorkTime
+	if err := infrastructure.DB.
+		Preload("User").
+		Where("room_id = ? AND seat_number > 0", roomID).
+		Find(&workTimes).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
+			Message: "Failed to retrieve seat status",
+		})
+		return
+	}
+
+	// 誰も座っていない場合は空配列を返す
+	if len(workTimes) == 0 {
+		c.JSON(http.StatusOK, []responses.SeatStatusResponse{})
+		return
+	}
+
+	// 整形して返す
+	response := make([]responses.SeatStatusResponse, 0, len(workTimes))
+	for _, wt := range workTimes {
+		response = append(response, responses.SeatStatusResponse{
+			SeatNumber: wt.SeatNumber,
+			IruyanID:   wt.User.IruyanID,
+			UserName:   wt.User.Name,
+			Email:      wt.User.Email,
+			AvatarUrl:  "",                  // GORMでUserにAvatarUrlフィールドがある場合
+			Task:       wt.Task,             // WorkTimeにTaskがある想定
+			Note:       "",                  // WorkTimeにNoteがある想定
+			Status:     "",                  // enumなら文字列に変換
+			StartTime:  wt.EntryTime.Unix(), // time.TimeならUnix秒に変換
+		})
+	}
+
+	c.JSON(http.StatusOK, response)
 }

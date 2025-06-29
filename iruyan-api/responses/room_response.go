@@ -82,3 +82,15 @@ type LeaveRoomResponseSwagger struct {
 	LeavingTime string `json:"leavingTime"` // ISO8601表記想定
 	Duration    string `json:"duration"`    // e.g., "1h2m3s"
 }
+
+type SeatStatusResponse struct {
+	SeatNumber int    `json:"seat_number"`
+	IruyanID   string `json:"iruyan_id"`
+	UserName   string `json:"user_name"`
+	Email      string `json:"email"`
+	AvatarUrl  string `json:"avatar_url,omitempty"`
+	Task       string `json:"task,omitempty"`
+	Note       string `json:"note,omitempty"`
+	Status     string `json:"status"`
+	StartTime  int64  `json:"start_time"`
+}

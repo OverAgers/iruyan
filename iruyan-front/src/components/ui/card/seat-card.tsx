@@ -11,6 +11,7 @@ type SeatCardProps = {
   image?: string;
   note?: string;
   task?: string;
+  isCurrentUser: boolean; // ←追加
   onClick: () => void;
 };
 
@@ -36,17 +37,17 @@ const SeatCard: React.FC<SeatCardProps> = ({
       <Box display="flex" justifyContent="space-between" sx={{ px: 4, py: 2 }}>
         <Box display="flex" flexDirection="column" alignItems="center">
           <Typography level="title-lg" fontWeight="bold">
-            {isVacant ? "空席" : name}
+            {isVacant ? "空席" : name || "（名前なし）"}
           </Typography>
           <Avatar src={image} sx={{ width: 48, height: 48, marginTop: 1 }} />
         </Box>
         {!isVacant && (
           <Box display="flex" flexDirection="column" alignItems="flex-start">
             <Typography level="title-lg" fontWeight="bold" color="primary">
-              {task}
+              {task || ""}
             </Typography>
             <Typography level="title-lg" mt={1}>
-              {note}
+              {note || ""}
             </Typography>
           </Box>
         )}

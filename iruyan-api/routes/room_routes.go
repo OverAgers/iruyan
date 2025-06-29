@@ -27,4 +27,7 @@ func RegisterRoomRoutes(router *gin.Engine) {
 
 	// 離席
 	router.PUT("/rooms/:roomId/seat/:seatNumber/leave", room.LeaveSeatHandler)
+
+	// 入室している部屋の着席状況一覧取得
+	router.GET("/rooms/:roomId/seats/status", room.GetSeatedUsersInRoomHandler)
 }

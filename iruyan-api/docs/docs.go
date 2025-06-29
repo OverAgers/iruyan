@@ -566,6 +566,44 @@ const docTemplate = `{
                 }
             }
         },
+        "/rooms/{roomId}/seats/status": {
+            "get": {
+                "description": "Returns a list of users currently seated in the given room",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "room"
+                ],
+                "summary": "Get seated users in a specific room",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Room ID",
+                        "name": "roomId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/responses.SeatStatusResponse"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/user/fetch/all": {
             "get": {
                 "description": "Retrieves a list of all registered users",
@@ -1364,6 +1402,20 @@ const docTemplate = `{
                 },
                 "seatNumber": {
                     "type": "integer"
+                }
+            }
+        },
+        "responses.SeatStatusResponse": {
+            "type": "object",
+            "properties": {
+                "iruyan_id": {
+                    "type": "string"
+                },
+                "seat_number": {
+                    "type": "integer"
+                },
+                "user_name": {
+                    "type": "string"
                 }
             }
         },
