@@ -11,16 +11,17 @@ import { LoginForm } from "@/schema/login-form-schema";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { data, error, login } = usePostLoginRequest();
+  const { data, login } = usePostLoginRequest();
   const { errorMessage, showModal, handleError, closeModal } = useLoginErrorHandler();
 
   const onSuccess = useCallback(async (formData: LoginForm) => {
     try {
       await login(formData);
-    } catch (err: any) {
+    } catch (err: unknown) {
       // エラーレスポンスからステータスコードを取得
-      const statusCode = err.response?.status?.toString() || "UNKNOWN_ERROR";
-      const originalMessage = err.response?.data?.message || err.message || "Unknown error";
+      const axiosError = err as { response?: { status?: number; data?: { message?: string } }; message?: string };
+      const statusCode = axiosError.response?.status?.toString() || "UNKNOWN_ERROR";
+      const originalMessage = axiosError.response?.data?.message || axiosError.message || "Unknown error";
       handleError(statusCode, originalMessage);
     }
   }, [login, handleError]);
