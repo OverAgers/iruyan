@@ -1,5 +1,6 @@
 "use client";
 
+import React, { useState } from "react";
 import useUserStore from "@/stores/user-store";
 import MainButton from "@/components/ui/button/main-button";
 import AuthInputText from "@/components/ui/input/authorization-input-text";
@@ -14,18 +15,18 @@ type Props = {
 
 export default function UserLoginForm({ onSuccess }: Props) {
   const setUser = useUserStore((state) => state.setUser);
-  const { errors, setValue, onSubmit: handleFormSubmit } = UseLoginForm({
-    onSubmit,
-  });
+  const [loginError, setLoginError] = useState<string | null>(null); // ← エラー表示用 state
+  const { errors, setValue, onSubmit: handleFormSubmit } = UseLoginForm({ onSubmit });
   const { isMutating, login } = UseLoginRequest();
 
   async function onSubmit(formData: LoginForm) {
     try {
+      setLoginError(null);
       const userData = await login(formData as PostLoginRequest);
 
       const userInfo = {
         iruyanId: userData.user.iruyanId,
-        name: userData.user.userName, // ← APIのkeyに合わせる
+        name: userData.user.userName,
         email: userData.user.email,
         status: "working" as StatusType,
         workTime: 0,
@@ -34,25 +35,20 @@ export default function UserLoginForm({ onSuccess }: Props) {
       };
 
       setUser(userInfo);
-
       onSuccess?.(formData);
     } catch (error: any) {
       console.error("ログインに失敗しました", error);
 
-      // エラーの構造を見やすく出力
-      if (error?.response) {
-        console.log("🔴 error.response.data:", JSON.stringify(error.response.data, null, 2));
-      } else if (error?.message) {
-        console.log("🔴 error.message:", error.message);
-      } else {
-        console.log("🔴 error (raw):", JSON.stringify(error, null, 2));
-      }
+      const errorMessage =
+        error?.response?.data?.message || error?.message || "";
 
-      const message =
-        error?.response?.data?.message ??
-        error?.message ??
-        "ログインに失敗しました。";
-      alert(message);
+      if (errorMessage.includes("user not found")) {
+        setLoginError("ユーザーIDが存在しません");
+      } else if (errorMessage.includes("invalid password")) {
+        setLoginError("パスワードが正しくありません");
+      } else {
+        setLoginError("IDまたはパスワードが異なります");
+      }
     }
   }
 
@@ -63,6 +59,7 @@ export default function UserLoginForm({ onSuccess }: Props) {
         placeholder="ユーザーID"
         onChange={(e) => setValue("iruyanId", e.target.value)}
         error={errors.iruyanId}
+        type="text"
       />
       <AuthInputText
         label="パスワード"
@@ -71,6 +68,12 @@ export default function UserLoginForm({ onSuccess }: Props) {
         error={errors.password}
         type="password"
       />
+
+      {/* ログインエラー表示 */}
+      {loginError && (
+        <p className="text-red-600 text-sm mt-2 mb-1">{loginError}</p>
+      )}
+
       <div>
         <MainButton
           component="button"

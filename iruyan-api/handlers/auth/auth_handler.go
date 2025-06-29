@@ -47,7 +47,7 @@ func LoginHandler(c *gin.Context) {
 
 	if result.Error != nil {
 		errorHandler := errorhandler.ErrorHandler{}
-		errorHandler.Unauthorized(c, "authentication failed: invalid iruyanID")
+		errorHandler.Unauthorized(c, "authentication failed: user not found")
 		return
 	}
 
