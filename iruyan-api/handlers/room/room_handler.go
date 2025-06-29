@@ -5,7 +5,6 @@ package room
 import (
 	"fmt"
 	"iruyan-api/handlers/seat"
-	"iruyan-api/handlers/worktime"
 	"iruyan-api/infrastructure"
 	"iruyan-api/models"
 	"iruyan-api/responses"
@@ -196,8 +195,14 @@ func EnterRoomHandler(c *gin.Context) {
 		return
 	}
 
+	parsedRoomID, err := uuid.Parse(roomID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, responses.ErrorResponse{Message: "invalid room ID format"})
+		return
+	}
+
 	// WorkTimeに入室情報を記録
-	workTime, err := worktime.RecordEntry(user.ID, roomID, task)
+	workTime, err := models.RecordEntry(infrastructure.DB, iruyanID, parsedRoomID, task)
 	if err != nil {
 		if err.Error() == "user not found" {
 			c.JSON(http.StatusNotFound, responses.ErrorResponse{
@@ -220,7 +225,6 @@ func EnterRoomHandler(c *gin.Context) {
 		Message:   "Room entry recorded successfully",
 		RoomID:    workTime.RoomID.String(),
 		RoomName:  room.Name,
-		UserID:    fmt.Sprintf("%d", workTime.UserID),
 		EntryTime: workTime.EntryTime,
 		Task:      task,
 	})
@@ -271,8 +275,14 @@ func LeaveRoomHandler(c *gin.Context) {
 		return
 	}
 
+	parsedRoomID, err := uuid.Parse(roomID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, responses.ErrorResponse{Message: "invalid room ID format"})
+		return
+	}
+
 	// WorkTimeテーブルから最新の入室記録を取得（LeavingTimeがNULLのレコードを取得）
-	workTime, err := worktime.GetLatestEntry(user.ID, roomID)
+	workTime, err := models.GetLatestEntry(infrastructure.DB, iruyanID, parsedRoomID)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusBadRequest, responses.ErrorResponse{
@@ -312,18 +322,31 @@ func LeaveRoomHandler(c *gin.Context) {
 		Message:     "Left the room successfully",
 		RoomID:      roomID,
 		RoomName:    room.Name,
-		UserID:      fmt.Sprintf("%d", workTime.UserID),
 		EntryTime:   workTime.EntryTime,
 		LeavingTime: leavingTime,
 		Duration:    workTime.Duration,
 	})
 }
 
-// 着席
+// TakeSeatHandler godoc
+// @Summary ユーザーが座席に着席する
+// @Description 指定された部屋・座席番号にユーザーを着席させます。
+// @Tags seat
+// @Accept application/x-www-form-urlencoded
+// @Produce json
+// @Param roomId path string true "Room UUID"
+// @Param seatNumber path int true "Seat Number"
+// @Param iruyanId formData string true "Iruyan ID（ユーザー識別子）"
+// @Success 200 {object} map[string]interface{} "着席成功時のレスポンス"
+// @Failure 400 {object} responses.ErrorResponse "リクエスト形式や座席不整合時"
+// @Failure 404 {object} responses.ErrorResponse "ユーザーまたは座席が存在しない場合"
+// @Failure 409 {object} responses.ErrorResponse "座席がすでに他ユーザーに使用されている場合"
+// @Failure 500 {object} responses.ErrorResponse "サーバ内部エラー"
+// @Router /rooms/{roomId}/seat/{seatNumber}/take [put]
 func TakeSeatHandler(c *gin.Context) {
 	roomIDParam := c.Param("roomId")
 	seatNumberParam := c.Param("seatNumber")
-	userIDStr := c.PostForm("userId")
+	iruyanID := c.PostForm("iruyanId")
 
 	// room_idをUUID型に変換してroomID変数に保存
 	roomID, err := uuid.Parse(roomIDParam)
@@ -343,19 +366,9 @@ func TakeSeatHandler(c *gin.Context) {
 		return
 	}
 
-	// ユーザーIDをuintに変換
-	userIDUint, err := strconv.ParseUint(userIDStr, 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, responses.ErrorResponse{
-			Message: "Invalid user ID format",
-		})
-		return
-	}
-	userID := uint(userIDUint)
-
 	// ユーザーが存在するか確認
 	var user models.User
-	if err := infrastructure.DB.First(&user, userID).Error; err != nil {
+	if err := user.FindByIruyanID(infrastructure.DB, iruyanID); err != nil {
 		c.JSON(http.StatusNotFound, responses.ErrorResponse{
 			Message: "User not found",
 		})
@@ -383,7 +396,7 @@ func TakeSeatHandler(c *gin.Context) {
 	}
 
 	// WorkTimeテーブルからユーザの最新の入室記録を取得
-	workTime, err := worktime.GetLatestEntry(userID, roomIDParam)
+	workTime, err := models.GetLatestEntry(infrastructure.DB, iruyanID, roomID)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusBadRequest, responses.ErrorResponse{
@@ -415,11 +428,24 @@ func TakeSeatHandler(c *gin.Context) {
 	})
 }
 
-// 離席
+// LeaveSeatHandler godoc
+// @Summary ユーザーが座席から離席する
+// @Description ユーザーが現在着席中の座席から離れます。
+// @Tags seat
+// @Accept application/x-www-form-urlencoded
+// @Produce json
+// @Param roomId path string true "Room UUID"
+// @Param seatNumber path int true "Seat Number"
+// @Param iruyanId formData string true "Iruyan ID（ユーザー識別子）"
+// @Success 200 {object} map[string]interface{} "離席成功時のレスポンス"
+// @Failure 400 {object} responses.ErrorResponse "ユーザーが着席していない、または指定された座席と一致しない場合"
+// @Failure 404 {object} responses.ErrorResponse "ユーザーが存在しない場合"
+// @Failure 500 {object} responses.ErrorResponse "サーバ内部エラー"
+// @Router /rooms/{roomId}/seat/{seatNumber}/leave [put]
 func LeaveSeatHandler(c *gin.Context) {
 	roomIDParam := c.Param("roomId")
 	seatNumberParam := c.Param("seatNumber")
-	userIDStr := c.PostForm("userId")
+	iruyanID := c.PostForm("iruyanId")
 
 	// room_idをUUID型に変換してroomID変数に保存
 	roomID, err := uuid.Parse(roomIDParam)
@@ -439,19 +465,9 @@ func LeaveSeatHandler(c *gin.Context) {
 		return
 	}
 
-	// ユーザーIDをuintに変換
-	userIDUint, err := strconv.ParseUint(userIDStr, 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, responses.ErrorResponse{
-			Message: "Invalid user ID format",
-		})
-		return
-	}
-	userID := uint(userIDUint)
-
 	// ユーザーが存在するか確認
 	var user models.User
-	if err := infrastructure.DB.First(&user, userID).Error; err != nil {
+	if err := user.FindByIruyanID(infrastructure.DB, iruyanID); err != nil {
 		c.JSON(http.StatusNotFound, responses.ErrorResponse{
 			Message: "User not found",
 		})
@@ -459,7 +475,7 @@ func LeaveSeatHandler(c *gin.Context) {
 	}
 
 	// WorkTimeテーブルからユーザの最新の入室記録を取得
-	workTime, err := worktime.GetLatestEntry(userID, roomIDParam)
+	workTime, err := models.GetLatestEntry(infrastructure.DB, iruyanID, roomID)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusBadRequest, responses.ErrorResponse{
@@ -509,4 +525,60 @@ func LeaveSeatHandler(c *gin.Context) {
 		"roomId":     roomID,
 		"seatNumber": seatNumber,
 	})
+}
+
+// GetSeatedUsersInRoomHandler godoc
+// @Summary Get seated users in a specific room
+// @Description Returns a list of users currently seated in the given room
+// @Tags room
+// @Produce json
+// @Param roomId path string true "Room ID"
+// @Success 200 {array} responses.SeatStatusResponse
+// @Failure 500 {object} responses.ErrorResponse
+// @Router /rooms/{roomId}/seats/status [get]
+func GetSeatedUsersInRoomHandler(c *gin.Context) {
+	roomIDParam := c.Param("roomId")
+
+	roomID, err := uuid.Parse(roomIDParam)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, responses.ErrorResponse{
+			Message: "Invalid roomID format",
+		})
+		return
+	}
+
+	var workTimes []models.WorkTime
+	if err := infrastructure.DB.
+		Preload("User").
+		Where("room_id = ? AND seat_number > 0", roomID).
+		Find(&workTimes).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
+			Message: "Failed to retrieve seat status",
+		})
+		return
+	}
+
+	// 誰も座っていない場合は空配列を返す
+	if len(workTimes) == 0 {
+		c.JSON(http.StatusOK, []responses.SeatStatusResponse{})
+		return
+	}
+
+	// 整形して返す
+	response := make([]responses.SeatStatusResponse, 0, len(workTimes))
+	for _, wt := range workTimes {
+		response = append(response, responses.SeatStatusResponse{
+			SeatNumber: wt.SeatNumber,
+			IruyanID:   wt.User.IruyanID,
+			UserName:   wt.User.Name,
+			Email:      wt.User.Email,
+			AvatarUrl:  "",                  // GORMでUserにAvatarUrlフィールドがある場合
+			Task:       wt.Task,             // WorkTimeにTaskがある想定
+			Note:       "",                  // WorkTimeにNoteがある想定
+			Status:     "",                  // enumなら文字列に変換
+			StartTime:  wt.EntryTime.Unix(), // time.TimeならUnix秒に変換
+		})
+	}
+
+	c.JSON(http.StatusOK, response)
 }

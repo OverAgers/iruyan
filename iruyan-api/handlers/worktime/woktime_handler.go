@@ -1,93 +1,320 @@
-// Package worktime provides functions for handling work time records such as
-// recording entry times, retrieving recent logs, and calculating logs for the past week.
+// Package worktime provides HTTP handlers for recording and retrieving work time logs.
 package worktime
 
 import (
-	"fmt"
 	"iruyan-api/infrastructure"
 	"iruyan-api/models"
-	"log"
+	"iruyan-api/responses"
+	"net/http"
+	"strconv"
+	"strings"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
 
-// RecordEntry - WorkTimeテーブルに入室情報を記録
-func RecordEntry(userID uint, roomIDStr string, task string) (*models.WorkTime, error) {
-	log.Printf("[INFO] 入室処理開始 (user_id=%d, room_id=%s)", userID, roomIDStr)
+// EntryHandler godoc
+// @Summary Record entry time
+// @Description Creates a work time record when a user enters a room
+// @Tags worktime
+// @Produce json
+// @Param iruyanId formData string true "Iruyan ID" default(johndoe)
+// @Param roomId formData string true "Room UUID"
+// @Param task formData string false "Task description"
+// @Success 200 {object} responses.WorkTimeResponseSwagger
+// @Failure 400 {object} responses.ErrorResponse
+// @Failure 500 {object} responses.ErrorResponse
+// @Router /worktime/entry [post]
+func EntryHandler(c *gin.Context) {
+	iruyanID := c.PostForm("iruyanId")
+	roomIDStr := c.PostForm("roomId")
+	task := c.PostForm("task")
 
-	// 文字列のUUIDをパース
+	var user models.User
+	err := user.FindByIruyanID(infrastructure.DB, iruyanID)
+	if err != nil {
+		if strings.HasPrefix(err.Error(), "user not found with iruyan_id:") {
+			c.JSON(http.StatusNotFound, responses.ErrorResponse{
+				Message: "User not found",
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
+			Message: "Database error",
+		})
+		return
+	}
+
 	roomID, err := uuid.Parse(roomIDStr)
 	if err != nil {
-		log.Printf("[ERROR] 無効なroomID形式: %s", roomIDStr)
-		return nil, fmt.Errorf("invalid room ID format")
+		c.JSON(http.StatusBadRequest, responses.ErrorResponse{Message: "invalid room ID format"})
+		return
 	}
 
-	// 入室中かどうかを確認
 	var existing models.WorkTime
-	inRoom, err := existing.IsUserAlreadyInRoom(infrastructure.DB, userID, roomID)
+	inRoom, err := existing.IsUserAlreadyInRoom(infrastructure.DB, user.ID, roomID)
 	if err != nil {
-		log.Printf("[ERROR] 入室確認に失敗 (user_id=%d, room_id=%s): %v", userID, roomID, err)
-		return nil, err
+		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{Message: err.Error()})
+		return
 	}
 	if inRoom {
-		log.Printf("[WARN] すでに入室中 (user_id=%d, room_id=%s)", userID, roomID)
-		return nil, fmt.Errorf("user is already in the room")
+		c.JSON(http.StatusBadRequest, responses.ErrorResponse{Message: "user is already in the room"})
+		return
 	}
 
-	// 入室レコードを作成
-	entryTime := time.Now()
-	workTime := &models.WorkTime{
-		UserID:    userID,
-		RoomID:    roomID,
-		Task:      task,
-		EntryTime: entryTime,
+	now := time.Now()
+
+	workTime := models.WorkTime{
+		RoomID:      roomID,
+		UserID:      user.ID,
+		Task:        task,
+		EntryTime:   now,
+		LeavingTime: time.Time{},
+		Duration:    0,
 	}
 
-	if err := infrastructure.DB.Create(workTime).Error; err != nil {
-		log.Printf("[ERROR] WorkTime作成失敗 (user_id=%d, room_id=%s): %v", userID, roomID, err)
-		return nil, err
+	if err := infrastructure.DB.Create(&workTime).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{Message: err.Error()})
+		return
 	}
 
-	log.Printf("[INFO] 入室記録完了 (user_id=%d, room_id=%s, entry_time=%s)", userID, roomID, entryTime.Format(time.RFC3339))
-	return workTime, nil
+	resp := responses.WorkTimeResponse{
+		RoomID:      workTime.RoomID,
+		Task:        workTime.Task,
+		EntryTime:   workTime.EntryTime,
+		LeavingTime: time.Time{},
+		Duration:    0,
+	}
+
+	c.JSON(http.StatusOK, resp)
 }
 
-// GetLatestEntry - 最新の入室記録を取得
-func GetLatestEntry(userID uint, roomID string) (*models.WorkTime, error) {
+// GetLatestEntryHandler godoc
+// @Summary Get latest active entry
+// @Description Retrieves the latest work time record for a user that has not ended (leaving_time is null)
+// @Tags worktime
+// @Produce json
+// @Param iruyanId query string true "Iruyan ID" default(johndoe)
+// @Param roomId query string true "Room UUID"
+// @Success 200 {object} responses.WorkTimeResponseSwagger
+// @Failure 400 {object} responses.ErrorResponse
+// @Failure 404 {object} responses.ErrorResponse
+// @Router /worktime/latest [get]
+func GetLatestEntryHandler(c *gin.Context) {
+	iruyanID := c.Query("iruyanId")
+	roomIDStr := c.Query("roomId")
+
+	var user models.User
+	err := user.FindByIruyanID(infrastructure.DB, iruyanID)
+	if err != nil {
+		if strings.HasPrefix(err.Error(), "user not found with iruyan_id:") {
+			c.JSON(http.StatusNotFound, responses.ErrorResponse{
+				Message: "User not found",
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
+			Message: "Database error",
+		})
+		return
+	}
+
+	roomID, err := uuid.Parse(roomIDStr)
+	if iruyanID == "" || err != nil {
+		c.JSON(http.StatusBadRequest, responses.ErrorResponse{Message: "invalid parameters"})
+		return
+	}
+
 	var workTime models.WorkTime
 	if err := infrastructure.DB.
-		Where("user_id = ? AND room_id = ? AND leaving_time IS NULL", userID, roomID).
+		Where("user_id = ? AND room_id = ? AND leaving_time IS NULL", user.ID, roomID).
 		Order("entry_time desc").
 		First(&workTime).Error; err != nil {
-		return nil, err
+		c.JSON(http.StatusNotFound, responses.ErrorResponse{Message: "no active session found"})
+		return
 	}
-	return &workTime, nil
+
+	resp := responses.WorkTimeResponse{
+		IruyanID:    user.IruyanID,
+		RoomID:      workTime.RoomID,
+		Task:        workTime.Task,
+		EntryTime:   workTime.EntryTime,
+		LeavingTime: workTime.LeavingTime,
+		Duration:    workTime.Duration,
+	}
+
+	c.JSON(http.StatusOK, resp)
 }
 
-// GetLatestLogs - 最近N回の入室記録を取得
-func GetLatestLogs(userID uint, limitN int) ([]models.WorkTime, error) {
+// GetRecentLogsHandler godoc
+// @Summary Get recent work logs
+// @Description Retrieves the most recent N work time records for a user
+// @Tags worktime
+// @Produce json
+// @Param iruyanId query string true "Iruyan ID" default(johndoe)
+// @Param limit query int false "Number of records to return" default(5)
+// @Success 200 {array} responses.WorkTimeResponseSwagger
+// @Failure 400 {object} responses.ErrorResponse
+// @Failure 500 {object} responses.ErrorResponse
+// @Router /worktime/recent [get]
+func GetRecentLogsHandler(c *gin.Context) {
+	iruyanID := c.Query("iruyanId")
+	limitStr := c.DefaultQuery("limit", "5")
+
+	var user models.User
+	err := user.FindByIruyanID(infrastructure.DB, iruyanID)
+	if err != nil {
+		if strings.HasPrefix(err.Error(), "user not found with iruyan_id:") {
+			c.JSON(http.StatusNotFound, responses.ErrorResponse{
+				Message: "User not found",
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
+			Message: "Database error",
+		})
+		return
+	}
+
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil || limit <= 0 {
+		c.JSON(http.StatusBadRequest, responses.ErrorResponse{Message: "invalid limit"})
+		return
+	}
+
 	var workTimes []models.WorkTime
 	if err := infrastructure.DB.
-		Where("user_id = ?", userID).
+		Where("user_id = ?", user.ID).
 		Order("entry_time desc").
-		Limit(limitN).
+		Limit(limit).
 		Find(&workTimes).Error; err != nil {
-		return nil, err
+		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{Message: err.Error()})
+		return
 	}
-	return workTimes, nil
+
+	var result []responses.WorkTimeResponse
+	for _, wt := range workTimes {
+		result = append(result, responses.WorkTimeResponse{
+			IruyanID:    user.IruyanID,
+			RoomID:      wt.RoomID,
+			Task:        wt.Task,
+			EntryTime:   wt.EntryTime,
+			LeavingTime: wt.LeavingTime,
+			Duration:    wt.Duration,
+		})
+	}
+
+	c.JSON(http.StatusOK, result)
 }
 
-// GetLogForLastWeek - 1週間の作業記録を取得するメソッド
-func GetLogForLastWeek(userID uint) ([]models.WorkTime, error) {
-	var workTimes []models.WorkTime
-	// 1週間前の日時を計算
+// GetWeeklyLogsHandler godoc
+// @Summary Get weekly work logs
+// @Description Retrieves all work time records from the past 7 days for a user
+// @Tags worktime
+// @Produce json
+// @Param iruyanId query string true "Iruyan ID" default(johndoe)
+// @Success 200 {array} responses.WorkTimeResponseSwagger
+// @Failure 400 {object} responses.ErrorResponse
+// @Failure 500 {object} responses.ErrorResponse
+// @Router /worktime/weekly [get]
+func GetWeeklyLogsHandler(c *gin.Context) {
+	iruyanID := c.Query("iruyanId")
+
+	var user models.User
+	err := user.FindByIruyanID(infrastructure.DB, iruyanID)
+	if err != nil {
+		if strings.HasPrefix(err.Error(), "user not found with iruyan_id:") {
+			c.JSON(http.StatusNotFound, responses.ErrorResponse{
+				Message: "User not found",
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
+			Message: "Database error",
+		})
+		return
+	}
+
 	oneWeekAgo := time.Now().AddDate(0, 0, -6)
+
+	var workTimes []models.WorkTime
 	if err := infrastructure.DB.
-		Where("user_id = ? AND entry_time >= ?", userID, oneWeekAgo).
+		Where("user_id = ? AND entry_time >= ?", user.ID, oneWeekAgo).
 		Order("entry_time desc").
 		Find(&workTimes).Error; err != nil {
-		return nil, err
+		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{Message: err.Error()})
+		return
 	}
-	return workTimes, nil
+
+	var result []responses.WorkTimeResponse
+	for _, wt := range workTimes {
+		result = append(result, responses.WorkTimeResponse{
+			IruyanID:    user.IruyanID,
+			RoomID:      wt.RoomID,
+			Task:        wt.Task,
+			EntryTime:   wt.EntryTime,
+			LeavingTime: wt.LeavingTime,
+			Duration:    wt.Duration,
+		})
+	}
+
+	c.JSON(http.StatusOK, result)
+}
+
+// GetAllWorkTimeHandler godoc
+// @Summary Get all WorkTime records
+// @Description Retrieves all work time records from the database
+// @Tags worktime
+// @Produce json
+// @Success 200 {object} responses.WorkTimeListResponseSwagger
+// @Failure 500 {object} responses.ErrorResponse
+// @Router /worktime/fetch/all [get]
+func GetAllWorkTimeHandler(c *gin.Context) {
+	var workTimes []models.WorkTime
+
+	if err := infrastructure.DB.
+		Preload("User").
+		Preload("Room").
+		Find(&workTimes).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
+			Message: "Failed to retrieve work time records",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, responses.WorkTimeListResponse{
+		WorkTimes: workTimes,
+	})
+}
+
+// GetWorkTimeByIruyanIDHandler godoc
+// @Summary Get WorkTime records for a specific user
+// @Description Retrieves all work time records for a user identified by iruyanID
+// @Tags worktime
+// @Produce json
+// @Param iruyanId path string true "Iruyan ID" default(johndoe)
+// @Success 200 {object} responses.WorkTimeListResponseSwagger
+// @Failure 400 {object} responses.ErrorResponse
+// @Failure 500 {object} responses.ErrorResponse
+// @Router /worktime/fetch/{iruyanId} [get]
+func GetWorkTimeByIruyanIDHandler(c *gin.Context) {
+	iruyanID := c.Param("iruyanId")
+
+	var workTimes []models.WorkTime
+	if err := infrastructure.DB.
+		Joins("JOIN users ON users.id = work_times.user_id").
+		Where("users.iruyan_id = ?", iruyanID).
+		Preload("User").
+		Preload("Room").
+		Find(&workTimes).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
+			Message: "Failed to retrieve work time records for user",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, responses.WorkTimeListResponse{
+		WorkTimes: workTimes,
+	})
 }

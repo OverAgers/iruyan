@@ -72,7 +72,7 @@ export default function Lobby() {
         roomId: selectedRoomId,
       });
 
-      window.location.href = `/rooms/:${selectedRoomId}`;
+      window.location.href = `/rooms/${selectedRoomId}`;
     } catch (error) {
       console.error("部屋へのエントリーに失敗しました:", error);
       alert("入室に失敗しました");

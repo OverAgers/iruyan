@@ -7,30 +7,20 @@ import (
 )
 
 func RegisterUserRoutes(router *gin.Engine) {
-	// ユーザー画面
-	router.GET("/user/:iruyanId", user.PageHandler)
+	userGroup := router.Group("/user/:iruyanId")
+	{
+		userGroup.GET("", user.PageHandler)
+		userGroup.DELETE("/delete", user.DeleteHandler)
+		userGroup.GET("/work_info", user.WorkInfoHandler)
+		userGroup.GET("/together", user.TogetherTimeHandler)
+		userGroup.GET("/ranking", user.RankingHandler)
+		userGroup.GET("/recent_log", user.GetRecentLog)
+		userGroup.POST("/task", user.TaskHandler)
+	}
 
-	// ユーザーの削除
-	router.DELETE("/user/:iruyanId/delete", user.DeleteHandler)
-
-	// 1週間の作業日取得
-	router.GET("/user/:iruyanId/work_info", user.WorkInfoHandler)
-
-	// 一緒に居た時間
-	router.GET("/user/:iruyanId/together", user.TogetherTimeHandler)
-
-	// 集中ランキング
-	router.GET("/user/:iruyanId/ranking", user.RankingHandler)
-
-	// 直近5回分の作業時間を取得
-	router.GET("/user/:iruyanId/recent_log", user.GetRecentLog)
-
-	// タスクの更新
-	router.POST("/user/:iruyanId/task", user.TaskHandler)
-
-	// ユーザーの全件取得
-	router.GET("/user/fetch/all", user.GetAllUsersHandler)
-
-	// 特定ユーザーの取得
-	router.GET("/user/fetch/:iruyanId", user.GetUserByIruyanIDHandler)
+	fetchGroup := router.Group("/user/fetch")
+	{
+		fetchGroup.GET("/all", user.GetAllUsersHandler)
+		fetchGroup.GET("/:iruyanId", user.GetUserByIruyanIDHandler)
+	}
 }
