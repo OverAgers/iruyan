@@ -1,5 +1,5 @@
-# ベースイメージとしてNode.js 20.12.2を使用
-FROM node:20.12.2
+# ベースイメージとしてNode.js 22.17.0を使用
+FROM node:22.17.0-slim
 
 # pnpmをグローバルにインストール
 RUN npm install -g pnpm
