@@ -8,23 +8,29 @@ import (
 
 func RegisterUserRoutes(router *gin.Engine) {
 	// ユーザー画面
-	router.GET("/user/:user_id", user.PageHandler)
+	router.GET("/user/:iruyanId", user.PageHandler)
 
 	// ユーザーの削除
-	router.POST("/user/:user_id/delete", user.DeleteHandler)
+	router.DELETE("/user/:iruyanId/delete", user.DeleteHandler)
 
 	// 1週間の作業日取得
-	router.GET("/user/:user_id/work_info", user.WorkInfoHandler)
+	router.GET("/user/:iruyanId/work_info", user.WorkInfoHandler)
 
 	// 一緒に居た時間
-	router.GET("/user/:user_id/together", user.TogetherTimeHandler)
+	router.GET("/user/:iruyanId/together", user.TogetherTimeHandler)
 
 	// 集中ランキング
-	router.GET("/user/:user_id/ranking", user.RankingHandler)
+	router.GET("/user/:iruyanId/ranking", user.RankingHandler)
 
 	// 直近5回分の作業時間を取得
-	router.GET("/user/:user_id/recent_log", user.GetRecentLog)
+	router.GET("/user/:iruyanId/recent_log", user.GetRecentLog)
 
 	// タスクの更新
-	router.POST("/user/:user_id/task", user.TaskHandler)
+	router.POST("/user/:iruyanId/task", user.TaskHandler)
+
+	// ユーザーの全件取得
+	router.GET("/user/fetch/all", user.GetAllUsersHandler)
+
+	// 特定ユーザーの取得
+	router.GET("/user/fetch/:iruyanId", user.GetUserByIruyanIDHandler)
 }

@@ -97,6 +97,15 @@ func (u *User) CheckPassword(password string) bool {
 	return err == nil
 }
 
+// GetAllUsers retrieves all users from the database.
+func GetAllUsers(db *gorm.DB) ([]User, error) {
+	var users []User
+	if err := db.Find(&users).Error; err != nil {
+		return nil, err
+	}
+	return users, nil
+}
+
 // FindByID - IDを元にUserが存在するかを検索するメソッド
 func (u *User) FindByID(db *gorm.DB, userID uint) error {
 	if err := db.Where("id = ?", userID).First(u).Error; err != nil {
@@ -117,5 +126,19 @@ func (u *User) FindByIruyanID(db *gorm.DB, iruyanID string) error {
 		}
 		return fmt.Errorf("failed to find user by iruyan_id (%s): %w", iruyanID, err)
 	}
+	return nil
+}
+
+func (u *User) DeleteByIruyanID(db *gorm.DB, iruyanID string) error {
+	// まず削除対象のユーザーを取得
+	if err := u.FindByIruyanID(db, iruyanID); err != nil {
+		return fmt.Errorf("delete failed: %w", err)
+	}
+
+	// 見つかったユーザーを削除
+	if err := db.Delete(u).Error; err != nil {
+		return fmt.Errorf("failed to delete user with iruyan_id (%s): %w", iruyanID, err)
+	}
+
 	return nil
 }
