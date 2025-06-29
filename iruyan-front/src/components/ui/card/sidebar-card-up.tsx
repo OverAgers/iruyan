@@ -38,7 +38,7 @@ export default function SidebarCardUp() {
       .catch((error) => {
         console.error("ユーザーステータスの取得に失敗しました:", error);
       });
-  }, [currentUser]);
+  }, [currentUser, entryTime]);
 
   const handleUpdateTask = () => {
     if (!currentUser) return;

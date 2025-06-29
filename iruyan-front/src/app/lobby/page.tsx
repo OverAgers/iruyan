@@ -10,6 +10,7 @@ import useUserStore from "@/stores/user-store";
 import Webcam from "react-webcam";
 import useGetRoomList from "@/features/lobby/api/get-room-list";
 import usePostRoomEnterRequest from "@/features/lobby/api/post-room-enter";
+import Image from "next/image";
 // import usePostLogoutRequest from "@/features/lobby/api/post-user-logout";
 
 export default function Lobby() {
@@ -184,12 +185,12 @@ export default function Lobby() {
               onClick={() => setIsCameraOpen(true)}
             >
               {currentUser?.avatarUrl ? (
-                <img
+                <Image
                   src={currentUser.avatarUrl}
                   alt="Avatar"
+                  width={40}
+                  height={40}
                   style={{
-                    width: "100%",
-                    height: "100%",
                     borderRadius: "50%",
                     objectFit: "cover",
                   }}
@@ -240,12 +241,12 @@ export default function Lobby() {
                       }}
                       onClick={() => setSelectedRoomId(room.roomId)}
                     >
-                      <img
+                      <Image
                         src="/icons/icon_fox.jpg"
                         alt="Avatar"
+                        width={40}
+                        height={40}
                         style={{
-                          width: "40px",
-                          height: "40px",
                           borderRadius: "50%",
                           objectFit: "cover",
                         }}

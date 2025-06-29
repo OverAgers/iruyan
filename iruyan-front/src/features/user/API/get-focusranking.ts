@@ -19,9 +19,12 @@ export default function useGetFocusRanking(userId: string, roomId: string) {
         const data = getFocusRankingSchema.parse(res.data);
         console.log("data", data);
         return data;
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error 
+          ? error.message 
+          : 'Unknown error occurred';
         throw new Error(
-          `集中時間ランキング情報取得エラー: ${error.response?.data?.message || error.message}`
+          `集中時間ランキング情報取得エラー: ${errorMessage}`
         );
       }
     },

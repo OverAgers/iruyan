@@ -49,7 +49,7 @@ export const apiGet = async <T>(url: string): Promise<ApiResponse<T>> => {
   }
 };
 
-export const apiPost = async <T>(url: string, data?: any): Promise<ApiResponse<T>> => {
+export const apiPost = async <T>(url: string, data?: unknown): Promise<ApiResponse<T>> => {
   try {
     const response = await apiClient.post<ApiResponse<T>>(url, data);
     return response.data;
@@ -58,7 +58,7 @@ export const apiPost = async <T>(url: string, data?: any): Promise<ApiResponse<T
   }
 };
 
-export const apiPut = async <T>(url: string, data?: any): Promise<ApiResponse<T>> => {
+export const apiPut = async <T>(url: string, data?: unknown): Promise<ApiResponse<T>> => {
   try {
     const response = await apiClient.put<ApiResponse<T>>(url, data);
     return response.data;
