@@ -328,7 +328,21 @@ func LeaveRoomHandler(c *gin.Context) {
 	})
 }
 
-// 着席
+// TakeSeatHandler godoc
+// @Summary ユーザーが座席に着席する
+// @Description 指定された部屋・座席番号にユーザーを着席させます。
+// @Tags seat
+// @Accept application/x-www-form-urlencoded
+// @Produce json
+// @Param roomId path string true "Room UUID"
+// @Param seatNumber path int true "Seat Number"
+// @Param iruyanId formData string true "Iruyan ID（ユーザー識別子）"
+// @Success 200 {object} map[string]interface{} "着席成功時のレスポンス"
+// @Failure 400 {object} responses.ErrorResponse "リクエスト形式や座席不整合時"
+// @Failure 404 {object} responses.ErrorResponse "ユーザーまたは座席が存在しない場合"
+// @Failure 409 {object} responses.ErrorResponse "座席がすでに他ユーザーに使用されている場合"
+// @Failure 500 {object} responses.ErrorResponse "サーバ内部エラー"
+// @Router /rooms/{roomId}/seat/{seatNumber}/take [put]
 func TakeSeatHandler(c *gin.Context) {
 	roomIDParam := c.Param("roomId")
 	seatNumberParam := c.Param("seatNumber")
@@ -414,7 +428,20 @@ func TakeSeatHandler(c *gin.Context) {
 	})
 }
 
-// 離席
+// LeaveSeatHandler godoc
+// @Summary ユーザーが座席から離席する
+// @Description ユーザーが現在着席中の座席から離れます。
+// @Tags seat
+// @Accept application/x-www-form-urlencoded
+// @Produce json
+// @Param roomId path string true "Room UUID"
+// @Param seatNumber path int true "Seat Number"
+// @Param iruyanId formData string true "Iruyan ID（ユーザー識別子）"
+// @Success 200 {object} map[string]interface{} "離席成功時のレスポンス"
+// @Failure 400 {object} responses.ErrorResponse "ユーザーが着席していない、または指定された座席と一致しない場合"
+// @Failure 404 {object} responses.ErrorResponse "ユーザーが存在しない場合"
+// @Failure 500 {object} responses.ErrorResponse "サーバ内部エラー"
+// @Router /rooms/{roomId}/seat/{seatNumber}/leave [put]
 func LeaveSeatHandler(c *gin.Context) {
 	roomIDParam := c.Param("roomId")
 	seatNumberParam := c.Param("seatNumber")

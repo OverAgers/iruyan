@@ -480,6 +480,98 @@ paths:
       summary: Leave a room
       tags:
       - room
+  /rooms/{roomId}/seat/{seatNumber}/leave:
+    put:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: ユーザーが現在着席中の座席から離れます。
+      parameters:
+      - description: Room UUID
+        in: path
+        name: roomId
+        required: true
+        type: string
+      - description: Seat Number
+        in: path
+        name: seatNumber
+        required: true
+        type: integer
+      - description: Iruyan ID（ユーザー識別子）
+        in: formData
+        name: iruyanId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 離席成功時のレスポンス
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: ユーザーが着席していない、または指定された座席と一致しない場合
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+        "404":
+          description: ユーザーが存在しない場合
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+        "500":
+          description: サーバ内部エラー
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+      summary: ユーザーが座席から離席する
+      tags:
+      - seat
+  /rooms/{roomId}/seat/{seatNumber}/take:
+    put:
+      consumes:
+      - application/x-www-form-urlencoded
+      description: 指定された部屋・座席番号にユーザーを着席させます。
+      parameters:
+      - description: Room UUID
+        in: path
+        name: roomId
+        required: true
+        type: string
+      - description: Seat Number
+        in: path
+        name: seatNumber
+        required: true
+        type: integer
+      - description: Iruyan ID（ユーザー識別子）
+        in: formData
+        name: iruyanId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 着席成功時のレスポンス
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: リクエスト形式や座席不整合時
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+        "404":
+          description: ユーザーまたは座席が存在しない場合
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+        "409":
+          description: 座席がすでに他ユーザーに使用されている場合
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+        "500":
+          description: サーバ内部エラー
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+      summary: ユーザーが座席に着席する
+      tags:
+      - seat
   /user/{iruyanId}:
     get:
       description: Display user page for a specific user ID
