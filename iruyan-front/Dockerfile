@@ -1,8 +1,11 @@
-# ベースイメージとしてNode.js 22.xを使用
-FROM node:22-alpine
+# ベースイメージとしてNode.js 22.17.0を使用
+FROM node:22.17.0-alpine
 
 # pnpmをグローバルにインストール（package.jsonのpackageManagerと一致）
 RUN npm install -g pnpm@10.12.4
+
+# バージョン確認
+RUN node --version && pnpm --version
 
 # 作業ディレクトリを作成
 WORKDIR /app
@@ -11,7 +14,7 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml ./
 
 # 依存パッケージのインストール
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --prefer-frozen-lockfile
 
 # アプリケーションのソースコードをすべてコピー
 COPY . .
