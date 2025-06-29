@@ -13,6 +13,11 @@ on:
     # 毎週月曜日の午前9時にセキュリティチェックを実行
     - cron: '0 9 * * 1'
 
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
 jobs:
   quality-gates:
     runs-on: ubuntu-latest
