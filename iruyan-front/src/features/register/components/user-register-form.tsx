@@ -4,27 +4,26 @@ import MainButton from "@/components/ui/button/main-button";
 import AuthInputText from "@/components/ui/input/authorization-input-text";
 import UseRegisterForm from "@/features/register/hooks/use-register-hooks";
 import { RegisterForm } from "@/schema/register-form-schema";
-import { useState } from "react";
 import { UserInfo } from "@/types/user-info";
 import UsePostRegisterRequest from "../api/post-register";
 import useUserStore from "@/stores/user-store";
 
 type Props = {
   onSuccess: (data: UserInfo) => void;
+  onError?: (errorCode: string, errorMessage: string) => void;
 };
 
-export default function UserRegisterForm({ onSuccess }: Props) {
+export default function UserRegisterForm({ onSuccess, onError }: Props) {
   const setUser = useUserStore((state) => state.setUser);
-  const [errorMessage, setErrorMessage] = useState("");
 
   const {
     register: registerUser,
     isLoading,
-    error: registerError,
   } = UsePostRegisterRequest();
 
   async function onSubmit(formData: RegisterForm): Promise<void> {
     try {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { passwordConfirm, ...dataToSubmit } = formData;
       const userData = await registerUser(dataToSubmit);
 
@@ -32,18 +31,54 @@ export default function UserRegisterForm({ onSuccess }: Props) {
         iruyanId: userData.user.iruyanId,
         name: userData.user.userName,
         email: userData.user.email,
-        status: "idle", // 初期状態
+        status: "idle",
         workTime: 0,
         restTime: 0,
-        startTime: Date.now(), // number型
+        startTime: Date.now(),
       };
 
       setUser(userInfo);
       onSuccess(userInfo);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("登録に失敗しました", error);
-      setErrorMessage(error.message || "登録に失敗しました");
-      alert(errorMessage || "登録に失敗しました");
+      
+      let errorCode = "UNKNOWN_ERROR";
+      let errorMessage = "登録に失敗しました";
+      
+      // Check for AxiosError first (since AxiosError extends Error)
+      if (typeof error === 'object' && error !== null && 'response' in error && 'isAxiosError' in error) {
+        // Handle axios error response
+        const axiosError = error as any;
+        
+        // Extract error message from response
+        if (axiosError.response?.data?.message) {
+          errorMessage = axiosError.response.data.message;
+        } else if (axiosError.response?.data?.error) {
+          errorMessage = axiosError.response.data.error;
+        } else if (typeof axiosError.response?.data === 'string') {
+          errorMessage = axiosError.response.data;
+        }
+        
+        // Extract error code
+        if (axiosError.response?.status) {
+          errorCode = axiosError.response.status.toString();
+        }
+        if (axiosError.response?.data?.code) {
+          errorCode = axiosError.response.data.code;
+        }
+        
+        // Handle specific error messages
+        if (errorMessage.includes("already taken")) {
+          errorCode = "409";
+        }
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      
+      // Call parent error handler if provided
+      if (onError) {
+        onError(errorCode, errorMessage);
+      }
     }
   }
 

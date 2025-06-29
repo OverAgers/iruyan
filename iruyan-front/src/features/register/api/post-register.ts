@@ -1,7 +1,7 @@
 // src/features/register/api/post-register.ts
-import axios from "axios";
 import { useState, useCallback } from "react";
 import { postRegisterResponseSchema, PostRegisterRequest, PostRegisterResponse } from "@/schema/register-form-schema";
+import apiClient from "@/lib/api-client";
 
 export default function UsePostRegisterRequest() {
   const [data, setData] = useState<PostRegisterResponse | null>(null);
@@ -11,8 +11,8 @@ export default function UsePostRegisterRequest() {
   const register = useCallback(async (props: PostRegisterRequest) => {
     setIsLoading(true);
     try {
-      const res = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/register`,
+      const res = await apiClient.post(
+        `/register`,
         new URLSearchParams({
           iruyanId: props.iruyanId,
           userName: props.name,

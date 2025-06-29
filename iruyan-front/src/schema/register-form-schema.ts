@@ -10,7 +10,11 @@ const baseRegisterSchema = z.object({
     .regex(/^(?=.*[a-zA-Z])(?=.*\d)/, "英字と数字をそれぞれ少なくとも1つ含めてください"),
   name: z.string().min(1, "ユーザー名を入力してください"),
   email: z.string().email("有効なメールアドレスを入力してください"),
-  password: z.string().min(8, "パスワードは8文字以上で入力してください"),
+  password: z
+    .string()
+    .min(8, "パスワードは8文字以上で入力してください")
+    .regex(/[0-9]/, "少なくとも1つの数字を含めてください")
+    .regex(/[a-zA-Z]/, "少なくとも1つの英字を含めてください"),
   passwordConfirm: z.string(),
 });
 
