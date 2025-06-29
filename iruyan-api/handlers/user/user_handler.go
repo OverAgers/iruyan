@@ -3,7 +3,6 @@
 package user
 
 import (
-	"iruyan-api/handlers/worktime"
 	"iruyan-api/infrastructure"
 	"iruyan-api/models"
 	"iruyan-api/responses"
@@ -108,7 +107,7 @@ func WorkInfoHandler(c *gin.Context) {
 		return
 	}
 
-	workLogs, err := worktime.GetLogForLastWeek(user.ID)
+	workLogs, err := models.GetLogForLastWeek(infrastructure.DB, iruyanID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
 			Message: "Failed to retrieve work logs",
@@ -284,7 +283,7 @@ func GetRecentLog(c *gin.Context) {
 		return
 	}
 
-	workTimes, err := worktime.GetLatestLogs(user.ID, 5)
+	workTimes, err := models.GetLatestEntriesByUser(infrastructure.DB, iruyanID, 5)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusBadRequest, responses.ErrorResponse{

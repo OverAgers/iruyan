@@ -59,6 +59,7 @@ func main() {
 	routes.RegisterUserRoutes(router)
 	routes.RegisterRoomRoutes(router)
 	routes.RegisterSeatRoutes(router)
+	routes.RegisterWorktimeRoutes(router)
 
 	// サーバー起動
 	if err := router.Run(":8080"); err != nil {

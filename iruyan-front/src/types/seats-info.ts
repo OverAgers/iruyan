@@ -4,8 +4,8 @@ export type SeatsInfo = {
   seatNumber: number;
   isVacant: boolean;
   iruyanId?: string;
-  name?: string;
-  image?: string;
+  userName?: string;
+  userImage?: string;
   note?: string;
   task?: string;
 };

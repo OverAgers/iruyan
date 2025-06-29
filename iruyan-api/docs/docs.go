@@ -430,6 +430,180 @@ const docTemplate = `{
                 }
             }
         },
+        "/rooms/{roomId}/seat/{seatNumber}/leave": {
+            "put": {
+                "description": "ユーザーが現在着席中の座席から離れます。",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "seat"
+                ],
+                "summary": "ユーザーが座席から離席する",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Room UUID",
+                        "name": "roomId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Seat Number",
+                        "name": "seatNumber",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Iruyan ID（ユーザー識別子）",
+                        "name": "iruyanId",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "離席成功時のレスポンス",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "ユーザーが着席していない、または指定された座席と一致しない場合",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "ユーザーが存在しない場合",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "サーバ内部エラー",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/rooms/{roomId}/seat/{seatNumber}/take": {
+            "put": {
+                "description": "指定された部屋・座席番号にユーザーを着席させます。",
+                "consumes": [
+                    "application/x-www-form-urlencoded"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "seat"
+                ],
+                "summary": "ユーザーが座席に着席する",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Room UUID",
+                        "name": "roomId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Seat Number",
+                        "name": "seatNumber",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Iruyan ID（ユーザー識別子）",
+                        "name": "iruyanId",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "着席成功時のレスポンス",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "リクエスト形式や座席不整合時",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "ユーザーまたは座席が存在しない場合",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "座席がすでに他ユーザーに使用されている場合",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "サーバ内部エラー",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/rooms/{roomId}/seats/status": {
+            "get": {
+                "description": "Returns a list of users currently seated in the given room",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "room"
+                ],
+                "summary": "Get seated users in a specific room",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Room ID",
+                        "name": "roomId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/responses.SeatStatusResponse"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/user/fetch/all": {
             "get": {
                 "description": "Retrieves a list of all registered users",
@@ -759,6 +933,275 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/worktime/entry": {
+            "post": {
+                "description": "Creates a work time record when a user enters a room",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "worktime"
+                ],
+                "summary": "Record entry time",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "johndoe",
+                        "description": "Iruyan ID",
+                        "name": "iruyanId",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Room UUID",
+                        "name": "roomId",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Task description",
+                        "name": "task",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.WorkTimeResponseSwagger"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/worktime/fetch/all": {
+            "get": {
+                "description": "Retrieves all work time records from the database",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "worktime"
+                ],
+                "summary": "Get all WorkTime records",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.WorkTimeListResponseSwagger"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/worktime/fetch/{iruyanId}": {
+            "get": {
+                "description": "Retrieves all work time records for a user identified by iruyanID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "worktime"
+                ],
+                "summary": "Get WorkTime records for a specific user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "johndoe",
+                        "description": "Iruyan ID",
+                        "name": "iruyanId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.WorkTimeListResponseSwagger"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/worktime/latest": {
+            "get": {
+                "description": "Retrieves the latest work time record for a user that has not ended (leaving_time is null)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "worktime"
+                ],
+                "summary": "Get latest active entry",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "johndoe",
+                        "description": "Iruyan ID",
+                        "name": "iruyanId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Room UUID",
+                        "name": "roomId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.WorkTimeResponseSwagger"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/worktime/recent": {
+            "get": {
+                "description": "Retrieves the most recent N work time records for a user",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "worktime"
+                ],
+                "summary": "Get recent work logs",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "johndoe",
+                        "description": "Iruyan ID",
+                        "name": "iruyanId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 5,
+                        "description": "Number of records to return",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/responses.WorkTimeResponseSwagger"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/worktime/weekly": {
+            "get": {
+                "description": "Retrieves all work time records from the past 7 days for a user",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "worktime"
+                ],
+                "summary": "Get weekly work logs",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "johndoe",
+                        "description": "Iruyan ID",
+                        "name": "iruyanId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/responses.WorkTimeResponseSwagger"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -830,6 +1273,9 @@ const docTemplate = `{
                     "description": "ISO8601表記想定",
                     "type": "string"
                 },
+                "iruyanId": {
+                    "type": "string"
+                },
                 "leavingTime": {
                     "description": "ISO8601表記想定",
                     "type": "string"
@@ -841,9 +1287,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "roomName": {
-                    "type": "string"
-                },
-                "userId": {
                     "type": "string"
                 }
             }
@@ -962,6 +1405,20 @@ const docTemplate = `{
                 }
             }
         },
+        "responses.SeatStatusResponse": {
+            "type": "object",
+            "properties": {
+                "iruyan_id": {
+                    "type": "string"
+                },
+                "seat_number": {
+                    "type": "integer"
+                },
+                "user_name": {
+                    "type": "string"
+                }
+            }
+        },
         "responses.User": {
             "type": "object",
             "properties": {
@@ -1004,6 +1461,17 @@ const docTemplate = `{
                 }
             }
         },
+        "responses.WorkTimeListResponseSwagger": {
+            "type": "object",
+            "properties": {
+                "work_times": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.WorkTimeResponseSwagger"
+                    }
+                }
+            }
+        },
         "responses.WorkTimeLogSwagger": {
             "type": "object",
             "properties": {
@@ -1014,6 +1482,32 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "leavingTime": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.WorkTimeResponseSwagger": {
+            "type": "object",
+            "properties": {
+                "duration": {
+                    "description": "formatted like \"1h23m\"",
+                    "type": "string"
+                },
+                "entryTime": {
+                    "description": "RFC3339",
+                    "type": "string"
+                },
+                "iruyanId": {
+                    "type": "string"
+                },
+                "leavingTime": {
+                    "description": "RFC3339 or nil",
+                    "type": "string"
+                },
+                "roomId": {
+                    "type": "string"
+                },
+                "task": {
                     "type": "string"
                 }
             }

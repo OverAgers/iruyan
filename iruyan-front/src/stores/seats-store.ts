@@ -7,8 +7,9 @@ import { occupySeat, vacateSeat } from "@/utils/seat-utils";
 export type SeatStore = {
   seats: SeatsInfo[];
   sitOnSeat: (id: string, userInfo: UserInfo) => void;
-  leaveSeat: (id: string) => void;
-  moveSeat: (newSeatId: string, userInfo: UserInfo) => void; // 新しいアクションを追加
+  leaveSeat: (id: string, userInfo: UserInfo) => void;
+  moveSeat: (newSeatId: string, userInfo: UserInfo) => void;
+  setSeatUser: (seatNumber: number, userInfo: SeatsInfo) => void;
 };
 
 const initialSeats: SeatsInfo[] = [
@@ -37,23 +38,51 @@ const useSeatStore = create<SeatStore>((set) => ({
       seats: vacateSeat(state.seats, id),
     })),
 
-  moveSeat: (newSeatId, userInfo) => {
+  moveSeat: (newSeatId, userInfo) =>
     set((state) => {
-      const currentSeat = state.seats.find(
-        (seat) => seat.iruyanId === userInfo.iruyanId && !seat.isVacant
+      const vacatedSeats = state.seats.map((seat) =>
+        seat.iruyanId === userInfo.iruyanId
+          ? {
+              ...seat,
+              isVacant: true,
+              iruyanId: "",
+              userName: "",
+              userImage: "",
+              task: "",
+              note: "",
+            }
+          : seat
       );
 
-      let updatedSeats = state.seats;
-
-      if (currentSeat) {
-        updatedSeats = vacateSeat(updatedSeats, currentSeat.seatId);
-      }
-
-      updatedSeats = occupySeat(updatedSeats, newSeatId, userInfo);
+      const updatedSeats = vacatedSeats.map((seat) =>
+        seat.seatId === newSeatId
+          ? {
+              ...seat,
+              isVacant: false,
+              iruyanId: userInfo.iruyanId,
+              userName: userInfo.name,
+              userImage: userInfo.avatarUrl ?? "",
+              task: userInfo.task ?? "",
+              note: userInfo.note ?? "",
+            }
+          : seat
+      );
 
       return { seats: updatedSeats };
-    });
-  },
+    }),
+
+  setSeatUser: (seatNumber, userInfo) =>
+    set((state) => ({
+      seats: state.seats.map((seat) =>
+        seat.seatNumber === seatNumber
+          ? {
+              ...seat,
+              ...userInfo,
+              isVacant: false,
+            }
+          : seat
+      ),
+    })),
 }));
 
 export default useSeatStore;
