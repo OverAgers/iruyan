@@ -47,7 +47,7 @@ jobs:
 
     - name: Install dependencies
       working-directory: ./iruyan-front
-      run: pnpm install --frozen-lockfile
+      run: pnpm install --prefer-frozen-lockfile
 
     - name: Run ESLint
       working-directory: ./iruyan-front
@@ -105,7 +105,7 @@ jobs:
 
     - name: Install dependencies
       working-directory: ./iruyan-front
-      run: pnpm install --frozen-lockfile
+      run: pnpm install --prefer-frozen-lockfile
 
     - name: Build application
       working-directory: ./iruyan-front
@@ -139,7 +139,7 @@ jobs:
 
     - name: Install dependencies
       working-directory: ./iruyan-front
-      run: pnpm install --frozen-lockfile
+      run: pnpm install --prefer-frozen-lockfile
 
     - name: Run npm audit
       working-directory: ./iruyan-front
@@ -208,7 +208,7 @@ jobs:
 
     - name: Install dependencies
       working-directory: ./iruyan-front
-      run: pnpm install --frozen-lockfile
+      run: pnpm install --prefer-frozen-lockfile
 
     - name: Build for performance testing
       working-directory: ./iruyan-front
