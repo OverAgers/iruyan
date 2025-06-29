@@ -1,11 +1,10 @@
 // Updated to fix ESLint errors - StatusType and any type issues resolved
-import React from "react";
+import React, { useEffect } from "react";
 import SeatCard from "@/components/ui/card/seat-card";
 import { Box, Grid2, Typography } from "@mui/material";
 import useSeatStore from "@/stores/seats-store";
 import useUserStore from "@/stores/user-store";
 import { useParams } from "next/navigation";
-import { StatusType } from "@/types/user-info";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -34,7 +33,11 @@ export default function Seats() {
           throw new Error("座席情報の形式が不正です");
         }
 
-        seatStatus.forEach((seat: any) => {
+        seatStatus.forEach((seat: {
+          seat_number: number;
+          iruyan_id?: string;
+          user_name?: string;
+        }) => {
           setSeatUser(seat.seat_number, {
             seatId: String(seat.seat_number), // seatId は文字列
             seatNumber: seat.seat_number,
@@ -49,8 +52,9 @@ export default function Seats() {
         });
 
 
-      } catch (err: any) {
-        alert(`座席情報取得エラー: ${err.message}`);
+      } catch (err: unknown) {
+        const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+        alert(`座席情報取得エラー: ${errorMessage}`);
       }
     };
 
@@ -97,8 +101,9 @@ export default function Seats() {
       } else {
         leaveSeat(seatId, currentUser); // 離席処理
       }
-    } catch (error: any) {
-      alert(`操作に失敗しました: ${error.message}`);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      alert(`操作に失敗しました: ${errorMessage}`);
     }
   };
 
