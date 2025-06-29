@@ -113,44 +113,11 @@ export default function Lobby() {
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        paddingBottom: "40px",
+        paddingBottom: "80px",
       })}>
         <Typography level="h4" sx={{ mb: 1, fontSize: "40px" }}>
           ご案内用紙
         </Typography>
-
-        {/* 部屋一覧表示 */}
-        {roomList.data && roomList.data.rooms.length > 0 && (
-          <Box
-            sx={{
-              mt: 4,
-              p: 2,
-              bgcolor: "white",
-              borderRadius: 2,
-              boxShadow: 2,
-              width: "80%",
-            }}
-          >
-            <Typography sx={{ mb: 2 }}>現在の部屋一覧</Typography>
-            {roomList.data.rooms.map((room) => (
-              <Box
-                key={room.roomId}
-                sx={{
-                  p: 1,
-                  border: "1px solid #ccc",
-                  borderRadius: 1,
-                  mb: 1,
-                  cursor: "pointer",
-                  backgroundColor: selectedRoomId === room.roomId ? "#e0f7fa" : "#ffffff",
-                  "&:hover": { backgroundColor: "#f0f0f0" },
-                }}
-                onClick={() => setSelectedRoomId(room.roomId)}
-              >
-                <Typography>{room.roomName}</Typography>
-              </Box>
-            ))}
-          </Box>
-        )}
 
         <Typography level="h4" sx={{ mb: 3, color: "text.secondary" }}>
           {currentUser?.name}さん、ごゆっくりどうぞ
@@ -176,7 +143,7 @@ export default function Lobby() {
               mr: 2,
             }}
           >
-            <Typography level="h4">今日のアイコン</Typography>
+            <Typography level="h4" sx={({ mb: 2 })}>今日のアイコン</Typography>
             <Button
               variant="plain"
               sx={{
@@ -210,14 +177,61 @@ export default function Lobby() {
           <Box
             sx={{
               display: "flex",
-              alignItems: "flex-start",
+              alignItems: "center",
               justifyContent: "center",
               flexDirection: "column",
-              gap: "44px",
+              gap: "20px",
+              mb: 6
             }}
           >
+            {/* 部屋一覧表示 */}
+            {roomList.data && roomList.data.rooms.length > 0 && (
+              <Box
+                sx={{
+                  borderRadius: 2,
+                  boxShadow: 2,
+                  width: "100%",
+                }}
+              >
+                <Box sx={{ display: "flex", alignItems: "baseLine", gap: "16px" }}>
+                  <Typography level="h4" sx={{ mb: 1, fontSize: "14px" }}>入室できる部屋一覧</Typography>
+                  <Typography sx={{ width: "20px", height: "20px", borderRadius: "50%", textAlign: "center", lineHeight: "20px", bgcolor: "#7A8764", color: "white", fontSize: "12px" }}>{roomList.data.rooms.length}</Typography>
+                </Box>
+                <Box sx={({ display: "flex", gap: "8px", maxWidth: "450px", overflow: "scroll" })}>
+                  {roomList.data.rooms.map((room) => (
+                    <Box
+                      key={room.roomId}
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px",
+                        padding: "10px 14px",
+                        border: "1px solid #ccc",
+                        borderRadius: 4,
+                        cursor: "pointer",
+                        backgroundColor: selectedRoomId === room.roomId ? "#e0f7fa" : "#ffffff",
+                        "&:hover": { backgroundColor: "#f0f0f0" },
+                      }}
+                      onClick={() => setSelectedRoomId(room.roomId)}
+                    >
+                      <img
+                        src="/icons/icon_fox.jpg"
+                        alt="Avatar"
+                        style={{
+                          width: "40px",
+                          height: "40px",
+                          borderRadius: "50%",
+                          objectFit: "cover",
+                        }}
+                      />
+                      <Typography sx={({ fontSize: "14px", })}>{room.roomName}</Typography>
+                    </Box>
+                  ))}
+                </Box>
+              </Box>
+            )}
             <Box sx={{ display: "flex", flexDirection: "column", width: "30vw" }}>
-              <Typography level="h4" sx={{ mb: 1 }}>
+              <Typography level="h4" sx={{ mb: 1, fontSize: "14px" }}>
                 作業内容
               </Typography>
               <TextField
@@ -225,11 +239,28 @@ export default function Lobby() {
                 fullWidth
                 value={taskInput}
                 onChange={(e) => setTaskInput(e.target.value)}
-                sx={{ bgcolor: "white" }}
+                sx={{
+                  bgcolor: "white",
+                  fontSize: "16px",
+                  height: 40, // 外枠の高さ
+                  '& .MuiInputBase-root': {
+                    height: '100%',        // InputBase を高さに合わせる
+                    alignItems: 'center',  // テキストを中央に揃える
+                  },
+                  '& input': {
+                    height: '100%',
+                    boxSizing: 'border-box',
+                    padding: '0 14px',     // 左右の padding を保持
+                  },
+                  '& input::placeholder': {
+                    fontSize: '14px', // ← placeholder のフォントサイズ
+                    color: '#999',     // ← 任意で色も調整可能
+                  },
+                }}
               />
             </Box>
             <Box sx={{ display: "flex", flexDirection: "column", width: "30vw" }}>
-              <Typography level="h4" sx={{ mb: 1 }}>
+              <Typography level="h4" sx={{ mb: 1, fontSize: "14px" }}>
                 今日のやる気 / つぶやき
               </Typography>
               <TextField
@@ -237,7 +268,24 @@ export default function Lobby() {
                 fullWidth
                 value={noteInput}
                 onChange={(e) => setNoteInput(e.target.value)}
-                sx={{ bgcolor: "white" }}
+                sx={{
+                  bgcolor: "white",
+                  fontSize: "16px",
+                  height: 40, // 外枠の高さ
+                  '& .MuiInputBase-root': {
+                    height: '100%',        // InputBase を高さに合わせる
+                    alignItems: 'center',  // テキストを中央に揃える
+                  },
+                  '& input': {
+                    height: '100%',
+                    boxSizing: 'border-box',
+                    padding: '0 14px',     // 左右の padding を保持
+                  },
+                  '& input::placeholder': {
+                    fontSize: '14px', // ← placeholder のフォントサイズ
+                    color: '#999',     // ← 任意で色も調整可能
+                  },
+                }}
               />
             </Box>
           </Box>
@@ -252,12 +300,13 @@ export default function Lobby() {
           onClick={handleUpdateUser}
           disabled={roomList.isLoading}
         />
-      </Box>
+      </Box >
 
       {/* カメラ撮影モーダル */}
       <Modal
         open={isCameraOpen}
-        onClose={() => setIsCameraOpen(false)}
+        onClose={() => setIsCameraOpen(false)
+        }
         aria-labelledby="camera-modal-title"
         aria-describedby="camera-modal-description"
       >
@@ -296,7 +345,7 @@ export default function Lobby() {
             </Button>
           </Box>
         </Box>
-      </Modal>
+      </Modal >
     </Box >
   );
 }
