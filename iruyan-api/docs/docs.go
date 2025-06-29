@@ -841,6 +841,48 @@ const docTemplate = `{
                 }
             }
         },
+        "/worktime/fetch/{iruyanId}": {
+            "get": {
+                "description": "Retrieves all work time records for a user identified by iruyanID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "worktime"
+                ],
+                "summary": "Get WorkTime records for a specific user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "johndoe",
+                        "description": "Iruyan ID",
+                        "name": "iruyanId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.WorkTimeListResponseSwagger"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/worktime/latest": {
             "get": {
                 "description": "Retrieves the latest work time record for a user that has not ended (leaving_time is null)",

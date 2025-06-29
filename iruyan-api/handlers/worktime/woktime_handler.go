@@ -287,3 +287,34 @@ func GetAllWorkTimeHandler(c *gin.Context) {
 		WorkTimes: workTimes,
 	})
 }
+
+// GetWorkTimeByIruyanIDHandler godoc
+// @Summary Get WorkTime records for a specific user
+// @Description Retrieves all work time records for a user identified by iruyanID
+// @Tags worktime
+// @Produce json
+// @Param iruyanId path string true "Iruyan ID" default(johndoe)
+// @Success 200 {object} responses.WorkTimeListResponseSwagger
+// @Failure 400 {object} responses.ErrorResponse
+// @Failure 500 {object} responses.ErrorResponse
+// @Router /worktime/fetch/{iruyanId} [get]
+func GetWorkTimeByIruyanIDHandler(c *gin.Context) {
+	iruyanID := c.Param("iruyanId")
+
+	var workTimes []models.WorkTime
+	if err := infrastructure.DB.
+		Joins("JOIN users ON users.id = work_times.user_id").
+		Where("users.iruyan_id = ?", iruyanID).
+		Preload("User").
+		Preload("Room").
+		Find(&workTimes).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
+			Message: "Failed to retrieve work time records for user",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, responses.WorkTimeListResponse{
+		WorkTimes: workTimes,
+	})
+}

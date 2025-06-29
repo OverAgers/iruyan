@@ -11,6 +11,8 @@ func RegisterWorktimeRoutes(router *gin.Engine) {
 	{
 		worktimeGroup.GET("/fetch/all", worktime.GetAllWorkTimeHandler)
 
+		worktimeGroup.GET("/fetch/:iruyanId", worktime.GetWorkTimeByIruyanIDHandler)
+
 		// POST: 入室処理（エントリ登録）
 		worktimeGroup.POST("/entry", worktime.EntryHandler)
 

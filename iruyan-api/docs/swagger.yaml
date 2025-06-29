@@ -738,6 +738,34 @@ paths:
       summary: Record entry time
       tags:
       - worktime
+  /worktime/fetch/{iruyanId}:
+    get:
+      description: Retrieves all work time records for a user identified by iruyanID
+      parameters:
+      - default: johndoe
+        description: Iruyan ID
+        in: path
+        name: iruyanId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.WorkTimeListResponseSwagger'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+      summary: Get WorkTime records for a specific user
+      tags:
+      - worktime
   /worktime/fetch/all:
     get:
       description: Retrieves all work time records from the database
