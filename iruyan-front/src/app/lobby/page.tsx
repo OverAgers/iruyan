@@ -89,21 +89,33 @@ export default function Lobby() {
         backgroundSize: "cover",
       }}
     >
-      <SubButton
-        title="ログアウト"
-        size="lg"
-        onClick={handleLogout}
-        sx={{ position: "absolute", top: "37px", right: "200px" }}
-      />
-      <SubButton
-        title="来店記録"
-        size="lg"
-        onClick={() => (window.location.href = "/user")}
-        sx={{ position: "absolute", top: "37px", right: "41px" }}
-      />
+      <Box sx={({
+        position: "absolute",
+        top: 0,
+        right: 0,
+        display: "flex",
+        gap: "16px",
+        padding: "32px"
+      })}>
+        <SubButton
+          title="ログアウト"
+          size="lg"
+          onClick={handleLogout}
+        />
+        <SubButton
+          title="来店記録"
+          size="lg"
+          onClick={() => (window.location.href = "/user")}
+        />
+      </Box>
 
-      <Box display={"flex"} flexDirection={"column"} alignItems={"center"} mb={20}>
-        <Typography level="h4" sx={{ mb: 1, fontSize: "48px" }}>
+      <Box sx={({
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        paddingBottom: "40px",
+      })}>
+        <Typography level="h4" sx={{ mb: 1, fontSize: "40px" }}>
           ご案内用紙
         </Typography>
 
@@ -206,7 +218,7 @@ export default function Lobby() {
           >
             <Box sx={{ display: "flex", flexDirection: "column", width: "30vw" }}>
               <Typography level="h4" sx={{ mb: 1 }}>
-                ・作業内容
+                作業内容
               </Typography>
               <TextField
                 placeholder="勉強"
@@ -218,7 +230,7 @@ export default function Lobby() {
             </Box>
             <Box sx={{ display: "flex", flexDirection: "column", width: "30vw" }}>
               <Typography level="h4" sx={{ mb: 1 }}>
-                ・今日のやる気 / つぶやき
+                今日のやる気 / つぶやき
               </Typography>
               <TextField
                 placeholder="課題やばい、、よ"
@@ -285,6 +297,6 @@ export default function Lobby() {
           </Box>
         </Box>
       </Modal>
-    </Box>
+    </Box >
   );
 }
