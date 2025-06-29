@@ -422,14 +422,393 @@
                     }
                 }
             }
+        },
+        "/user/fetch/all": {
+            "get": {
+                "description": "Retrieves a list of all registered users",
+                "tags": [
+                    "user"
+                ],
+                "summary": "Get all users",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/responses.User"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/fetch/{iruyanId}": {
+            "get": {
+                "description": "Retrieves a user based on the provided Iruyan ID",
+                "tags": [
+                    "user"
+                ],
+                "summary": "Get user by Iruyan ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Iruyan ID",
+                        "name": "iruyanId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.User"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/{iruyanId}": {
+            "get": {
+                "description": "Display user page for a specific user ID",
+                "tags": [
+                    "user"
+                ],
+                "summary": "Show user page",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Iruyan ID",
+                        "name": "iruyanId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/{iruyanId}/delete": {
+            "delete": {
+                "description": "Delete user by ID",
+                "tags": [
+                    "user"
+                ],
+                "summary": "Delete a user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "UIruyan ID",
+                        "name": "iruyanId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/user/{iruyanId}/ranking": {
+            "get": {
+                "description": "Returns focus ranking of the user",
+                "tags": [
+                    "user"
+                ],
+                "summary": "Get user ranking",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Iruyan ID",
+                        "name": "iruyanId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/user/{iruyanId}/recent_log": {
+            "get": {
+                "description": "Returns the latest 5 work logs for the user (Duration as ISO 8601 format string)",
+                "tags": [
+                    "user"
+                ],
+                "summary": "Get user's recent work logs",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Iruyan ID",
+                        "name": "iruyanId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.GetRecentLogResponseSwagger"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/{iruyanId}/task": {
+            "post": {
+                "description": "Updates the user's current task for ongoing work session",
+                "tags": [
+                    "user"
+                ],
+                "summary": "Update current task",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "iruyanId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Task Description",
+                        "name": "task",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/{iruyanId}/together": {
+            "get": {
+                "description": "Returns mock together time",
+                "tags": [
+                    "user"
+                ],
+                "summary": "Get time spent together",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Iruyan ID",
+                        "name": "iruyanId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/user/{iruyanId}/work_info": {
+            "get": {
+                "description": "Retrieve user's work logs grouped by day (Duration as ISO 8601 format string)",
+                "tags": [
+                    "user"
+                ],
+                "summary": "Get user's work log for the past week",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Iruyan ID",
+                        "name": "iruyanId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.WorkLogForLastWeekResponseSwagger"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "models.User": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "iruyanID": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "password": {
+                    "description": "ハッシュ化されたパスワード",
+                    "type": "string"
+                }
+            }
+        },
+        "responses.DailyWorkLogResponseSwagger": {
+            "type": "object",
+            "properties": {
+                "date": {
+                    "type": "string"
+                },
+                "hours": {
+                    "type": "string"
+                }
+            }
+        },
         "responses.ErrorResponse": {
             "type": "object",
             "properties": {
                 "message": {
                     "type": "string"
+                }
+            }
+        },
+        "responses.GetRecentLogResponseSwagger": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "userId": {
+                    "type": "string"
+                },
+                "workTimeLog": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.WorkTimeLogSwagger"
+                    }
                 }
             }
         },
@@ -576,6 +955,20 @@
                 }
             }
         },
+        "responses.User": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "iruyanId": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
         "responses.UserInfo": {
             "type": "object",
             "properties": {
@@ -586,6 +979,34 @@
                     "type": "string"
                 },
                 "userName": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.WorkLogForLastWeekResponseSwagger": {
+            "type": "object",
+            "properties": {
+                "dailyLogs": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.DailyWorkLogResponseSwagger"
+                    }
+                },
+                "userId": {
+                    "type": "integer"
+                }
+            }
+        },
+        "responses.WorkTimeLogSwagger": {
+            "type": "object",
+            "properties": {
+                "duration": {
+                    "type": "string"
+                },
+                "entryTime": {
+                    "type": "string"
+                },
+                "leavingTime": {
                     "type": "string"
                 }
             }

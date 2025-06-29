@@ -1,9 +1,41 @@
 basePath: /
 definitions:
+  models.User:
+    properties:
+      email:
+        type: string
+      id:
+        type: integer
+      iruyanID:
+        type: string
+      name:
+        type: string
+      password:
+        description: ハッシュ化されたパスワード
+        type: string
+    type: object
+  responses.DailyWorkLogResponseSwagger:
+    properties:
+      date:
+        type: string
+      hours:
+        type: string
+    type: object
   responses.ErrorResponse:
     properties:
       message:
         type: string
+    type: object
+  responses.GetRecentLogResponseSwagger:
+    properties:
+      message:
+        type: string
+      userId:
+        type: string
+      workTimeLog:
+        items:
+          $ref: '#/definitions/responses.WorkTimeLogSwagger'
+        type: array
     type: object
   responses.LeaveRoomResponseSwagger:
     properties:
@@ -98,6 +130,15 @@ definitions:
       seatNumber:
         type: integer
     type: object
+  responses.User:
+    properties:
+      email:
+        type: string
+      iruyanId:
+        type: string
+      name:
+        type: string
+    type: object
   responses.UserInfo:
     properties:
       email:
@@ -105,6 +146,24 @@ definitions:
       iruyanId:
         type: string
       userName:
+        type: string
+    type: object
+  responses.WorkLogForLastWeekResponseSwagger:
+    properties:
+      dailyLogs:
+        items:
+          $ref: '#/definitions/responses.DailyWorkLogResponseSwagger'
+        type: array
+      userId:
+        type: integer
+    type: object
+  responses.WorkTimeLogSwagger:
+    properties:
+      duration:
+        type: string
+      entryTime:
+        type: string
+      leavingTime:
         type: string
     type: object
 host: localhost:8080
@@ -396,4 +455,225 @@ paths:
       summary: Leave a room
       tags:
       - room
+  /user/{iruyanId}:
+    get:
+      description: Display user page for a specific user ID
+      parameters:
+      - description: Iruyan ID
+        in: path
+        name: iruyanId
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+      summary: Show user page
+      tags:
+      - user
+  /user/{iruyanId}/delete:
+    delete:
+      description: Delete user by ID
+      parameters:
+      - description: UIruyan ID
+        in: path
+        name: iruyanId
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Delete a user
+      tags:
+      - user
+  /user/{iruyanId}/ranking:
+    get:
+      description: Returns focus ranking of the user
+      parameters:
+      - description: Iruyan ID
+        in: path
+        name: iruyanId
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get user ranking
+      tags:
+      - user
+  /user/{iruyanId}/recent_log:
+    get:
+      description: Returns the latest 5 work logs for the user (Duration as ISO 8601
+        format string)
+      parameters:
+      - description: Iruyan ID
+        in: path
+        name: iruyanId
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.GetRecentLogResponseSwagger'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+      summary: Get user's recent work logs
+      tags:
+      - user
+  /user/{iruyanId}/task:
+    post:
+      description: Updates the user's current task for ongoing work session
+      parameters:
+      - description: User ID
+        in: path
+        name: iruyanId
+        required: true
+        type: integer
+      - description: Task Description
+        in: formData
+        name: task
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+      summary: Update current task
+      tags:
+      - user
+  /user/{iruyanId}/together:
+    get:
+      description: Returns mock together time
+      parameters:
+      - description: Iruyan ID
+        in: path
+        name: iruyanId
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get time spent together
+      tags:
+      - user
+  /user/{iruyanId}/work_info:
+    get:
+      description: Retrieve user's work logs grouped by day (Duration as ISO 8601
+        format string)
+      parameters:
+      - description: Iruyan ID
+        in: path
+        name: iruyanId
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.WorkLogForLastWeekResponseSwagger'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+      summary: Get user's work log for the past week
+      tags:
+      - user
+  /user/fetch/{iruyanId}:
+    get:
+      description: Retrieves a user based on the provided Iruyan ID
+      parameters:
+      - description: Iruyan ID
+        in: path
+        name: iruyanId
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.User'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+      summary: Get user by Iruyan ID
+      tags:
+      - user
+  /user/fetch/all:
+    get:
+      description: Retrieves a list of all registered users
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/responses.User'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+      summary: Get all users
+      tags:
+      - user
 swagger: "2.0"
