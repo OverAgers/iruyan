@@ -36,11 +36,13 @@ export default function UserLoginForm({ onSuccess }: Props) {
 
       setUser(userInfo);
       onSuccess?.(formData);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("ログインに失敗しました", error);
 
       const errorMessage =
-        error?.response?.data?.message || error?.message || "";
+        (error as Error)?.message || 
+        (error as { response?: { data?: { message?: string } } })?.response?.data?.message || 
+        "";
 
       if (errorMessage.includes("user not found")) {
         setLoginError("ユーザーIDが存在しません");

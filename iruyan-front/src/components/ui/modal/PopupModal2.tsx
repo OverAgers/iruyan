@@ -3,7 +3,6 @@ import Button from "@mui/joy/Button";
 import Modal from "@mui/joy/Modal";
 import Typography from "@mui/joy/Typography";
 import Sheet from "@mui/joy/Sheet";
-import ModalClose from "@mui/joy/ModalClose";
 import MainButton from "@/components/ui/button/main-button";
 
 export default function PopupModal2() {
