@@ -14,7 +14,7 @@ import usePostRoomEnterRequest from "@/features/lobby/api/post-room-enter";
 
 export default function Lobby() {
   const currentUser = useUserStore((state) => state.currentUser);
-  const { setTask, setNote, setAvatarUrl, clearUser } = useUserStore();
+  const { setTask, setNote, setAvatarUrl } = useUserStore();
 
   const roomList = useGetRoomList();
   const roomEntry = usePostRoomEnterRequest();
@@ -23,18 +23,36 @@ export default function Lobby() {
   const [noteInput, setNoteInput] = useState<string>(currentUser?.note || "");
   const [isCameraOpen, setIsCameraOpen] = useState<boolean>(false);
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
+  const [isLoggingOut, setIsLoggingOut] = useState<boolean>(false);
+  const [isInitialized, setIsInitialized] = useState<boolean>(false);
 
   const webcamRef = useRef<Webcam>(null);
 
   useEffect(() => {
     const userInfo = localStorage.getItem("user-store");
-    if (!userInfo) {
+    const isLoggingOutFlag = localStorage.getItem("is-logging-out");
+    
+    if (!userInfo && !isLoggingOutFlag) {
       console.log("ユーザー情報が存在しないため、ログインページにリダイレクトします。");
       window.location.href = "/login";
       return;
     }
+    
+    // ログアウトフラグをクリア
+    if (isLoggingOutFlag) {
+      localStorage.removeItem("is-logging-out");
+    }
+    
+    // 初期化完了をマーク
+    setIsInitialized(true);
   }, []);
 
+  // 初期化中またはログアウト中は何も表示しない
+  if (!isInitialized || isLoggingOut) {
+    return null;
+  }
+
+  // 初期化完了後、ユーザーが存在しない場合のみメッセージを表示
   if (!currentUser) {
     return <Typography>ログインしてください。</Typography>;
   }
@@ -62,9 +80,17 @@ export default function Lobby() {
   };
 
   const handleLogout = async () => {
+    // ログアウトフラグを設定
+    localStorage.setItem("is-logging-out", "true");
+    
+    // ログアウト状態を設定
+    setIsLoggingOut(true);
+    
+    // ローカルストレージをクリア
     localStorage.removeItem("user-store");
-    clearUser();
-    window.location.href = "/login";
+    
+    // 即座にリダイレクト
+    window.location.replace("/login");
   };
 
   const handleCapture = async () => {
