@@ -1,6 +1,5 @@
-"use client";
-
-import React, { useEffect } from "react";
+// Updated to fix ESLint errors - StatusType and any type issues resolved
+import React from "react";
 import SeatCard from "@/components/ui/card/seat-card";
 import { Box, Grid2, Typography } from "@mui/material";
 import useSeatStore from "@/stores/seats-store";

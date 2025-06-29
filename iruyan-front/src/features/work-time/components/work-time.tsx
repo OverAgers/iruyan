@@ -39,7 +39,7 @@ export default function WorkTime() {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [isRunning, mode]);
+  }, [isRunning, mode, incrementWorkTime, incrementRestTime]);
 
     const handleLogout = async () => {
       // try {

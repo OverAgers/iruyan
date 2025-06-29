@@ -1,0 +1,133 @@
+name: Frontend CI
+
+on:
+  push:
+    branches: [ main, staging ]
+    paths:
+      - 'iruyan-front/**'
+  pull_request:
+    branches: [ main, staging ]
+    paths:
+      - 'iruyan-front/**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [22.x]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: 10.12.3
+
+    - name: Get pnpm store directory
+      shell: bash
+      run: |
+        echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+    - name: Setup pnpm cache
+      uses: actions/cache@v4
+      with:
+        path: ${{ env.STORE_PATH }}
+        key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml', '**/pnpm-workspace.yaml') }}
+        restore-keys: |
+          ${{ runner.os }}-pnpm-store-
+
+    - name: Install dependencies
+      working-directory: ./iruyan-front
+      run: pnpm install --prefer-frozen-lockfile
+
+    - name: Run linting
+      working-directory: ./iruyan-front
+      run: pnpm lint
+
+    - name: Run type checking
+      working-directory: ./iruyan-front
+      run: pnpm type-check
+
+    - name: Build application
+      working-directory: ./iruyan-front
+      run: pnpm build
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-${{ matrix.node-version }}
+        path: iruyan-front/.next
+        retention-days: 7
+
+  security:
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '22.x'
+
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: 10.12.3
+
+    - name: Install dependencies
+      working-directory: ./iruyan-front
+      run: pnpm install --prefer-frozen-lockfile
+
+    - name: Run security audit
+      working-directory: ./iruyan-front
+      run: pnpm audit --audit-level moderate
+
+  deploy-preview:
+    runs-on: ubuntu-latest
+    needs: [test, security]
+    if: github.event_name == 'pull_request'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '22.x'
+
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: 10.12.3
+
+    - name: Install dependencies
+      working-directory: ./iruyan-front
+      run: pnpm install --prefer-frozen-lockfile
+
+    - name: Build for preview
+      working-directory: ./iruyan-front
+      run: pnpm build
+
+    - name: Comment PR
+      uses: actions/github-script@v7
+      with:
+        script: |
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: '✅ Frontend CI checks passed! The build is ready for review.'
+          }) 

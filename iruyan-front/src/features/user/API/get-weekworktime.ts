@@ -29,9 +29,12 @@ export default function useGetWeeklyWork(userId: string, roomId: string) {
         const data = getWeeklyWorkSchema.parse(res.data);
         console.log("data", data);
         return data;
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error 
+          ? error.message 
+          : 'Unknown error occurred';
         throw new Error(
-          `作業情報取得エラー: ${error.response?.data?.message || error.message}`
+          `作業情報取得エラー: ${errorMessage}`
         );
       }
     },

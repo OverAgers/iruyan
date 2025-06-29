@@ -1,10 +1,24 @@
 import axios from "axios";
 import { useCallback, useState } from "react";
 import { z } from "zod";
-import { PostLoginRequest, postLoginRequestSchema, postLoginResponseSchema } from "@/schema/login-form-schema";
 
+export const postLoginRequestSchema = z.object({
+  iruyanId: z.string(),
+  password: z.string(),
+});
+
+export const postLoginResponseSchema = z.object({
+  token: z.string(),
+  user: z.object({
+    id: z.string(),
+    iruyanId: z.string(),
+    userName: z.string(),
+    email: z.string(),
+  }),
+});
+
+export type PostLoginRequest = z.infer<typeof postLoginRequestSchema>;
 export type PostLoginResponse = z.infer<typeof postLoginResponseSchema>;
-export type { PostLoginRequest } from "@/schema/login-form-schema";
 
 export default function usePostLoginRequest() {
   const requestURL = `${process.env.NEXT_PUBLIC_API_URL}/login`;

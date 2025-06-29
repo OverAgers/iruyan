@@ -48,7 +48,17 @@ export default function UserRegisterForm({ onSuccess, onError }: Props) {
       // Check for AxiosError first (since AxiosError extends Error)
       if (typeof error === 'object' && error !== null && 'response' in error && 'isAxiosError' in error) {
         // Handle axios error response
-        const axiosError = error as any;
+        const axiosError = error as {
+          response?: {
+            data?: {
+              message?: string;
+              error?: string;
+              code?: string;
+            };
+            status?: number;
+          };
+          isAxiosError: boolean;
+        };
         
         // Extract error message from response
         if (axiosError.response?.data?.message) {

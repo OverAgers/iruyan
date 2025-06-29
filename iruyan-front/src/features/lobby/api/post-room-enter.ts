@@ -18,7 +18,7 @@ export default function usePostRoomEnterRequest() {
     const requestURL = `${baseURL}/rooms/${roomId}/enter/${iruyanId}`;
 
     try {
-      const res = await axios.post(
+      await axios.post(
         requestURL,
         new URLSearchParams({
           iruyanId,
