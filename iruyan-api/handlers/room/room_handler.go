@@ -8,7 +8,6 @@ import (
 	"iruyan-api/infrastructure"
 	"iruyan-api/models"
 	"iruyan-api/responses"
-	"log"
 
 	"net/http"
 	"strconv"
@@ -349,8 +348,6 @@ func TakeSeatHandler(c *gin.Context) {
 	seatNumberParam := c.Param("seatNumber")
 	iruyanID := c.PostForm("iruyanId")
 
-	log.Printf("roomIDParam: %s, seatNumberParam: %s, iruyanID: %s", roomIDParam, seatNumberParam, iruyanID)
-
 	// room_idをUUID型に変換してroomID変数に保存
 	roomID, err := uuid.Parse(roomIDParam)
 	if err != nil {
@@ -449,8 +446,6 @@ func LeaveSeatHandler(c *gin.Context) {
 	roomIDParam := c.Param("roomId")
 	seatNumberParam := c.Param("seatNumber")
 	iruyanID := c.PostForm("iruyanId")
-
-	log.Printf("roomIDParam: %d, seatNumberParam: %d, iruyanID: %d", roomIDParam, seatNumberParam, iruyanID)
 
 	// room_idをUUID型に変換してroomID変数に保存
 	roomID, err := uuid.Parse(roomIDParam)

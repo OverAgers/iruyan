@@ -5,7 +5,6 @@ import (
 	"iruyan-api/infrastructure"
 	"iruyan-api/models"
 	"iruyan-api/responses"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -31,8 +30,6 @@ func EntryHandler(c *gin.Context) {
 	iruyanID := c.PostForm("iruyanId")
 	roomIDStr := c.PostForm("roomId")
 	task := c.PostForm("task")
-
-	log.Printf("📥 Received Params - iruyanID: %s, roomIDStr: %s, task: %s", iruyanID, roomIDStr, task)
 
 	var user models.User
 	err := user.FindByIruyanID(infrastructure.DB, iruyanID)
