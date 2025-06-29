@@ -1,0 +1,257 @@
+name: Frontend Advanced CI
+
+on:
+  push:
+    branches: [ main, staging ]
+    paths:
+      - 'iruyan-front/**'
+  pull_request:
+    branches: [ main, staging ]
+    paths:
+      - 'iruyan-front/**'
+  schedule:
+    # 毎週月曜日の午前9時にセキュリティチェックを実行
+    - cron: '0 9 * * 1'
+
+jobs:
+  quality-gates:
+    runs-on: ubuntu-latest
+    name: Quality Gates
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '22.x'
+
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: 10.12.3
+
+    - name: Get pnpm store directory
+      shell: bash
+      run: |
+        echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+    - name: Setup pnpm cache
+      uses: actions/cache@v4
+      with:
+        path: ${{ env.STORE_PATH }}
+        key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+        restore-keys: |
+          ${{ runner.os }}-pnpm-store-
+
+    - name: Install dependencies
+      working-directory: ./iruyan-front
+      run: pnpm install --frozen-lockfile
+
+    - name: Run ESLint
+      working-directory: ./iruyan-front
+      run: pnpm lint
+
+    - name: Run TypeScript type checking
+      working-directory: ./iruyan-front
+      run: pnpm type-check
+
+    - name: Check for unused dependencies
+      working-directory: ./iruyan-front
+      run: |
+        npx depcheck --json --output-file depcheck-result.json || true
+        if [ -s depcheck-result.json ]; then
+          echo "Unused dependencies found:"
+          cat depcheck-result.json
+          exit 1
+        fi
+
+  build-and-test:
+    runs-on: ubuntu-latest
+    needs: quality-gates
+    name: Build and Test
+
+    strategy:
+      matrix:
+        node-version: [22.x]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: 10.12.3
+
+    - name: Get pnpm store directory
+      shell: bash
+      run: |
+        echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+    - name: Setup pnpm cache
+      uses: actions/cache@v4
+      with:
+        path: ${{ env.STORE_PATH }}
+        key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+        restore-keys: |
+          ${{ runner.os }}-pnpm-store-
+
+    - name: Install dependencies
+      working-directory: ./iruyan-front
+      run: pnpm install --frozen-lockfile
+
+    - name: Build application
+      working-directory: ./iruyan-front
+      run: pnpm build
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-${{ matrix.node-version }}
+        path: iruyan-front/.next
+        retention-days: 30
+
+  security-scan:
+    runs-on: ubuntu-latest
+    needs: quality-gates
+    name: Security Scan
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '22.x'
+
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: 10.12.3
+
+    - name: Install dependencies
+      working-directory: ./iruyan-front
+      run: pnpm install --frozen-lockfile
+
+    - name: Run npm audit
+      working-directory: ./iruyan-front
+      run: pnpm audit --audit-level moderate
+
+    - name: Run Snyk security scan
+      if: ${{ secrets.SNYK_TOKEN != '' }}
+      uses: snyk/actions/node@master
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        args: --severity-threshold=high
+        working-directory: ./iruyan-front
+
+    - name: Skip Snyk scan (no token)
+      if: ${{ secrets.SNYK_TOKEN == '' }}
+      run: echo "Skipping Snyk scan - no SNYK_TOKEN provided"
+
+  docker-build:
+    runs-on: ubuntu-latest
+    needs: [build-and-test, security-scan]
+    name: Docker Build
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Build Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./iruyan-front
+        file: ./iruyan-front/Dockerfile
+        push: false
+        tags: iruyan-front:latest
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+    - name: Upload Docker image
+      uses: actions/upload-artifact@v4
+      with:
+        name: docker-image
+        path: /tmp/iruyan-front.tar
+        retention-days: 7
+
+  performance-test:
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    name: Performance Test
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '22.x'
+
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: 10.12.3
+
+    - name: Install dependencies
+      working-directory: ./iruyan-front
+      run: pnpm install --frozen-lockfile
+
+    - name: Build for performance testing
+      working-directory: ./iruyan-front
+      run: pnpm build
+
+    - name: Run Lighthouse CI
+      uses: treosh/lighthouse-ci-action@v12
+      with:
+        configPath: './iruyan-front/.lighthouserc.json'
+        uploadArtifacts: true
+        temporaryPublicStorage: true
+
+  notify:
+    runs-on: ubuntu-latest
+    needs: [quality-gates, build-and-test, security-scan, docker-build, performance-test]
+    if: always()
+    name: Notify Results
+
+    steps:
+    - name: Notify on success
+      if: success()
+      uses: actions/github-script@v7
+      with:
+        script: |
+          if (context.eventName === 'pull_request') {
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '🎉 All CI checks passed! Your changes are ready for review.'
+            })
+          }
+
+    - name: Notify on failure
+      if: failure()
+      uses: actions/github-script@v7
+      with:
+        script: |
+          if (context.eventName === 'pull_request') {
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '❌ Some CI checks failed. Please review the logs and fix the issues.'
+            })
+          } 
