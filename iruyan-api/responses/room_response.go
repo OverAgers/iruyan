@@ -57,7 +57,7 @@ type EnterRoomResponse struct {
 	Message   string    `json:"message"`
 	RoomID    string    `json:"roomId"`
 	RoomName  string    `json:"roomName"`
-	UserID    string    `json:"userId"`
+	IruyanID  string    `json:"iruyanId"`
 	EntryTime time.Time `json:"entryTime"`
 	Task      string    `json:"task"`
 }
@@ -67,7 +67,7 @@ type LeaveRoomResponse struct {
 	Message     string        `json:"message"`
 	RoomID      string        `json:"roomId"`
 	RoomName    string        `json:"roomName"`
-	UserID      string        `json:"userId"`
+	IruyanID    string        `json:"iruyanId"`
 	EntryTime   time.Time     `json:"entryTime"`
 	LeavingTime time.Time     `json:"leavingTime"`
 	Duration    time.Duration `json:"duration"` // 滞在時間
@@ -77,7 +77,7 @@ type LeaveRoomResponseSwagger struct {
 	Message     string `json:"message"`
 	RoomID      string `json:"roomId"`
 	RoomName    string `json:"roomName"`
-	UserID      string `json:"userId"`
+	IruyanID    string `json:"iruyanId"`
 	EntryTime   string `json:"entryTime"`   // ISO8601表記想定
 	LeavingTime string `json:"leavingTime"` // ISO8601表記想定
 	Duration    string `json:"duration"`    // e.g., "1h2m3s"

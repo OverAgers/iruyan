@@ -759,6 +759,205 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/worktime/entry": {
+            "post": {
+                "description": "Creates a work time record when a user enters a room",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "worktime"
+                ],
+                "summary": "Record entry time",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "johndoe",
+                        "description": "Iruyan ID",
+                        "name": "iruyanId",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Room UUID",
+                        "name": "roomId",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Task description",
+                        "name": "task",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.WorkTimeResponseSwagger"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/worktime/latest": {
+            "get": {
+                "description": "Retrieves the latest work time record for a user that has not ended (leaving_time is null)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "worktime"
+                ],
+                "summary": "Get latest active entry",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "johndoe",
+                        "description": "Iruyan ID",
+                        "name": "iruyanId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Room UUID",
+                        "name": "roomId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.WorkTimeResponseSwagger"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/worktime/recent": {
+            "get": {
+                "description": "Retrieves the most recent N work time records for a user",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "worktime"
+                ],
+                "summary": "Get recent work logs",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "iruyanId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 5,
+                        "description": "Number of records to return",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/responses.WorkTimeResponseSwagger"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/worktime/weekly": {
+            "get": {
+                "description": "Retrieves all work time records from the past 7 days for a user",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "worktime"
+                ],
+                "summary": "Get weekly work logs",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "iruyanId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/responses.WorkTimeResponseSwagger"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -830,6 +1029,9 @@ const docTemplate = `{
                     "description": "ISO8601表記想定",
                     "type": "string"
                 },
+                "iruyanId": {
+                    "type": "string"
+                },
                 "leavingTime": {
                     "description": "ISO8601表記想定",
                     "type": "string"
@@ -841,9 +1043,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "roomName": {
-                    "type": "string"
-                },
-                "userId": {
                     "type": "string"
                 }
             }
@@ -1014,6 +1213,32 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "leavingTime": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.WorkTimeResponseSwagger": {
+            "type": "object",
+            "properties": {
+                "duration": {
+                    "description": "formatted like \"1h23m\"",
+                    "type": "string"
+                },
+                "entryTime": {
+                    "description": "RFC3339",
+                    "type": "string"
+                },
+                "iruyanId": {
+                    "type": "string"
+                },
+                "leavingTime": {
+                    "description": "RFC3339 or nil",
+                    "type": "string"
+                },
+                "roomId": {
+                    "type": "string"
+                },
+                "task": {
                     "type": "string"
                 }
             }

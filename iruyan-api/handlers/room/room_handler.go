@@ -5,7 +5,6 @@ package room
 import (
 	"fmt"
 	"iruyan-api/handlers/seat"
-	"iruyan-api/handlers/worktime"
 	"iruyan-api/infrastructure"
 	"iruyan-api/models"
 	"iruyan-api/responses"
@@ -196,8 +195,14 @@ func EnterRoomHandler(c *gin.Context) {
 		return
 	}
 
+	parsedRoomID, err := uuid.Parse(roomID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, responses.ErrorResponse{Message: "invalid room ID format"})
+		return
+	}
+
 	// WorkTimeに入室情報を記録
-	workTime, err := worktime.RecordEntry(user.ID, roomID, task)
+	workTime, err := models.RecordEntry(infrastructure.DB, iruyanID, parsedRoomID, task)
 	if err != nil {
 		if err.Error() == "user not found" {
 			c.JSON(http.StatusNotFound, responses.ErrorResponse{
@@ -220,7 +225,6 @@ func EnterRoomHandler(c *gin.Context) {
 		Message:   "Room entry recorded successfully",
 		RoomID:    workTime.RoomID.String(),
 		RoomName:  room.Name,
-		UserID:    fmt.Sprintf("%d", workTime.UserID),
 		EntryTime: workTime.EntryTime,
 		Task:      task,
 	})
@@ -271,8 +275,14 @@ func LeaveRoomHandler(c *gin.Context) {
 		return
 	}
 
+	parsedRoomID, err := uuid.Parse(roomID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, responses.ErrorResponse{Message: "invalid room ID format"})
+		return
+	}
+
 	// WorkTimeテーブルから最新の入室記録を取得（LeavingTimeがNULLのレコードを取得）
-	workTime, err := worktime.GetLatestEntry(user.ID, roomID)
+	workTime, err := models.GetLatestEntry(infrastructure.DB, iruyanID, parsedRoomID)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusBadRequest, responses.ErrorResponse{
@@ -312,7 +322,6 @@ func LeaveRoomHandler(c *gin.Context) {
 		Message:     "Left the room successfully",
 		RoomID:      roomID,
 		RoomName:    room.Name,
-		UserID:      fmt.Sprintf("%d", workTime.UserID),
 		EntryTime:   workTime.EntryTime,
 		LeavingTime: leavingTime,
 		Duration:    workTime.Duration,
@@ -323,7 +332,7 @@ func LeaveRoomHandler(c *gin.Context) {
 func TakeSeatHandler(c *gin.Context) {
 	roomIDParam := c.Param("roomId")
 	seatNumberParam := c.Param("seatNumber")
-	userIDStr := c.PostForm("userId")
+	iruyanID := c.PostForm("iruyanId")
 
 	// room_idをUUID型に変換してroomID変数に保存
 	roomID, err := uuid.Parse(roomIDParam)
@@ -343,19 +352,9 @@ func TakeSeatHandler(c *gin.Context) {
 		return
 	}
 
-	// ユーザーIDをuintに変換
-	userIDUint, err := strconv.ParseUint(userIDStr, 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, responses.ErrorResponse{
-			Message: "Invalid user ID format",
-		})
-		return
-	}
-	userID := uint(userIDUint)
-
 	// ユーザーが存在するか確認
 	var user models.User
-	if err := infrastructure.DB.First(&user, userID).Error; err != nil {
+	if err := user.FindByIruyanID(infrastructure.DB, iruyanID); err != nil {
 		c.JSON(http.StatusNotFound, responses.ErrorResponse{
 			Message: "User not found",
 		})
@@ -383,7 +382,7 @@ func TakeSeatHandler(c *gin.Context) {
 	}
 
 	// WorkTimeテーブルからユーザの最新の入室記録を取得
-	workTime, err := worktime.GetLatestEntry(userID, roomIDParam)
+	workTime, err := models.GetLatestEntry(infrastructure.DB, iruyanID, roomID)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusBadRequest, responses.ErrorResponse{
@@ -419,7 +418,7 @@ func TakeSeatHandler(c *gin.Context) {
 func LeaveSeatHandler(c *gin.Context) {
 	roomIDParam := c.Param("roomId")
 	seatNumberParam := c.Param("seatNumber")
-	userIDStr := c.PostForm("userId")
+	iruyanID := c.PostForm("iruyanId")
 
 	// room_idをUUID型に変換してroomID変数に保存
 	roomID, err := uuid.Parse(roomIDParam)
@@ -439,19 +438,9 @@ func LeaveSeatHandler(c *gin.Context) {
 		return
 	}
 
-	// ユーザーIDをuintに変換
-	userIDUint, err := strconv.ParseUint(userIDStr, 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, responses.ErrorResponse{
-			Message: "Invalid user ID format",
-		})
-		return
-	}
-	userID := uint(userIDUint)
-
 	// ユーザーが存在するか確認
 	var user models.User
-	if err := infrastructure.DB.First(&user, userID).Error; err != nil {
+	if err := user.FindByIruyanID(infrastructure.DB, iruyanID); err != nil {
 		c.JSON(http.StatusNotFound, responses.ErrorResponse{
 			Message: "User not found",
 		})
@@ -459,7 +448,7 @@ func LeaveSeatHandler(c *gin.Context) {
 	}
 
 	// WorkTimeテーブルからユーザの最新の入室記録を取得
-	workTime, err := worktime.GetLatestEntry(userID, roomIDParam)
+	workTime, err := models.GetLatestEntry(infrastructure.DB, iruyanID, roomID)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusBadRequest, responses.ErrorResponse{

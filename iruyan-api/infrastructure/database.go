@@ -9,6 +9,7 @@ import (
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 var DB *gorm.DB
@@ -19,35 +20,46 @@ func InitDB() {
 		log.Fatal("DATABASE_URL environment variable is not set")
 	}
 
-	// デフォルトのデータベースURL
 	defaultDSN := "postgres://defaultuser:defaultpassword@localhost:5432/defaultdb?sslmode=disable"
 
 	var err error
+	var db *gorm.DB
 	maxRetries := 5
 
-	// データベース接続をリトライ
 	for i := 0; i < maxRetries; i++ {
-		DB, err = gorm.Open(postgres.Open(primaryDSN), &gorm.Config{})
+		db, err = gorm.Open(postgres.Open(primaryDSN), &gorm.Config{
+			Logger: logger.Default.LogMode(logger.Info), // SQLログを出力
+		})
 		if err == nil {
-			fmt.Println("Primary database connection successfully established.")
+			DB = db // グローバル変数に代入
+			fmt.Println("✅ Primary database connection established.")
 			break
 		}
-		log.Printf("Failed to connect to primary database (attempt %d/%d): %v", i+1, maxRetries, err)
+		log.Printf("⚠️ Failed to connect to primary database (attempt %d/%d): %v", i+1, maxRetries, err)
 		time.Sleep(2 * time.Second)
 	}
 
-	// プライマリ接続が確立できない場合、デフォルトのデータベースに接続を試行
 	if err != nil {
-		log.Println("Connecting to default database.")
-		DB, err = gorm.Open(postgres.Open(defaultDSN), &gorm.Config{})
+		log.Println("🔁 Connecting to default database.")
+		db, err = gorm.Open(postgres.Open(defaultDSN), &gorm.Config{
+			Logger: logger.Default.LogMode(logger.Info),
+		})
 		if err != nil {
-			log.Fatalf("Failed to connect to both primary and default databases: %v", err)
+			log.Fatalf("❌ Failed to connect to both primary and default databases: %v", err)
 		}
-		fmt.Println("Default database connection successfully established.")
+		DB = db
+		fmt.Println("✅ Default database connection established.")
 	}
 
-	// モデルをマイグレーション
-	if err := DB.AutoMigrate(&models.User{}, &models.Room{}, &models.Seat{}, &models.WorkTime{}); err != nil {
-		log.Fatalf("Failed to migrate database: %v", err)
+	// 🔽 モデルのマイグレーション（依存関係順に注意）
+	if err := DB.AutoMigrate(
+		&models.User{},
+		&models.Room{},
+		&models.Seat{},
+		&models.WorkTime{},
+	); err != nil {
+		log.Fatalf("❌ Failed to migrate database: %v", err)
 	}
+
+	fmt.Println("✅ Database migrated successfully.")
 }

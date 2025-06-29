@@ -45,6 +45,8 @@ definitions:
       entryTime:
         description: ISO8601表記想定
         type: string
+      iruyanId:
+        type: string
       leavingTime:
         description: ISO8601表記想定
         type: string
@@ -53,8 +55,6 @@ definitions:
       roomId:
         type: string
       roomName:
-        type: string
-      userId:
         type: string
     type: object
   responses.LoginSuccessResponse:
@@ -164,6 +164,24 @@ definitions:
       entryTime:
         type: string
       leavingTime:
+        type: string
+    type: object
+  responses.WorkTimeResponseSwagger:
+    properties:
+      duration:
+        description: formatted like "1h23m"
+        type: string
+      entryTime:
+        description: RFC3339
+        type: string
+      iruyanId:
+        type: string
+      leavingTime:
+        description: RFC3339 or nil
+        type: string
+      roomId:
+        type: string
+      task:
         type: string
     type: object
 host: localhost:8080
@@ -676,4 +694,138 @@ paths:
       summary: Get all users
       tags:
       - user
+  /worktime/entry:
+    post:
+      description: Creates a work time record when a user enters a room
+      parameters:
+      - default: johndoe
+        description: Iruyan ID
+        in: formData
+        name: iruyanId
+        required: true
+        type: string
+      - description: Room UUID
+        in: formData
+        name: roomId
+        required: true
+        type: string
+      - description: Task description
+        in: formData
+        name: task
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.WorkTimeResponseSwagger'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+      summary: Record entry time
+      tags:
+      - worktime
+  /worktime/latest:
+    get:
+      description: Retrieves the latest work time record for a user that has not ended
+        (leaving_time is null)
+      parameters:
+      - default: johndoe
+        description: Iruyan ID
+        in: query
+        name: iruyanId
+        required: true
+        type: string
+      - description: Room UUID
+        in: query
+        name: roomId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.WorkTimeResponseSwagger'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+      summary: Get latest active entry
+      tags:
+      - worktime
+  /worktime/recent:
+    get:
+      description: Retrieves the most recent N work time records for a user
+      parameters:
+      - description: User ID
+        in: query
+        name: iruyanId
+        required: true
+        type: string
+      - default: 5
+        description: Number of records to return
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/responses.WorkTimeResponseSwagger'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+      summary: Get recent work logs
+      tags:
+      - worktime
+  /worktime/weekly:
+    get:
+      description: Retrieves all work time records from the past 7 days for a user
+      parameters:
+      - description: User ID
+        in: query
+        name: iruyanId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/responses.WorkTimeResponseSwagger'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+      summary: Get weekly work logs
+      tags:
+      - worktime
 swagger: "2.0"
