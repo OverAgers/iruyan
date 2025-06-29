@@ -815,6 +815,32 @@ const docTemplate = `{
                 }
             }
         },
+        "/worktime/fetch/all": {
+            "get": {
+                "description": "Retrieves all work time records from the database",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "worktime"
+                ],
+                "summary": "Get all WorkTime records",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.WorkTimeListResponseSwagger"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/worktime/latest": {
             "get": {
                 "description": "Retrieves the latest work time record for a user that has not ended (leaving_time is null)",
@@ -1200,6 +1226,17 @@ const docTemplate = `{
                 },
                 "userId": {
                     "type": "integer"
+                }
+            }
+        },
+        "responses.WorkTimeListResponseSwagger": {
+            "type": "object",
+            "properties": {
+                "work_times": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.WorkTimeResponseSwagger"
+                    }
                 }
             }
         },

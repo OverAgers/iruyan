@@ -157,6 +157,13 @@ definitions:
       userId:
         type: integer
     type: object
+  responses.WorkTimeListResponseSwagger:
+    properties:
+      work_times:
+        items:
+          $ref: '#/definitions/responses.WorkTimeResponseSwagger'
+        type: array
+    type: object
   responses.WorkTimeLogSwagger:
     properties:
       duration:
@@ -729,6 +736,23 @@ paths:
           schema:
             $ref: '#/definitions/responses.ErrorResponse'
       summary: Record entry time
+      tags:
+      - worktime
+  /worktime/fetch/all:
+    get:
+      description: Retrieves all work time records from the database
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.WorkTimeListResponseSwagger'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+      summary: Get all WorkTime records
       tags:
       - worktime
   /worktime/latest:

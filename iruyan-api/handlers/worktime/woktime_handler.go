@@ -261,3 +261,29 @@ func GetWeeklyLogsHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, result)
 }
+
+// GetAllWorkTimeHandler godoc
+// @Summary Get all WorkTime records
+// @Description Retrieves all work time records from the database
+// @Tags worktime
+// @Produce json
+// @Success 200 {object} responses.WorkTimeListResponseSwagger
+// @Failure 500 {object} responses.ErrorResponse
+// @Router /worktime/fetch/all [get]
+func GetAllWorkTimeHandler(c *gin.Context) {
+	var workTimes []models.WorkTime
+
+	if err := infrastructure.DB.
+		Preload("User").
+		Preload("Room").
+		Find(&workTimes).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
+			Message: "Failed to retrieve work time records",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, responses.WorkTimeListResponse{
+		WorkTimes: workTimes,
+	})
+}
