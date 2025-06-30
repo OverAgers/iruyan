@@ -5,10 +5,12 @@ package auth
 import (
 	"errors"
 	"net/http"
+	"strings"
 
 	errorhandler "iruyan-api/handlers/error"
 	"iruyan-api/infrastructure"
 	"iruyan-api/models"
+	"iruyan-api/repository"
 	"iruyan-api/responses"
 
 	"github.com/gin-gonic/gin"
@@ -127,15 +129,34 @@ func RegisterHandler(c *gin.Context) {
 
 	errorHandler := errorhandler.ErrorHandler{}
 
-	user, err := models.NewUser(infrastructure.DB, name, iruyanID, password, email)
-	if err != nil {
-		errorHandler.BadRequest(c, err.Error())
+	// --- パラメータのバリデーション ---
+	if iruyanID == "" || password == "" || name == "" || email == "" {
+		missing := []string{}
+		if iruyanID == "" {
+			missing = append(missing, "iruyanId")
+		}
+		if password == "" {
+			missing = append(missing, "password")
+		}
+		if name == "" {
+			missing = append(missing, "userName")
+		}
+		if email == "" {
+			missing = append(missing, "email")
+		}
+
+		errorHandler.BadRequest(c, "Missing required parameter(s): "+strings.Join(missing, ", "))
 		return
 	}
 
-	result := infrastructure.DB.Create(user)
-	if result.Error != nil {
-		errorHandler.InternalServerError(c, "Failed to save user to database: "+result.Error.Error())
+	user, err := repository.CreateUser(infrastructure.DB, name, iruyanID, password, email)
+	if err != nil {
+		switch err {
+		case repository.ErrDuplicateIruyanID, repository.ErrDuplicateEmail:
+			errorHandler.Conflict(c, err.Error())
+		default:
+			errorHandler.BadRequest(c, err.Error())
+		}
 		return
 	}
 

@@ -19,37 +19,18 @@ type User struct {
 }
 
 // NewUser: User構造体のコンストラクタ関数
-func NewUser(db *gorm.DB, name, iruyanID, password, email string) (*User, error) {
-	// ユーザーネームの重複チェック
-	var existingUser User
-	if err := db.Where("iruyan_id = ?", iruyanID).Or("email = ?", email).First(&existingUser).Error; err == nil {
-		if existingUser.IruyanID == iruyanID {
-			return nil, fmt.Errorf("iruyan_id '%s' is already taken", iruyanID)
-		}
-		if existingUser.Email == email {
-			return nil, fmt.Errorf("email '%s' is already registered", email)
-		}
-	} else if !errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, fmt.Errorf("failed to check existing user: %w", err)
-	}
-
-	// メールアドレスのバリデーション
+func NewUser(name, iruyanID, password, email string) (*User, error) {
 	if err := validateEmail(email); err != nil {
 		return nil, err
 	}
-
-	// パスワードのバリデーション
 	if err := validatePassword(password); err != nil {
 		return nil, err
 	}
-
-	// パスワードをハッシュ化
 	hashedPassword, err := HashPassword(password)
 	if err != nil {
 		return nil, err
 	}
 
-	// 新しいUserインスタンスを生成し、ハッシュ化されたパスワードを設定
 	return &User{
 		Name:     name,
 		IruyanID: iruyanID,
