@@ -2,7 +2,7 @@ package responses
 
 // LoginSuccessResponse ログイン成功時のレスポンス
 type LoginSuccessResponse struct {
-	Message string   `json:"message"`
+	Message string   `json:"message" example:"Login successful"`
 	User    UserInfo `json:"user"`
 }
 
@@ -20,7 +20,7 @@ type LogoutSuccessResponse struct {
 
 // UserInfo ユーザー情報のレスポンス
 type UserInfo struct {
-	IruyanID string `json:"iruyanId"`
-	Name     string `json:"userName"`
-	Email    string `json:"email"`
+	IruyanID string `json:"iruyanId" example:"johndoe"`
+	Name     string `json:"name" example:"John Doe"`
+	Email    string `json:"email" example:"john@example.com"`
 }

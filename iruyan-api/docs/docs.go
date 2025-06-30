@@ -76,10 +76,22 @@ const docTemplate = `{
                             "$ref": "#/definitions/responses.LoginSuccessResponse"
                         }
                     },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
                             "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.InternalErrorResponse"
                         }
                     }
                 }
@@ -1262,6 +1274,15 @@ const docTemplate = `{
                 }
             }
         },
+        "responses.InternalErrorResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "example": "internal error: failed to retrieve user"
+                }
+            }
+        },
         "responses.LeaveRoomResponseSwagger": {
             "type": "object",
             "properties": {
@@ -1295,7 +1316,8 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "message": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Login successful"
                 },
                 "user": {
                     "$ref": "#/definitions/responses.UserInfo"
@@ -1408,11 +1430,29 @@ const docTemplate = `{
         "responses.SeatStatusResponse": {
             "type": "object",
             "properties": {
+                "avatar_url": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
                 "iruyan_id": {
+                    "type": "string"
+                },
+                "note": {
                     "type": "string"
                 },
                 "seat_number": {
                     "type": "integer"
+                },
+                "start_time": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "task": {
+                    "type": "string"
                 },
                 "user_name": {
                     "type": "string"
@@ -1437,13 +1477,16 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "email": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "john@example.com"
                 },
                 "iruyanId": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "johndoe"
                 },
-                "userName": {
-                    "type": "string"
+                "name": {
+                    "type": "string",
+                    "example": "John Doe"
                 }
             }
         },

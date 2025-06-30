@@ -3,6 +3,7 @@
 package auth
 
 import (
+	"errors"
 	"net/http"
 
 	errorhandler "iruyan-api/handlers/error"
@@ -36,27 +37,51 @@ func LoginPageHandler(c *gin.Context) {
 // @Param iruyanId formData string true "Iruyan ID" default(johndoe)
 // @Param password formData string true "Password" default(pass1234)
 // @Success 200 {object} responses.LoginSuccessResponse
+// @Failure 400 {object} responses.ErrorResponse
 // @Failure 401 {object} responses.ErrorResponse
+// @Failure 500 {object} responses.ErrorResponse
 // @Router /login [post]
 func LoginHandler(c *gin.Context) {
 	iruyanID := c.PostForm("iruyanId")
 	password := c.PostForm("password")
 
+	// --- [1] バリデーションチェック（空欄チェック） ---
+	if iruyanID == "" || password == "" {
+		c.JSON(http.StatusBadRequest, responses.ErrorResponse{
+			Message: "iruyanId and password are required",
+		})
+		return
+	}
+
+	// --- [2] ユーザー検索 ---
 	var user models.User
 	result := infrastructure.DB.Where("iruyan_id = ?", iruyanID).First(&user)
 
 	if result.Error != nil {
-		errorHandler := errorhandler.ErrorHandler{}
-		errorHandler.Unauthorized(c, "authentication failed: user not found")
+		// ユーザーが見つからなかった場合
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusUnauthorized, responses.ErrorResponse{
+				Message: "authentication failed: user not found",
+			})
+			return
+		}
+
+		// データベース関連のその他のエラー（500）
+		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
+			Message: "internal error: failed to retrieve user",
+		})
 		return
 	}
 
+	// --- [3] パスワードチェック ---
 	if !user.CheckPassword(password) {
-		errorHandler := errorhandler.ErrorHandler{}
-		errorHandler.Unauthorized(c, "authentication failed: invalid password")
+		c.JSON(http.StatusUnauthorized, responses.ErrorResponse{
+			Message: "authentication failed: invalid password",
+		})
 		return
 	}
 
+	// --- [4] 認証成功時 ---
 	c.JSON(http.StatusOK, responses.LoginSuccessResponse{
 		Message: "Login successful",
 		User: responses.UserInfo{

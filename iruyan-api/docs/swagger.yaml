@@ -37,6 +37,12 @@ definitions:
           $ref: '#/definitions/responses.WorkTimeLogSwagger'
         type: array
     type: object
+  responses.InternalErrorResponse:
+    properties:
+      message:
+        example: 'internal error: failed to retrieve user'
+        type: string
+    type: object
   responses.LeaveRoomResponseSwagger:
     properties:
       duration:
@@ -60,6 +66,7 @@ definitions:
   responses.LoginSuccessResponse:
     properties:
       message:
+        example: Login successful
         type: string
       user:
         $ref: '#/definitions/responses.UserInfo'
@@ -132,10 +139,22 @@ definitions:
     type: object
   responses.SeatStatusResponse:
     properties:
+      avatar_url:
+        type: string
+      email:
+        type: string
       iruyan_id:
+        type: string
+      note:
         type: string
       seat_number:
         type: integer
+      start_time:
+        type: integer
+      status:
+        type: string
+      task:
+        type: string
       user_name:
         type: string
     type: object
@@ -151,10 +170,13 @@ definitions:
   responses.UserInfo:
     properties:
       email:
+        example: john@example.com
         type: string
       iruyanId:
+        example: johndoe
         type: string
-      userName:
+      name:
+        example: John Doe
         type: string
     type: object
   responses.WorkLogForLastWeekResponseSwagger:
@@ -247,10 +269,18 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/responses.LoginSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
             $ref: '#/definitions/responses.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.InternalErrorResponse'
       summary: User login
       tags:
       - auth
