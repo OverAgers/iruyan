@@ -8,9 +8,8 @@ export const postLoginRequestSchema = z.object({
 });
 
 export const postLoginResponseSchema = z.object({
-  token: z.string(),
+  message: z.string(),
   user: z.object({
-    id: z.string(),
     iruyanId: z.string(),
     userName: z.string(),
     email: z.string(),
@@ -45,10 +44,10 @@ export default function usePostLoginRequest() {
       const result = postLoginResponseSchema.parse(res.data);
 
       setData(result);
-      return result; // ← ★ ここを追加
+      return result;
     } catch (err) {
       setError(err as Error);
-      throw err; // ← ★ catch しても呼び出し元にエラーを伝える
+      throw err;
     } finally {
       setIsMutating(false);
     }
