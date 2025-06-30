@@ -91,7 +91,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.InternalErrorResponse"
+                            "$ref": "#/definitions/responses.ErrorResponse"
                         }
                     }
                 }
@@ -1274,15 +1274,6 @@ const docTemplate = `{
                 }
             }
         },
-        "responses.InternalErrorResponse": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string",
-                    "example": "internal error: failed to retrieve user"
-                }
-            }
-        },
         "responses.LeaveRoomResponseSwagger": {
             "type": "object",
             "properties": {
@@ -1328,7 +1319,8 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "message": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Logout successful"
                 },
                 "user": {
                     "$ref": "#/definitions/responses.UserInfo"
@@ -1339,7 +1331,8 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "message": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Registration successful"
                 },
                 "user": {
                     "$ref": "#/definitions/responses.UserInfo"

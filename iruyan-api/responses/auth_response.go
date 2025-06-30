@@ -8,13 +8,13 @@ type LoginSuccessResponse struct {
 
 // RegisterSuccessResponse 新規登録成功時のレスポンス
 type RegisterSuccessResponse struct {
-	Message string   `json:"message"`
+	Message string   `json:"message" example:"Registration successful"`
 	User    UserInfo `json:"user"`
 }
 
 // LogoutSuccessResponse ログアウト成功時のレスポンス
 type LogoutSuccessResponse struct {
-	Message string   `json:"message"`
+	Message string   `json:"message" example:"Logout successful"`
 	User    UserInfo `json:"user"`
 }
 

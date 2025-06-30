@@ -37,12 +37,6 @@ definitions:
           $ref: '#/definitions/responses.WorkTimeLogSwagger'
         type: array
     type: object
-  responses.InternalErrorResponse:
-    properties:
-      message:
-        example: 'internal error: failed to retrieve user'
-        type: string
-    type: object
   responses.LeaveRoomResponseSwagger:
     properties:
       duration:
@@ -74,6 +68,7 @@ definitions:
   responses.LogoutSuccessResponse:
     properties:
       message:
+        example: Logout successful
         type: string
       user:
         $ref: '#/definitions/responses.UserInfo'
@@ -81,6 +76,7 @@ definitions:
   responses.RegisterSuccessResponse:
     properties:
       message:
+        example: Registration successful
         type: string
       user:
         $ref: '#/definitions/responses.UserInfo'
@@ -280,7 +276,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/responses.InternalErrorResponse'
+            $ref: '#/definitions/responses.ErrorResponse'
       summary: User login
       tags:
       - auth
