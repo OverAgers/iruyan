@@ -14,11 +14,6 @@ import (
 	"iruyan-api/repository"
 )
 
-// 共通レスポンス構造体
-type errorResponse struct {
-	Message string `json:"message"`
-}
-
 // logStep はテスト内ログを整えるヘルパー（ASCII のみ）
 func logStep(t *testing.T, label, msg string) {
 	t.Helper()

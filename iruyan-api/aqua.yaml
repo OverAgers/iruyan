@@ -5,3 +5,4 @@ registries:
 packages:
   - name: go-task/task@v3.38.0 # タスクランナー
   - name: gotestyourself/gotestsum@v1.10.0 # go test の出力を 色付き + 整形して表示してくれるツール
+  - name: golangci/golangci-lint@v1.64.0
