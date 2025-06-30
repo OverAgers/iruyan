@@ -25,6 +25,7 @@ func setupTestRouter() *gin.Engine {
 	gin.SetMode(gin.TestMode)
 	r := gin.Default()
 	r.POST("/login", LoginHandler)
+	r.POST("/register", RegisterHandler)
 	return r
 }
 
@@ -34,7 +35,7 @@ func TestMain(m *testing.M) {
 	m.Run()
 }
 
-// --- 正常系 ---
+// --- [Login] 正常系 ---
 func TestLoginHandler_Success(t *testing.T) {
 	router := setupTestRouter()
 	t.Logf("\n=== [INFO] Start: 正常なログイン成功テスト ===")
@@ -62,7 +63,7 @@ func TestLoginHandler_Success(t *testing.T) {
 	logStep(t, "RESULT", "Received 200 OK and success message")
 }
 
-// --- パラメータ不足 ---
+// --- [Login] パラメータ不足 ---
 func TestLoginHandler_MissingParams(t *testing.T) {
 	router := setupTestRouter()
 	t.Logf("\n=== [INFO] Start: パラメータ不足テスト ===")
@@ -80,7 +81,7 @@ func TestLoginHandler_MissingParams(t *testing.T) {
 	logStep(t, "RESULT", "Received 400 Bad Request with expected error message")
 }
 
-// --- 存在しないユーザー ---
+// --- [Login] 存在しないユーザー ---
 func TestLoginHandler_UserNotFound(t *testing.T) {
 	router := setupTestRouter()
 	t.Logf("\n=== [INFO] Start: 存在しないユーザーのテスト ===")
@@ -103,7 +104,7 @@ func TestLoginHandler_UserNotFound(t *testing.T) {
 	logStep(t, "RESULT", "Received 401 Unauthorized for non-existent user")
 }
 
-// --- パスワード間違い ---
+// --- [Login] パスワード間違い ---
 func TestLoginHandler_WrongPassword(t *testing.T) {
 	router := setupTestRouter()
 	t.Logf("\n=== [INFO] Start: パスワード不一致テスト ===")
@@ -127,4 +128,163 @@ func TestLoginHandler_WrongPassword(t *testing.T) {
 	assert.Contains(t, w.Body.String(), "invalid password")
 
 	logStep(t, "RESULT", "Received 401 Unauthorized for incorrect password")
+}
+
+// --- [Register] 登録成功 ---
+func TestRegisterHandler_Success(t *testing.T) {
+	router := setupTestRouter()
+	t.Logf("\n=== [INFO] Start: 登録成功テスト ===")
+	t.Cleanup(func() {
+		t.Logf("--- [INFO] End: 登録成功テスト ---\n")
+	})
+
+	data := url.Values{}
+	data.Set("iruyanId", "newuser")
+	data.Set("password", "securepass1234")
+	data.Set("userName", "New User")
+	data.Set("email", "newuser@example.com")
+
+	req, _ := http.NewRequest(http.MethodPost, "/register", strings.NewReader(data.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Contains(t, w.Body.String(), `"Registration successful"`)
+
+	logStep(t, "RESULT", "Received 200 OK with success message")
+}
+
+// --- [Register] パラメータ不足 ---
+func TestRegisterHandler_MissingParams(t *testing.T) {
+	router := setupTestRouter()
+	t.Logf("\n=== [INFO] Start: パラメータ不足による登録失敗テスト ===")
+	t.Cleanup(func() {
+		t.Logf("--- [INFO] End: パラメータ不足による登録失敗テスト ---\n")
+	})
+
+	req, _ := http.NewRequest(http.MethodPost, "/register", nil)
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+	assert.Contains(t, w.Body.String(), "Missing required parameter(s)") // 具体的なバリデーションエラーに応じて修正
+
+	logStep(t, "RESULT", "Received 400 Bad Request due to missing params")
+}
+
+// --- [Register] 重複登録（iruyanIDのユニーク制約エラー） ---
+func TestRegisterHandler_DuplicateUser(t *testing.T) {
+	router := setupTestRouter()
+	t.Logf("\n=== [INFO] Start: 重複登録エラーテスト ===")
+	t.Cleanup(func() {
+		t.Logf("--- [INFO] End: 重複登録エラーテスト ---\n")
+	})
+
+	// 最初の登録
+	_ = repository.CreateTestUser("duplicateuser", "samepass1234")
+
+	data := url.Values{}
+	data.Set("iruyanId", "duplicateuser")
+	data.Set("password", "samepass1234")
+	data.Set("userName", "Duplicate User")
+	data.Set("email", "duplicate@example.com")
+
+	req, _ := http.NewRequest(http.MethodPost, "/register", strings.NewReader(data.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusConflict, w.Code)
+	assert.Contains(t, w.Body.String(), "iruyan_id is already taken")
+
+	logStep(t, "RESULT", "Received 500 Internal Server Error for duplicate user")
+}
+
+// --- [Register] 重複登録（パスワード制約エラー） ---
+func TestRegisterHandler_ShortPassword(t *testing.T) {
+	router := setupTestRouter()
+	t.Log("\n=== [INFO] Start: パスワードが短すぎるテスト ===")
+	t.Cleanup(func() { t.Log("--- [INFO] End ---\n") })
+
+	data := url.Values{}
+	data.Set("iruyanId", "shortpwuser")
+	data.Set("password", "a1b2") // ← 6文字未満
+	data.Set("userName", "Short PW")
+	data.Set("email", "shortpw@example.com")
+
+	req, _ := http.NewRequest(http.MethodPost, "/register", strings.NewReader(data.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+	assert.Contains(t, w.Body.String(), "password must be at least 6 characters long")
+}
+
+// --- [Register] 重複登録（パスワード制約エラー） ---
+func TestRegisterHandler_WeakPassword_NoNumber(t *testing.T) {
+	router := setupTestRouter()
+	t.Log("\n=== [INFO] Start: パスワードが数字なし ===")
+	t.Cleanup(func() { t.Log("--- [INFO] End ---\n") })
+
+	data := url.Values{}
+	data.Set("iruyanId", "nonumberuser")
+	data.Set("password", "abcdefg") // ← 数字なし
+	data.Set("userName", "No Number")
+	data.Set("email", "nonumber@example.com")
+
+	req, _ := http.NewRequest(http.MethodPost, "/register", strings.NewReader(data.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+	assert.Contains(t, w.Body.String(), "password must contain at least one letter and one number")
+}
+
+// --- [Register] 重複登録（パスワード制約エラー） ---
+func TestRegisterHandler_WeakPassword_NoLetter(t *testing.T) {
+	router := setupTestRouter()
+	t.Log("\n=== [INFO] Start: パスワードが英字なし ===")
+	t.Cleanup(func() { t.Log("--- [INFO] End ---\n") })
+
+	data := url.Values{}
+	data.Set("iruyanId", "noletteruser")
+	data.Set("password", "1234567") // ← 英字なし
+	data.Set("userName", "No Letter")
+	data.Set("email", "noletter@example.com")
+
+	req, _ := http.NewRequest(http.MethodPost, "/register", strings.NewReader(data.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+	assert.Contains(t, w.Body.String(), "password must contain at least one letter and one number")
+}
+
+// --- [Register] 重複登録（メールアドレス制約エラー） ---
+func TestRegisterHandler_InvalidEmail(t *testing.T) {
+	router := setupTestRouter()
+	t.Log("\n=== [INFO] Start: メール形式が不正 ===")
+	t.Cleanup(func() { t.Log("--- [INFO] End ---\n") })
+
+	data := url.Values{}
+	data.Set("iruyanId", "invalidemailuser")
+	data.Set("password", "valid1Pass")
+	data.Set("userName", "Invalid Email")
+	data.Set("email", "invalid-email") // ← 不正な形式
+
+	req, _ := http.NewRequest(http.MethodPost, "/register", strings.NewReader(data.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+	assert.Contains(t, w.Body.String(), "invalid email format")
 }
