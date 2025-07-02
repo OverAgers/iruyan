@@ -6,7 +6,6 @@ import (
 	"regexp"
 
 	"golang.org/x/crypto/bcrypt"
-	"gorm.io/gorm"
 )
 
 // User 構造体
@@ -73,53 +72,9 @@ func validateEmail(email string) error {
 }
 
 // CheckPassword 受け取ったプレーンテキストのパスワードをハッシュ化されたパスワードと比較するメソッド
-func (u *User) CheckPassword(password string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password))
-	return err == nil
-}
-
-// GetAllUsers retrieves all users from the database.
-func GetAllUsers(db *gorm.DB) ([]User, error) {
-	var users []User
-	if err := db.Find(&users).Error; err != nil {
-		return nil, err
+func (u *User) CheckPassword(password string) error {
+	if err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password)); err != nil {
+		return errors.New("invalid password")
 	}
-	return users, nil
-}
-
-// FindByID - IDを元にUserが存在するかを検索するメソッド
-func (u *User) FindByID(db *gorm.DB, userID uint) error {
-	if err := db.Where("id = ?", userID).First(u).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return errors.New("user not found")
-		}
-		return err
-	}
-	return nil
-}
-
-// FindByIruyanID - IruyanID を元に User を検索するメソッド
-func (u *User) FindByIruyanID(db *gorm.DB, iruyanID string) error {
-	err := db.Where("iruyan_id = ?", iruyanID).First(u).Error
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return fmt.Errorf("user not found with iruyan_id: %s", iruyanID)
-		}
-		return fmt.Errorf("failed to find user by iruyan_id (%s): %w", iruyanID, err)
-	}
-	return nil
-}
-
-func (u *User) DeleteByIruyanID(db *gorm.DB, iruyanID string) error {
-	// まず削除対象のユーザーを取得
-	if err := u.FindByIruyanID(db, iruyanID); err != nil {
-		return fmt.Errorf("delete failed: %w", err)
-	}
-
-	// 見つかったユーザーを削除
-	if err := db.Delete(u).Error; err != nil {
-		return fmt.Errorf("failed to delete user with iruyan_id (%s): %w", iruyanID, err)
-	}
-
 	return nil
 }

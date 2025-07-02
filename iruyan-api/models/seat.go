@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -31,10 +32,10 @@ func NewSeat(db *gorm.DB, roomID uuid.UUID) (*Seat, error) {
 
 	// 新しいSeatインスタンスを生成する
 	return &Seat{
-		ID			: uuid.New(),
-		RoomID		: roomID,
-		SeatNumber	: seatNumber,
-	}, nil	
+		ID:         uuid.New(),
+		RoomID:     roomID,
+		SeatNumber: seatNumber,
+	}, nil
 }
 
 // IsSeatExistsInRoom - 部屋に指定された座席番号が存在するか確認するメソッド
