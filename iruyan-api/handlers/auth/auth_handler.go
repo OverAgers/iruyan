@@ -4,12 +4,10 @@ package auth
 
 import (
 	"errors"
-	"fmt"
 	"log"
 	"net/http"
 	"strings"
 
-	errorhandler "iruyan-api/handlers/error"
 	"iruyan-api/pkg/errdefs"
 
 	"iruyan-api/responses"
@@ -18,8 +16,15 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type AuthHandler struct {
+type authHandler struct {
 	AuthUsecase usecase.AuthUsecase
+}
+
+// [DI] AuthUsecase
+func NewAuthHandler(authUsecase usecase.AuthUsecase) *authHandler {
+	return &authHandler{
+		AuthUsecase: authUsecase,
+	}
 }
 
 // LoginPageHandler ログイン画面表示
@@ -29,7 +34,7 @@ type AuthHandler struct {
 // @Produce json
 // @Success 200 {object} responses.ErrorResponse
 // @Router /login [get]
-func LoginPageHandler(c *gin.Context) {
+func (h *authHandler) LoginPageHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, responses.ErrorResponse{
 		Message: "Login page accessed successfully",
 	})
@@ -48,7 +53,7 @@ func LoginPageHandler(c *gin.Context) {
 // @Failure 401 {object} responses.ErrorResponse
 // @Failure 500 {object} responses.ErrorResponse
 // @Router /login [post]
-func LoginHandler(c *gin.Context) {
+func (h *authHandler) LoginHandler(c *gin.Context) {
 	iruyanID := c.PostForm("iruyanId")
 	password := c.PostForm("password")
 
@@ -59,8 +64,7 @@ func LoginHandler(c *gin.Context) {
 		return
 	}
 
-	var authUsecase usecase.AuthUsecase
-	user, err := authUsecase.LoginUser(iruyanID, password)
+	user, err := h.AuthUsecase.LoginUser(iruyanID, password)
 	if err != nil {
 		switch {
 		case errors.Is(err, errdefs.ErrUserNotFound):
@@ -70,6 +74,7 @@ func LoginHandler(c *gin.Context) {
 		default:
 			c.JSON(http.StatusInternalServerError, responses.ErrorResponse{Message: "unexpected error"})
 		}
+		return
 	}
 
 	c.JSON(http.StatusOK, responses.LoginSuccessResponse{
@@ -89,7 +94,7 @@ func LoginHandler(c *gin.Context) {
 // @Produce json
 // @Success 200 {object} responses.ErrorResponse
 // @Router /register [get]
-func RegisterPageHandler(c *gin.Context) {
+func (h *authHandler) RegisterPageHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, responses.ErrorResponse{
 		Message: "Register page accessed successfully",
 	})
@@ -109,13 +114,11 @@ func RegisterPageHandler(c *gin.Context) {
 // @Failure 400 {object} responses.ErrorResponse
 // @Failure 500 {object} responses.ErrorResponse
 // @Router /register [post]
-func RegisterHandler(c *gin.Context) {
+func (h *authHandler) RegisterHandler(c *gin.Context) {
 	iruyanID := c.PostForm("iruyanId")
 	password := c.PostForm("password")
 	name := c.PostForm("userName")
 	email := c.PostForm("email")
-
-	errorHandler := errorhandler.ErrorHandler{}
 
 	// --- パラメータのバリデーション ---
 	missing := []string{}
@@ -132,32 +135,35 @@ func RegisterHandler(c *gin.Context) {
 		missing = append(missing, "email")
 	}
 	if len(missing) > 0 {
-		errorHandler.BadRequest(c, "Missing required parameter(s): "+strings.Join(missing, ", "))
+		c.JSON(http.StatusBadRequest, responses.ErrorResponse{
+			Message: "Missing required parameter(s): " + strings.Join(missing, ", "),
+		})
+
 		return
 	}
 
-	var authUsecase usecase.AuthUsecase
-	user, err := authUsecase.RegisterUser(name, iruyanID, password, email)
+	user, err := h.AuthUsecase.RegisterUser(name, iruyanID, password, email)
 	if err != nil {
-		msg := err.Error()
 		switch {
-		case errors.Is(err, errdefs.ErrDuplicateIruyanID),
-			errors.Is(err, errdefs.ErrDuplicateEmail):
-			errorHandler.Conflict(c, msg)
-
-		case errors.Is(err, errdefs.ErrInvalidPassword),
-			errors.Is(err, errdefs.ErrInvalidEmail):
-			errorHandler.BadRequest(c, msg)
-
+		case errors.Is(err, errdefs.ErrDuplicateIruyanID):
+			c.JSON(http.StatusConflict, responses.ErrorResponse{Message: "iruyan_id is already taken"})
+		case errors.Is(err, errdefs.ErrDuplicateEmail):
+			c.JSON(http.StatusConflict, responses.ErrorResponse{Message: "email is already registered"})
+		case errors.Is(err, errdefs.ErrInvalidPassword):
+			c.JSON(http.StatusBadRequest, responses.ErrorResponse{Message: "invalid password"})
+		case errors.Is(err, errdefs.ErrPasswordTooShort):
+			c.JSON(http.StatusBadRequest, responses.ErrorResponse{Message: "password must be at least 6 characters long"})
+		case errors.Is(err, errdefs.ErrPasswordMissingChars):
+			c.JSON(http.StatusBadRequest, responses.ErrorResponse{Message: "password must contain at least one letter and one number"})
+		case errors.Is(err, errdefs.ErrInvalidEmail):
+			c.JSON(http.StatusBadRequest, responses.ErrorResponse{Message: "invalid email format"})
 		case errors.Is(err, errdefs.ErrUserNotFound):
-			errorHandler.NotFoundError(c, msg)
-
+			c.JSON(http.StatusNotFound, responses.ErrorResponse{Message: "user not found"})
 		default:
-			// ログだけ詳細、レスポンスは汎用文言
 			log.Printf("[RegisterUser] unexpected error: %+v", err)
-			errorHandler.InternalServerError(c, msg)
+			c.JSON(http.StatusInternalServerError, responses.ErrorResponse{Message: "unexpected error"})
 		}
-
+		return
 	}
 
 	c.JSON(http.StatusOK, responses.RegisterSuccessResponse{
@@ -181,15 +187,14 @@ func RegisterHandler(c *gin.Context) {
 // @Failure 400 {object} responses.ErrorResponse
 // @Failure 404 {object} responses.ErrorResponse
 // @Router /logout [post]
-func LogoutHandler(c *gin.Context) {
+func (h *authHandler) LogoutHandler(c *gin.Context) {
 	iruyanID := c.PostForm("iruyanId")
 
-	var authUsecase usecase.AuthUsecase
-	user, err := authUsecase.LogoutUser(iruyanID)
+	user, err := h.AuthUsecase.LogoutUser(iruyanID)
 	if err != nil {
-		switch err.Error() {
-		case fmt.Sprintf("user not found with iruyan_id: %s", iruyanID):
-			c.JSON(http.StatusUnauthorized, responses.ErrorResponse{Message: "authentication failed: user not found"})
+		switch {
+		case errors.Is(err, errdefs.ErrUserNotFound):
+			c.JSON(http.StatusUnauthorized, responses.ErrorResponse{Message: "user not found"})
 		default:
 			c.JSON(http.StatusInternalServerError, responses.ErrorResponse{Message: "internal error: " + err.Error()})
 		}

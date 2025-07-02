@@ -15,7 +15,7 @@ type UserRepositoryInterface interface {
 	NewInstance() *models.User
 	CreateUser(name, iruyanID, password, email string) (*models.User, error)
 	Delete(user *models.User) error
-	FindByID(userID string) (*models.User, error)
+	FindByID(userID uint) (*models.User, error)
 	FindByIruyanID(iruyanID string) (*models.User, error)
 	DeleteByIruyanID(iruyanID string) error
 	GetAllUsers() ([]models.User, error)
@@ -23,6 +23,12 @@ type UserRepositoryInterface interface {
 
 type userRepository struct {
 	DB *gorm.DB
+}
+
+func NewUserRepository(db *gorm.DB) UserRepositoryInterface {
+	return &userRepository{
+		DB: db,
+	}
 }
 
 func (r *userRepository) NewInstance() *models.User {
@@ -88,7 +94,7 @@ func (r *userRepository) FindByID(userID uint) (*models.User, error) {
 	var user models.User
 	if err := r.DB.Where("id = ?", userID).First(&user).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, errors.New("user not found")
+			return nil, errdefs.ErrUserNotFound
 		}
 		return nil, err
 	}
@@ -100,9 +106,9 @@ func (r *userRepository) FindByIruyanID(iruyanID string) (*models.User, error) {
 	var user models.User
 	if err := r.DB.Where("iruyan_id = ?", iruyanID).First(&user).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, fmt.Errorf("user not found with iruyan_id: %s", iruyanID)
+			return nil, errdefs.ErrUserNotFound
 		}
-		return nil, fmt.Errorf("failed to find user by iruyan_id (%s): %w", iruyanID, err)
+		return nil, errdefs.ErrInternalServer
 	}
 	return &user, nil
 }

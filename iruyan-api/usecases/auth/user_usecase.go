@@ -15,6 +15,13 @@ type authUsecase struct {
 	Repo repositories.UserRepositoryInterface
 }
 
+// [DI] UserRepositoryInterface
+func NewAuthUsecase(repo repositories.UserRepositoryInterface) AuthUsecase {
+	return &authUsecase{
+		Repo: repo,
+	}
+}
+
 func (u *authUsecase) RegisterUser(name, iruyanID, password, email string) (*models.User, error) {
 	return u.Repo.CreateUser(name, iruyanID, password, email)
 }
