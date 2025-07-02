@@ -34,6 +34,7 @@ func setupTestRouter() *gin.Engine {
 	// ルーティングには構造体のメソッドを渡す
 	r.POST("/login", authHandler.LoginHandler)
 	r.POST("/register", authHandler.RegisterHandler)
+	r.POST("/logout", authHandler.LogoutHandler)
 
 	return r
 }
@@ -329,4 +330,69 @@ func TestRegisterHandler_InvalidEmail(t *testing.T) {
 
 	assert.Equal(t, http.StatusBadRequest, w.Code, "Expected status 400 BadRequest")
 	assert.Contains(t, w.Body.String(), "invalid email format", "Expected error message about invalid email format")
+}
+
+// --- [Logout] ログアウト成功 ---
+func TestLogoutHandler_Success(t *testing.T) {
+	router := setupTestRouter()
+	t.Log("\n=== [INFO] Start: 正常なログアウト処理 ===")
+	t.Cleanup(func() { t.Log("--- [INFO] End ---\n") })
+
+	// 先にログイン用のテストユーザーを作成
+	err := repositories.CreateTestUser("logoutuser", "pass1234")
+	assert.NoError(t, err)
+
+	data := url.Values{}
+	data.Set("iruyanId", "logoutuser")
+
+	req, _ := http.NewRequest(http.MethodPost, "/logout", strings.NewReader(data.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	t.Logf("[RESPONSE] StatusCode: %d", w.Code)
+	t.Logf("[RESPONSE] Body: %s", w.Body.String())
+
+	assert.Equal(t, http.StatusOK, w.Code, "Expected status 200 OK")
+	assert.Contains(t, w.Body.String(), "Logout successful")
+	assert.Contains(t, w.Body.String(), `"logoutuser"`)
+}
+
+// --- [Logout] 存在しないユーザー ---
+func TestLogoutHandler_UserNotFound(t *testing.T) {
+	router := setupTestRouter()
+	t.Log("\n=== [INFO] Start: 存在しないユーザーでログアウト ===")
+	t.Cleanup(func() { t.Log("--- [INFO] End ---\n") })
+
+	data := url.Values{}
+	data.Set("iruyanId", "nonexistentuser")
+
+	req, _ := http.NewRequest(http.MethodPost, "/logout", strings.NewReader(data.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	t.Logf("[RESPONSE] StatusCode: %d", w.Code)
+	t.Logf("[RESPONSE] Body: %s", w.Body.String())
+
+	assert.Equal(t, http.StatusUnauthorized, w.Code, "Expected status 401 Unauthorized")
+	assert.Contains(t, w.Body.String(), "user not found")
+}
+
+// --- [Logout] パラメータ未指定 ---
+func TestLogoutHandler_MissingParams(t *testing.T) {
+	router := setupTestRouter()
+	t.Log("\n=== [INFO] Start: パラメータ未指定のログアウト ===")
+	t.Cleanup(func() { t.Log("--- [INFO] End ---\n") })
+
+	req, _ := http.NewRequest(http.MethodPost, "/logout", nil)
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	t.Logf("[RESPONSE] StatusCode: %d", w.Code)
+	t.Logf("[RESPONSE] Body: %s", w.Body.String())
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+	assert.Contains(t, w.Body.String(), "iruyanId is required") // ログアウトでも同様のチェックを入れているなら
 }

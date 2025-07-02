@@ -190,6 +190,13 @@ func (h *authHandler) RegisterHandler(c *gin.Context) {
 func (h *authHandler) LogoutHandler(c *gin.Context) {
 	iruyanID := c.PostForm("iruyanId")
 
+	if iruyanID == "" {
+		c.JSON(http.StatusBadRequest, responses.ErrorResponse{
+			Message: "iruyanId is required",
+		})
+		return
+	}
+
 	user, err := h.AuthUsecase.LogoutUser(iruyanID)
 	if err != nil {
 		switch {
