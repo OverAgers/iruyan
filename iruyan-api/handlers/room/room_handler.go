@@ -6,6 +6,7 @@ import (
 	"errors"
 	errorhandler "iruyan-api/handlers/error"
 	"iruyan-api/pkg/errdefs"
+	"iruyan-api/presenters"
 	"iruyan-api/responses"
 	usecase "iruyan-api/usecases/room"
 
@@ -109,7 +110,7 @@ func GetRoomHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, responses.RoomResponse{
 		Message: "Room details retrieved successfully",
 		RoomID:  room.ID.String(),
-		Room:    responses.ConvertToRoomDetail(room),
+		Room:    presenters.ToRoomDetail(room),
 	})
 }
 
