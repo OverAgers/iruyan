@@ -5,7 +5,7 @@ import (
 	"iruyan-api/infrastructure"
 	"iruyan-api/middleware"
 	"iruyan-api/routes"
-	roomInit "iruyan-api/usecase/room"
+	usecase "iruyan-api/usecases/room"
 	"log"
 	"os"
 
@@ -33,7 +33,9 @@ func main() {
 	if roomName == "" {
 		roomName = "General"
 	}
-	if err := roomInit.CreateRoomWithSeats(roomName, 10); err != nil {
+
+	var roomUsecase usecase.RoomUsecase
+	if err := roomUsecase.CreateRoomWithSeats(roomName, 10); err != nil {
 		log.Printf("⚠️  初期ルーム作成失敗: %v", err)
 	}
 
