@@ -1477,7 +1477,7 @@ const docTemplate = `{
                     "type": "string",
                     "example": "johndoe"
                 },
-                "name": {
+                "userName": {
                     "type": "string",
                     "example": "John Doe"
                 }

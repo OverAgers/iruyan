@@ -76,7 +76,7 @@ func (u *roomUsecase) CreateRoomWithSeats(name string, seatCount int) error {
 	}
 
 	for i := 0; i < seatCount; i++ {
-		if _, err := u.SeatRepo.CreateSeat(tx, room.ID, i); err != nil {
+		if _, err := u.SeatRepo.CreateSeat(tx, room.ID, i+1); err != nil {
 			tx.Rollback()
 			return errdefs.ErrCreateSeatFailed
 		}
@@ -103,7 +103,7 @@ func (u *roomUsecase) CreateRoom(name string) (*models.Room, error) {
 	}
 
 	for i := 0; i < 10; i++ {
-		if _, err := u.SeatRepo.CreateSeat(tx, room.ID, i); err != nil {
+		if _, err := u.SeatRepo.CreateSeat(tx, room.ID, i+1); err != nil {
 			tx.Rollback()
 			return nil, err
 		}

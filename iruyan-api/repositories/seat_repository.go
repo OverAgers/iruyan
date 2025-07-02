@@ -25,8 +25,9 @@ func NewSeatRepository(db *gorm.DB) SeatRepositoryInterface {
 // CreateSeat は指定された RoomID に紐づく Seat を1つ作成する
 func (r *seatRepository) CreateSeat(tx *gorm.DB, roomID uuid.UUID, seatNumber int) (*models.Seat, error) {
 	seat := models.Seat{
-		ID:     uuid.New(),
-		RoomID: roomID,
+		ID:         uuid.New(),
+		RoomID:     roomID,
+		SeatNumber: seatNumber,
 	}
 	if err := tx.Create(&seat).Error; err != nil {
 		return nil, err

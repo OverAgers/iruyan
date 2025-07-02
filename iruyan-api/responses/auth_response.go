@@ -21,6 +21,6 @@ type LogoutSuccessResponse struct {
 // UserInfo ユーザー情報のレスポンス
 type UserInfo struct {
 	IruyanID string `json:"iruyanId" example:"johndoe"`
-	Name     string `json:"name" example:"John Doe"`
+	Name     string `json:"userName" example:"John Doe"`
 	Email    string `json:"email" example:"john@example.com"`
 }
