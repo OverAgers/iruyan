@@ -16,7 +16,7 @@ type WorkTimeRepositoryInterface interface {
 	IsSeatTaken(roomID uuid.UUID, seatNumber int) (bool, error)
 	UpdateSeatNumber(workTimeID int, seatNumber int) error
 	FindSeatedUsersByRoomID(roomID uuid.UUID) ([]models.WorkTime, error)
-	GetLogForLastWeek(iruyanID string) ([]models.WorkTime, error)
+	GetLogForLastWeek(userID uint, iruyanID string) ([]models.WorkTime, error)
 	GetActiveEntry(userID uint) (*models.WorkTime, error)
 	GetLatestEntriesByUser(userID uint, limit int) ([]models.WorkTime, error)
 	FindLatestEntry(userID uint, roomID uuid.UUID) (*models.WorkTime, error)
@@ -27,6 +27,12 @@ type WorkTimeRepositoryInterface interface {
 
 type workTimeRepository struct {
 	DB *gorm.DB
+}
+
+func NewWorkTimeRepository(db *gorm.DB) WorkTimeRepositoryInterface {
+	return &workTimeRepository{
+		DB: db,
+	}
 }
 
 func (r *workTimeRepository) IsUserAlreadyInRoom(userID uint, roomID uuid.UUID) (bool, error) {
@@ -83,18 +89,12 @@ func (r *workTimeRepository) FindSeatedUsersByRoomID(roomID uuid.UUID) ([]models
 	return workTimes, nil
 }
 
-func (r *workTimeRepository) GetLogForLastWeek(iruyanID string, userRepo UserRepositoryInterface) ([]models.WorkTime, error) {
-	// ユーザーを取得
-	user, err := userRepo.FindByIruyanID(iruyanID)
-	if err != nil {
-		return nil, err
-	}
-
+func (r *workTimeRepository) GetLogForLastWeek(userID uint, iruyanID string) ([]models.WorkTime, error) {
 	var workTimes []models.WorkTime
 	fiveDaysAgo := time.Now().AddDate(0, 0, -5)
 
-	err = r.DB.
-		Where("user_id = ? AND entry_time >= ?", user.ID, fiveDaysAgo).
+	err := r.DB.
+		Where("user_id = ? AND entry_time >= ?", userID, fiveDaysAgo).
 		Order("entry_time DESC").
 		Find(&workTimes).Error
 

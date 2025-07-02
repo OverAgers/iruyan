@@ -1,26 +1,38 @@
 package routes
 
 import (
-	"iruyan-api/handlers/user"
+	handlers "iruyan-api/handlers/user"
+	"iruyan-api/infrastructure"
+	"iruyan-api/repositories"
+	userusecases "iruyan-api/usecases/user"
+	worktimeusecases "iruyan-api/usecases/worktime"
 
 	"github.com/gin-gonic/gin"
 )
 
 func RegisterUserRoutes(router *gin.Engine) {
+	// --- 依存性の注入 ---
+	db := infrastructure.DB // *gorm.DB のインスタンス
+	userRepo := repositories.NewUserRepository(db)
+	userUsecase := userusecases.NewUserUsecase(userRepo)
+	workTimeRepo := repositories.NewWorkTimeRepository(db)
+	workTimeUsecase := worktimeusecases.NewWorkTimeUsecase(userRepo, workTimeRepo)
+	userHandler := handlers.NewUserHandler(userUsecase, workTimeUsecase)
+
 	userGroup := router.Group("/user/:iruyanId")
 	{
-		userGroup.GET("", user.PageHandler)
-		userGroup.DELETE("/delete", user.DeleteHandler)
-		userGroup.GET("/work_info", user.WorkInfoHandler)
-		userGroup.GET("/together", user.TogetherTimeHandler)
-		userGroup.GET("/ranking", user.RankingHandler)
-		userGroup.GET("/recent_log", user.GetRecentLogHandler)
-		userGroup.POST("/task", user.TaskHandler)
+		userGroup.GET("", userHandler.PageHandler)
+		userGroup.DELETE("/delete", userHandler.DeleteHandler)
+		userGroup.GET("/work_info", userHandler.WorkInfoHandler)
+		userGroup.GET("/together", userHandler.TogetherTimeHandler)
+		userGroup.GET("/ranking", userHandler.RankingHandler)
+		userGroup.GET("/recent_log", userHandler.GetRecentLogHandler)
+		userGroup.POST("/task", userHandler.TaskHandler)
 	}
 
 	fetchGroup := router.Group("/user/fetch")
 	{
-		fetchGroup.GET("/all", user.GetAllUsersHandler)
-		fetchGroup.GET("/:iruyanId", user.GetUserByIruyanIDHandler)
+		fetchGroup.GET("/all", userHandler.GetAllUsersHandler)
+		fetchGroup.GET("/:iruyanId", userHandler.GetUserByIruyanIDHandler)
 	}
 }

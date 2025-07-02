@@ -14,6 +14,18 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type userHandler struct {
+	UserUsecase     userusecase.UserUsecase
+	WorkTimeUsecase worktimeusecase.WorkTimeUsecase
+}
+
+func NewUserHandler(userUsecase userusecase.UserUsecase, workTimeUsecase worktimeusecase.WorkTimeUsecase) *userHandler {
+	return &userHandler{
+		UserUsecase:     userUsecase,
+		WorkTimeUsecase: workTimeUsecase,
+	}
+}
+
 // PageHandler godoc
 // @Summary Show user page
 // @Description Display user page for a specific user ID
@@ -24,11 +36,10 @@ import (
 // @Failure 404 {object} responses.ErrorResponse
 // @Failure 500 {object} responses.ErrorResponse
 // @Router /user/{iruyanId} [get]
-func PageHandler(c *gin.Context) {
+func (h *userHandler) PageHandler(c *gin.Context) {
 	iruyanID := c.Param("iruyanId")
 
-	var userUsecase userusecase.UserUsecase
-	err := userUsecase.CheckUserExists(iruyanID)
+	err := h.UserUsecase.CheckUserExists(iruyanID)
 	if err != nil {
 		switch {
 		case errors.Is(err, errdefs.ErrUserNotFound):
@@ -52,11 +63,10 @@ func PageHandler(c *gin.Context) {
 // @Param iruyanId path string true "UIruyan ID"
 // @Success 200 {object} map[string]interface{}
 // @Router /user/{iruyanId}/delete [delete]
-func DeleteHandler(c *gin.Context) {
+func (h *userHandler) DeleteHandler(c *gin.Context) {
 	iruyanID := c.Param("iruyanId")
 
-	var userUsecase userusecase.UserUsecase
-	err := userUsecase.DeleteUser(iruyanID)
+	err := h.UserUsecase.DeleteUser(iruyanID)
 	if err != nil {
 		switch {
 		case errors.Is(err, errdefs.ErrUserNotFound):
@@ -83,11 +93,10 @@ func DeleteHandler(c *gin.Context) {
 // @Failure 404 {object} responses.ErrorResponse
 // @Failure 500 {object} responses.ErrorResponse
 // @Router /user/{iruyanId}/work_info [get]
-func WorkInfoHandler(c *gin.Context) {
+func (h *userHandler) WorkInfoHandler(c *gin.Context) {
 	iruyanID := c.Param("iruyanId")
 
-	var userUsecase userusecase.UserUsecase
-	err := userUsecase.CheckUserExists(iruyanID)
+	err := h.UserUsecase.CheckUserExists(iruyanID)
 	if err != nil {
 		switch {
 		case errors.Is(err, errdefs.ErrUserNotFound):
@@ -122,11 +131,10 @@ func WorkInfoHandler(c *gin.Context) {
 // @Param iruyanId path string true "Iruyan ID"
 // @Success 200 {object} map[string]interface{}
 // @Router /user/{iruyanId}/together [get]
-func TogetherTimeHandler(c *gin.Context) {
+func (h *userHandler) TogetherTimeHandler(c *gin.Context) {
 	iruyanID := c.Param("iruyanId")
 
-	var userUsecase userusecase.UserUsecase
-	err := userUsecase.CheckUserExists(iruyanID)
+	err := h.UserUsecase.CheckUserExists(iruyanID)
 	if err != nil {
 		switch {
 		case errors.Is(err, errdefs.ErrUserNotFound):
@@ -150,11 +158,10 @@ func TogetherTimeHandler(c *gin.Context) {
 // @Param iruyanId path string true "Iruyan ID"
 // @Success 200 {object} map[string]interface{}
 // @Router /user/{iruyanId}/ranking [get]
-func RankingHandler(c *gin.Context) {
+func (h *userHandler) RankingHandler(c *gin.Context) {
 	iruyanID := c.Param("iruyanId")
 
-	var userUsecase userusecase.UserUsecase
-	err := userUsecase.CheckUserExists(iruyanID)
+	err := h.UserUsecase.CheckUserExists(iruyanID)
 	if err != nil {
 		switch {
 		case errors.Is(err, errdefs.ErrUserNotFound):
@@ -181,12 +188,11 @@ func RankingHandler(c *gin.Context) {
 // @Failure 404 {object} responses.ErrorResponse
 // @Failure 500 {object} responses.ErrorResponse
 // @Router /user/{iruyanId}/task [post]
-func TaskHandler(c *gin.Context) {
+func (h *userHandler) TaskHandler(c *gin.Context) {
 	iruyanID := c.Param("iruyanId")
 	task := c.PostForm("task")
 
-	var worktimeUsecase worktimeusecase.WorkTimeUsecase
-	if err := worktimeUsecase.UpdateTask(iruyanID, task); err != nil {
+	if err := h.WorkTimeUsecase.UpdateTask(iruyanID, task); err != nil {
 		switch {
 		case errors.Is(err, errdefs.ErrUserNotFound):
 			c.JSON(http.StatusNotFound, responses.ErrorResponse{Message: "user not found"})
@@ -211,11 +217,10 @@ func TaskHandler(c *gin.Context) {
 // @Failure 404 {object} responses.ErrorResponse
 // @Failure 500 {object} responses.ErrorResponse
 // @Router /user/{iruyanId}/recent_log [get]
-func GetRecentLogHandler(c *gin.Context) {
+func (h *userHandler) GetRecentLogHandler(c *gin.Context) {
 	iruyanID := c.Param("iruyanId")
 
-	var worktimeUsecase worktimeusecase.WorkTimeUsecase
-	logs, err := worktimeUsecase.GetRecentLogs(iruyanID, 5)
+	logs, err := h.WorkTimeUsecase.GetRecentLogs(iruyanID, 5)
 	if err != nil {
 		switch {
 		case errors.Is(err, errdefs.ErrUserNotFound):
@@ -242,9 +247,8 @@ func GetRecentLogHandler(c *gin.Context) {
 // @Success 200 {array} responses.User
 // @Failure 500 {object} responses.ErrorResponse
 // @Router /user/fetch/all [get]
-func GetAllUsersHandler(c *gin.Context) {
-	var userUsecase userusecase.UserUsecase
-	users, err := userUsecase.GetAllUsers()
+func (h *userHandler) GetAllUsersHandler(c *gin.Context) {
+	users, err := h.UserUsecase.GetAllUsers()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
 			Message: "Failed to retrieve users",
@@ -273,11 +277,10 @@ func GetAllUsersHandler(c *gin.Context) {
 // @Failure 404 {object} responses.ErrorResponse
 // @Failure 500 {object} responses.ErrorResponse
 // @Router /user/fetch/{iruyanId} [get]
-func GetUserByIruyanIDHandler(c *gin.Context) {
+func (h *userHandler) GetUserByIruyanIDHandler(c *gin.Context) {
 	iruyanId := c.Param("iruyanId")
 
-	var userUsecase userusecase.UserUsecase
-	user, err := userUsecase.GetUserByIruyanID(iruyanId)
+	user, err := h.UserUsecase.GetUserByIruyanID(iruyanId)
 	if err != nil {
 		if errors.Is(err, errdefs.ErrUserNotFound) {
 			c.JSON(http.StatusNotFound, responses.ErrorResponse{

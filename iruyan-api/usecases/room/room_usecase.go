@@ -33,35 +33,52 @@ type roomUsecase struct {
 	DB           *gorm.DB
 }
 
+// [DI] RoomepositoryInterface
+func NewRoomUsecase(
+	userRepo repositories.UserRepositoryInterface,
+	roomRepo repositories.RoomRepositoryInterface,
+	seatRepo repositories.SeatRepositoryInterface,
+	workTimeRepo repositories.WorkTimeRepositoryInterface,
+	db *gorm.DB,
+) RoomUsecase {
+	return &roomUsecase{
+		UserRepo:     userRepo,
+		RoomRepo:     roomRepo,
+		SeatRepo:     seatRepo,
+		WorkTimeRepo: workTimeRepo,
+		DB:           db,
+	}
+}
+
 func (u *roomUsecase) CreateRoomWithSeats(name string, seatCount int) error {
-	// 既存ルーム確認
 	exists, err := u.RoomRepo.ExistsByName(name)
 	if err != nil {
-		return fmt.Errorf("failed to check existing room: %w", err)
+		return fmt.Errorf("%w: %v", errdefs.ErrCreateRoomFailed, err)
 	}
 	if exists {
-		fmt.Printf("Room '%s' already exists. Skipping creation.\n", name)
-		return nil
+		return errdefs.ErrRoomAlreadyExists
 	}
 
-	// トランザクション開始
 	tx := u.DB.Begin()
 
-	room := models.Room{Name: name}
+	room := models.Room{
+		ID:   uuid.New(),
+		Name: name,
+	}
 	if err := room.ValidateName(); err != nil {
 		tx.Rollback()
-		return fmt.Errorf("room name invalid: %w", err)
+		return errdefs.ErrInvalidRoomName
 	}
 
 	if err := u.RoomRepo.CreateWithTx(tx, &room); err != nil {
 		tx.Rollback()
-		return fmt.Errorf("failed to create room: %w", err)
+		return errdefs.ErrCreateRoomFailed
 	}
 
 	for i := 0; i < seatCount; i++ {
-		if _, err := u.SeatRepo.CreateSeat(tx, room.ID); err != nil {
+		if _, err := u.SeatRepo.CreateSeat(tx, room.ID, i); err != nil {
 			tx.Rollback()
-			return fmt.Errorf("failed to create seat: %w", err)
+			return errdefs.ErrCreateSeatFailed
 		}
 	}
 
@@ -69,35 +86,34 @@ func (u *roomUsecase) CreateRoomWithSeats(name string, seatCount int) error {
 }
 
 func (u *roomUsecase) CreateRoom(name string) (*models.Room, error) {
-	room := &models.Room{Name: name}
-
-	// 名前のバリデーション
-	if err := room.ValidateName(); err != nil {
-		return nil, err
+	room := models.Room{
+		ID:   uuid.New(),
+		Name: name,
 	}
 
-	// [💡]複数のリポジトリを横断するビジネス処理の場合は、usecaeでトランザクションを制御する
+	if err := room.ValidateName(); err != nil {
+		return nil, errdefs.ErrInvalidRoomName
+	}
+
 	tx := u.DB.Begin()
 
-	// 部屋作成
-	if err := u.RoomRepo.CreateWithTx(tx, room); err != nil {
+	if err := u.RoomRepo.CreateWithTx(tx, &room); err != nil {
 		tx.Rollback()
 		return nil, err
 	}
 
-	// シートを10個自動生成
 	for i := 0; i < 10; i++ {
-		if _, err := u.SeatRepo.CreateSeat(tx, room.ID); err != nil {
+		if _, err := u.SeatRepo.CreateSeat(tx, room.ID, i); err != nil {
 			tx.Rollback()
-			return nil, fmt.Errorf("failed to create seat: %w", err)
+			return nil, err
 		}
 	}
 
 	if err := tx.Commit().Error; err != nil {
-		return nil, fmt.Errorf("failed to commit transaction: %w", err)
+		return nil, err
 	}
 
-	return room, nil
+	return &room, nil
 }
 
 func (u *roomUsecase) EnterRoom(iruyanID string, roomID uuid.UUID, task string) (*models.WorkTime, *models.Room, error) {
@@ -275,4 +291,30 @@ func (u *roomUsecase) GetSeatedUsers(roomID uuid.UUID) ([]responses.SeatStatusRe
 		})
 	}
 	return response, nil
+}
+
+func (u *roomUsecase) GetRooms() ([]responses.RoomDetail, error) {
+	rooms, err := u.RoomRepo.GetRoomsWithSeats()
+	if err != nil {
+		return nil, err
+	}
+
+	roomDetails := make([]responses.RoomDetail, len(rooms))
+	for i, room := range rooms {
+		seats := make([]responses.SeatDetail, len(room.Seats))
+		for j, seat := range room.Seats {
+			seats[j] = responses.SeatDetail{
+				SeatID:     seat.ID.String(),
+				RoomID:     seat.RoomID.String(),
+				SeatNumber: seat.SeatNumber,
+			}
+		}
+		roomDetails[i] = responses.RoomDetail{
+			RoomID:   room.ID.String(),
+			RoomName: room.Name,
+			Seats:    seats,
+		}
+	}
+
+	return roomDetails, nil
 }

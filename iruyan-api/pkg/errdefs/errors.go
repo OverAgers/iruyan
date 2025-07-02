@@ -26,9 +26,12 @@ var (
 	ErrSeatAlreadyTaken      = errors.New("seat is already taken")
 	ErrNotSeated             = errors.New("the user is not currently seated")
 	ErrSeatMismatch          = errors.New("the seat number does not match the user's current seat")
-	ErrDataRetrievalFailed   = errors.New("failed to retrieve seat status")
 	ErrNoActiveSession       = errors.New("no active session found")
+	ErrDataRetrievalFailed   = errors.New("failed to retrieve seat status")
+	ErrCreateRoomFailed      = errors.New("failed to create room")
+	ErrCreateSeatFailed      = errors.New("failed to create seat")
 
 	// --- General errors ---
-	ErrInternalServer = errors.New("internal server error")
+	ErrInternalServer    = errors.New("internal server error")
+	ErrTransactionCommit = errors.New("failed to commit transaction")
 )

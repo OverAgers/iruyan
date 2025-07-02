@@ -18,6 +18,13 @@ type userUsecase struct {
 	Repo repositories.UserRepositoryInterface
 }
 
+// [DI] UserRepositoryInterface
+func NewUserUsecase(repo repositories.UserRepositoryInterface) UserUsecase {
+	return &userUsecase{
+		Repo: repo,
+	}
+}
+
 func (u *userUsecase) CheckUserExists(iruyanID string) error {
 	_, err := u.Repo.FindByIruyanID(iruyanID)
 	return err

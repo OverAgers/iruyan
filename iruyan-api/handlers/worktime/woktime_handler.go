@@ -14,6 +14,16 @@ import (
 	"github.com/google/uuid"
 )
 
+type workTimeHandler struct {
+	WorkTimeUsecase usecase.WorkTimeUsecase
+}
+
+func NewWorkTimeHandler(workTimeUsecase usecase.WorkTimeUsecase) *workTimeHandler {
+	return &workTimeHandler{
+		WorkTimeUsecase: workTimeUsecase,
+	}
+}
+
 // EntryHandler godoc
 // @Summary Record entry time
 // @Description Creates a work time record when a user enters a room
@@ -26,7 +36,7 @@ import (
 // @Failure 400 {object} responses.ErrorResponse
 // @Failure 500 {object} responses.ErrorResponse
 // @Router /worktime/entry [post]
-func EntryHandler(c *gin.Context) {
+func (h *workTimeHandler) EntryHandler(c *gin.Context) {
 	iruyanID := c.PostForm("iruyanId")
 	roomIDStr := c.PostForm("roomId")
 	task := c.PostForm("task")
@@ -37,8 +47,7 @@ func EntryHandler(c *gin.Context) {
 		return
 	}
 
-	var worktimeUsecase usecase.WorkTimeUsecase
-	workTime, err := worktimeUsecase.EnterRoom(iruyanID, roomID, task)
+	workTime, err := h.WorkTimeUsecase.EnterRoom(iruyanID, roomID, task)
 	if err != nil {
 		switch {
 		case errors.Is(err, errdefs.ErrUserNotFound):
@@ -72,7 +81,7 @@ func EntryHandler(c *gin.Context) {
 // @Failure 400 {object} responses.ErrorResponse
 // @Failure 404 {object} responses.ErrorResponse
 // @Router /worktime/latest [get]
-func GetLatestEntryHandler(c *gin.Context) {
+func (h *workTimeHandler) GetLatestEntryHandler(c *gin.Context) {
 	iruyanID := c.Query("iruyanId")
 	roomIDStr := c.Query("roomId")
 
@@ -82,8 +91,7 @@ func GetLatestEntryHandler(c *gin.Context) {
 		return
 	}
 
-	var worktimeUsecase usecase.WorkTimeUsecase
-	workTime, err := worktimeUsecase.GetLatestEntry(iruyanID, roomID)
+	workTime, err := h.WorkTimeUsecase.GetLatestEntry(iruyanID, roomID)
 	if err != nil {
 		switch {
 		case errors.Is(err, errdefs.ErrUserNotFound):
@@ -118,7 +126,7 @@ func GetLatestEntryHandler(c *gin.Context) {
 // @Failure 400 {object} responses.ErrorResponse
 // @Failure 500 {object} responses.ErrorResponse
 // @Router /worktime/recent [get]
-func GetRecentLogsHandler(c *gin.Context) {
+func (h *workTimeHandler) GetRecentLogsHandler(c *gin.Context) {
 	iruyanID := c.Query("iruyanId")
 	limitStr := c.DefaultQuery("limit", "5")
 
@@ -128,8 +136,7 @@ func GetRecentLogsHandler(c *gin.Context) {
 		return
 	}
 
-	var worktimeUsecase usecase.WorkTimeUsecase
-	logs, err := worktimeUsecase.GetRecentLogs(iruyanID, limit)
+	logs, err := h.WorkTimeUsecase.GetRecentLogs(iruyanID, limit)
 	if err != nil {
 		switch {
 		case errors.Is(err, errdefs.ErrUserNotFound):
@@ -155,11 +162,10 @@ func GetRecentLogsHandler(c *gin.Context) {
 // @Failure 400 {object} responses.ErrorResponse
 // @Failure 500 {object} responses.ErrorResponse
 // @Router /worktime/weekly [get]
-func GetWeeklyLogsHandler(c *gin.Context) {
+func (h *workTimeHandler) GetWeeklyLogsHandler(c *gin.Context) {
 	iruyanID := c.Query("iruyanId")
-	var worktimeUsecase usecase.WorkTimeUsecase
 
-	logs, err := worktimeUsecase.GetWeeklyLogs(iruyanID)
+	logs, err := h.WorkTimeUsecase.GetWeeklyLogs(iruyanID)
 	if err != nil {
 		switch {
 		case errors.Is(err, errdefs.ErrUserNotFound):
@@ -183,9 +189,8 @@ func GetWeeklyLogsHandler(c *gin.Context) {
 // @Success 200 {object} responses.WorkTimeListResponseSwagger
 // @Failure 500 {object} responses.ErrorResponse
 // @Router /worktime/fetch/all [get]
-func GetAllWorkTimeHandler(c *gin.Context) {
-	var worktimeUsecase usecase.WorkTimeUsecase
-	workTimes, err := worktimeUsecase.GetAllWorkTimes()
+func (h *workTimeHandler) GetAllWorkTimeHandler(c *gin.Context) {
+	workTimes, err := h.WorkTimeUsecase.GetAllWorkTimes()
 	if err != nil {
 		switch {
 		case errors.Is(err, errdefs.ErrUserNotFound):
@@ -213,11 +218,10 @@ func GetAllWorkTimeHandler(c *gin.Context) {
 // @Failure 400 {object} responses.ErrorResponse
 // @Failure 500 {object} responses.ErrorResponse
 // @Router /worktime/fetch/{iruyanId} [get]
-func GetWorkTimeByIruyanIDHandler(c *gin.Context) {
+func (h *workTimeHandler) GetWorkTimeByIruyanIDHandler(c *gin.Context) {
 	iruyanID := c.Param("iruyanId")
 
-	var worktimeUsecase usecase.WorkTimeUsecase
-	workTimes, err := worktimeUsecase.GetWorkTimeByIruyanID(iruyanID)
+	workTimes, err := h.WorkTimeUsecase.GetWorkTimeByIruyanID(iruyanID)
 	if err != nil {
 		switch {
 		case errors.Is(err, errdefs.ErrUserNotFound):

@@ -28,9 +28,25 @@ type workTimeUsecase struct {
 	WorkTimeRepo repositories.WorkTimeRepositoryInterface
 }
 
+// [DI] UserRepositoryInterface
+func NewWorkTimeUsecase(userRepo repositories.UserRepositoryInterface, workTimeRepo repositories.WorkTimeRepositoryInterface) WorkTimeUsecase {
+	return &workTimeUsecase{
+		UserRepo:     userRepo,
+		WorkTimeRepo: workTimeRepo,
+	}
+}
+
 func (u *workTimeUsecase) GetWorkLogForLastWeek(iruyanID string) (responses.WorkLogForLastWeekResponse, error) {
 	// 直近1週間の作業ログ取得
-	workLogs, err := u.WorkTimeRepo.GetLogForLastWeek(iruyanID)
+	user, err := u.UserRepo.FindByIruyanID(iruyanID)
+	if err != nil {
+		if errors.Is(err, errdefs.ErrUserNotFound) {
+			return responses.WorkLogForLastWeekResponse{}, errdefs.ErrUserNotFound
+		}
+		return responses.WorkLogForLastWeekResponse{}, err
+	}
+
+	workLogs, err := u.WorkTimeRepo.GetLogForLastWeek(user.ID, iruyanID)
 	if err != nil {
 		return responses.WorkLogForLastWeekResponse{}, err
 	}

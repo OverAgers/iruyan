@@ -9,6 +9,7 @@ import (
 	"iruyan-api/presenters"
 	"iruyan-api/responses"
 	usecase "iruyan-api/usecases/room"
+	"log"
 
 	"net/http"
 	"strconv"
@@ -17,6 +18,17 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
+
+type roomHandler struct {
+	RoomUsecase usecase.RoomUsecase
+}
+
+// [DI] AuthUsecase
+func NewRoomHandler(roomUsecase usecase.RoomUsecase) *roomHandler {
+	return &roomHandler{
+		RoomUsecase: roomUsecase,
+	}
+}
 
 // CreateRoomHandler Room作成
 // @Summary Create a new room
@@ -29,19 +41,23 @@ import (
 // @Failure 400 {object} responses.ErrorResponse
 // @Failure 500 {object} responses.ErrorResponse
 // @Router /rooms [post]
-func CreateRoomHandler(c *gin.Context) {
+func (h *roomHandler) CreateRoomHandler(c *gin.Context) {
 	roomName := c.PostForm("roomName")
 
-	var roomUsecase usecase.RoomUsecase
-	room, err := roomUsecase.CreateRoom(roomName)
+	room, err := h.RoomUsecase.CreateRoom(roomName)
 	if err != nil {
 		switch {
 		case errors.Is(err, errdefs.ErrInvalidRoomName):
 			c.JSON(http.StatusBadRequest, responses.ErrorResponse{Message: "invalid room name"})
-		case errors.Is(err, errdefs.ErrRoomAlreadyExists):
-			c.JSON(http.StatusConflict, responses.ErrorResponse{Message: "room already exists"})
+		case errors.Is(err, errdefs.ErrCreateRoomFailed):
+			c.JSON(http.StatusInternalServerError, responses.ErrorResponse{Message: "failed to create room"})
+		case errors.Is(err, errdefs.ErrCreateSeatFailed):
+			c.JSON(http.StatusInternalServerError, responses.ErrorResponse{Message: "failed to create seats"})
+		case errors.Is(err, errdefs.ErrTransactionCommit):
+			c.JSON(http.StatusInternalServerError, responses.ErrorResponse{Message: "failed to finalize room creation"})
 		default:
-			c.JSON(http.StatusInternalServerError, responses.ErrorResponse{Message: "unexpected error: " + err.Error()})
+			log.Printf("[CreateRoom] unexpected error: %+v", err)
+			c.JSON(http.StatusInternalServerError, responses.ErrorResponse{Message: "unexpected error"})
 		}
 		return
 	}
@@ -60,9 +76,8 @@ func CreateRoomHandler(c *gin.Context) {
 // @Produce json
 // @Success 200 {object} responses.RoomListResponse
 // @Router /rooms [get]
-func GetRoomsHandler(c *gin.Context) {
-	var roomUsecase usecase.RoomUsecase
-	rooms, err := roomUsecase.GetRooms()
+func (h *roomHandler) GetRoomsHandler(c *gin.Context) {
+	rooms, err := h.RoomUsecase.GetRooms()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
 			Message: "failed to retrieve rooms: " + err.Error(),
@@ -85,7 +100,7 @@ func GetRoomsHandler(c *gin.Context) {
 // @Success 200 {object} responses.RoomDetailResponse
 // @Failure 404 {object} responses.ErrorResponse
 // @Router /rooms/{roomId} [get]
-func GetRoomHandler(c *gin.Context) {
+func (h *roomHandler) GetRoomHandler(c *gin.Context) {
 	roomIDStr := c.Param("roomId")
 
 	// UUIDのパース
@@ -95,8 +110,7 @@ func GetRoomHandler(c *gin.Context) {
 		return
 	}
 
-	var roomUsecase usecase.RoomUsecase
-	room, err := roomUsecase.GetRoomByID(roomID)
+	room, err := h.RoomUsecase.GetRoomByID(roomID)
 	if err != nil {
 		switch {
 		case errors.Is(err, errdefs.ErrRoomNotFound):
@@ -126,7 +140,7 @@ func GetRoomHandler(c *gin.Context) {
 // @Failure 404 {object} responses.ErrorResponse "Room not found"
 // @Failure 500 {object} responses.ErrorResponse "Failed to record entry to the room"
 // @Router /rooms/{roomId}/enter/{iruyanId} [post]
-func EnterRoomHandler(c *gin.Context) {
+func (h *roomHandler) EnterRoomHandler(c *gin.Context) {
 	roomIDStr := c.Param("roomId")
 	iruyanID := c.Param("iruyanId")
 	task := c.PostForm("task")
@@ -138,8 +152,7 @@ func EnterRoomHandler(c *gin.Context) {
 		return
 	}
 
-	var roomUsecase usecase.RoomUsecase
-	workTime, room, err := roomUsecase.EnterRoom(iruyanID, roomID, task)
+	workTime, room, err := h.RoomUsecase.EnterRoom(iruyanID, roomID, task)
 	if err != nil {
 		switch {
 		case errors.Is(err, errdefs.ErrUserNotFound):
@@ -176,7 +189,7 @@ func EnterRoomHandler(c *gin.Context) {
 // @Failure 404 {object} responses.ErrorResponse "Room or user not found"
 // @Failure 500 {object} responses.ErrorResponse "Failed to record leaving time"
 // @Router /rooms/{roomId}/leave [post]
-func LeaveRoomHandler(c *gin.Context) {
+func (h *roomHandler) LeaveRoomHandler(c *gin.Context) {
 	roomID := c.Param("roomId")
 	iruyanID := c.PostForm("iruyanId")
 	durationStr := c.PostForm("duration")
@@ -197,8 +210,7 @@ func LeaveRoomHandler(c *gin.Context) {
 		return
 	}
 
-	var roomUsecase usecase.RoomUsecase
-	leaveInfo, err := roomUsecase.LeaveRoom(iruyanID, parsedRoomID, duration)
+	leaveInfo, err := h.RoomUsecase.LeaveRoom(iruyanID, parsedRoomID, duration)
 	if err != nil {
 		switch {
 		case errors.Is(err, errdefs.ErrUserNotFound):
@@ -240,7 +252,7 @@ func LeaveRoomHandler(c *gin.Context) {
 // @Failure 409 {object} responses.ErrorResponse "座席がすでに他ユーザーに使用されている場合"
 // @Failure 500 {object} responses.ErrorResponse "サーバ内部エラー"
 // @Router /rooms/{roomId}/seat/{seatNumber}/take [put]
-func TakeSeatHandler(c *gin.Context) {
+func (h *roomHandler) TakeSeatHandler(c *gin.Context) {
 	roomIDParam := c.Param("roomId")
 	seatNumberParam := c.Param("seatNumber")
 	iruyanID := c.PostForm("iruyanId")
@@ -257,8 +269,7 @@ func TakeSeatHandler(c *gin.Context) {
 		return
 	}
 
-	var roomUsecase usecase.RoomUsecase
-	if err := roomUsecase.TakeSeat(iruyanID, roomID, seatNumber); err != nil {
+	if err := h.RoomUsecase.TakeSeat(iruyanID, roomID, seatNumber); err != nil {
 		switch {
 		case errors.Is(err, errdefs.ErrUserNotFound):
 			c.JSON(http.StatusNotFound, responses.ErrorResponse{Message: "user not found"})
@@ -295,7 +306,7 @@ func TakeSeatHandler(c *gin.Context) {
 // @Failure 404 {object} responses.ErrorResponse "ユーザーが存在しない場合"
 // @Failure 500 {object} responses.ErrorResponse "サーバ内部エラー"
 // @Router /rooms/{roomId}/seat/{seatNumber}/leave [put]
-func LeaveSeatHandler(c *gin.Context) {
+func (h *roomHandler) LeaveSeatHandler(c *gin.Context) {
 	roomIDParam := c.Param("roomId")
 	seatNumberParam := c.Param("seatNumber")
 	iruyanID := c.PostForm("iruyanId")
@@ -312,8 +323,7 @@ func LeaveSeatHandler(c *gin.Context) {
 		return
 	}
 
-	var roomUsecase usecase.RoomUsecase
-	if err := roomUsecase.LeaveSeat(iruyanID, roomID, seatNumber); err != nil {
+	if err := h.RoomUsecase.LeaveSeat(iruyanID, roomID, seatNumber); err != nil {
 		switch {
 		case errors.Is(err, errdefs.ErrUserNotFound):
 			c.JSON(http.StatusNotFound, responses.ErrorResponse{Message: "user not found"})
@@ -343,7 +353,7 @@ func LeaveSeatHandler(c *gin.Context) {
 // @Success 200 {array} responses.SeatStatusResponse
 // @Failure 500 {object} responses.ErrorResponse
 // @Router /rooms/{roomId}/seats/status [get]
-func GetSeatedUsersInRoomHandler(c *gin.Context) {
+func (h *roomHandler) GetSeatedUsersInRoomHandler(c *gin.Context) {
 	roomIDParam := c.Param("roomId")
 	roomID, err := uuid.Parse(roomIDParam)
 	if err != nil {
@@ -351,8 +361,7 @@ func GetSeatedUsersInRoomHandler(c *gin.Context) {
 		return
 	}
 
-	var roomUsecase usecase.RoomUsecase
-	seatedUsers, err := roomUsecase.GetSeatedUsers(roomID)
+	seatedUsers, err := h.RoomUsecase.GetSeatedUsers(roomID)
 	if err != nil {
 		switch {
 		case errors.Is(err, errdefs.ErrRoomNotFound):

@@ -22,6 +22,12 @@ type roomRepository struct {
 	DB *gorm.DB
 }
 
+func NewRoomRepository(db *gorm.DB) RoomRepositoryInterface {
+	return &roomRepository{
+		DB: db,
+	}
+}
+
 func (r *roomRepository) CreateWithTx(tx *gorm.DB, room *models.Room) error {
 	if err := tx.Create(room).Error; err != nil {
 		return fmt.Errorf("failed to create room: %w", err)

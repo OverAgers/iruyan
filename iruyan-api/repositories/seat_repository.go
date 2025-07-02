@@ -1,7 +1,6 @@
 package repositories
 
 import (
-	"fmt"
 	"iruyan-api/models"
 
 	"github.com/google/uuid"
@@ -9,7 +8,7 @@ import (
 )
 
 type SeatRepositoryInterface interface {
-	CreateSeat(tx *gorm.DB, roomID uuid.UUID) (*models.Seat, error)
+	CreateSeat(tx *gorm.DB, roomID uuid.UUID, seatNumber int) (*models.Seat, error)
 	ExistsInRoom(roomID uuid.UUID, seatNumber int) (bool, error)
 }
 
@@ -17,17 +16,22 @@ type seatRepository struct {
 	DB *gorm.DB
 }
 
+func NewSeatRepository(db *gorm.DB) SeatRepositoryInterface {
+	return &seatRepository{
+		DB: db,
+	}
+}
+
 // CreateSeat は指定された RoomID に紐づく Seat を1つ作成する
-func (r *seatRepository) CreateSeat(tx *gorm.DB, roomID uuid.UUID) (*models.Seat, error) {
-	seat := &models.Seat{
+func (r *seatRepository) CreateSeat(tx *gorm.DB, roomID uuid.UUID, seatNumber int) (*models.Seat, error) {
+	seat := models.Seat{
+		ID:     uuid.New(),
 		RoomID: roomID,
 	}
-
-	if err := tx.Create(seat).Error; err != nil {
-		return nil, fmt.Errorf("failed to create seat: %w", err)
+	if err := tx.Create(&seat).Error; err != nil {
+		return nil, err
 	}
-
-	return seat, nil
+	return &seat, nil
 }
 
 func (r *seatRepository) ExistsInRoom(roomID uuid.UUID, seatNumber int) (bool, error) {
