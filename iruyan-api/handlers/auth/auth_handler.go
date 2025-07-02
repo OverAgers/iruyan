@@ -3,16 +3,29 @@
 package auth
 
 import (
+	"errors"
+	"log"
 	"net/http"
+	"strings"
 
-	errorhandler "iruyan-api/handlers/error"
-	"iruyan-api/infrastructure"
-	"iruyan-api/models"
+	"iruyan-api/pkg/errdefs"
+
 	"iruyan-api/responses"
+	usecase "iruyan-api/usecases/auth"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
+
+type authHandler struct {
+	AuthUsecase usecase.AuthUsecase
+}
+
+// [DI] AuthUsecase
+func NewAuthHandler(authUsecase usecase.AuthUsecase) *authHandler {
+	return &authHandler{
+		AuthUsecase: authUsecase,
+	}
+}
 
 // LoginPageHandler ログイン画面表示
 // @Summary Show login page
@@ -21,7 +34,7 @@ import (
 // @Produce json
 // @Success 200 {object} responses.ErrorResponse
 // @Router /login [get]
-func LoginPageHandler(c *gin.Context) {
+func (h *authHandler) LoginPageHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, responses.ErrorResponse{
 		Message: "Login page accessed successfully",
 	})
@@ -36,24 +49,31 @@ func LoginPageHandler(c *gin.Context) {
 // @Param iruyanId formData string true "Iruyan ID" default(johndoe)
 // @Param password formData string true "Password" default(pass1234)
 // @Success 200 {object} responses.LoginSuccessResponse
+// @Failure 400 {object} responses.ErrorResponse
 // @Failure 401 {object} responses.ErrorResponse
+// @Failure 500 {object} responses.ErrorResponse
 // @Router /login [post]
-func LoginHandler(c *gin.Context) {
+func (h *authHandler) LoginHandler(c *gin.Context) {
 	iruyanID := c.PostForm("iruyanId")
 	password := c.PostForm("password")
 
-	var user models.User
-	result := infrastructure.DB.Where("iruyan_id = ?", iruyanID).First(&user)
-
-	if result.Error != nil {
-		errorHandler := errorhandler.ErrorHandler{}
-		errorHandler.Unauthorized(c, "authentication failed: user not found")
+	if iruyanID == "" || password == "" {
+		c.JSON(http.StatusBadRequest, responses.ErrorResponse{
+			Message: "iruyanId and password are required",
+		})
 		return
 	}
 
-	if !user.CheckPassword(password) {
-		errorHandler := errorhandler.ErrorHandler{}
-		errorHandler.Unauthorized(c, "authentication failed: invalid password")
+	user, err := h.AuthUsecase.LoginUser(iruyanID, password)
+	if err != nil {
+		switch {
+		case errors.Is(err, errdefs.ErrUserNotFound):
+			c.JSON(http.StatusUnauthorized, responses.ErrorResponse{Message: "user not found"})
+		case errors.Is(err, errdefs.ErrInvalidPassword):
+			c.JSON(http.StatusUnauthorized, responses.ErrorResponse{Message: "invalid password"})
+		default:
+			c.JSON(http.StatusInternalServerError, responses.ErrorResponse{Message: "unexpected error"})
+		}
 		return
 	}
 
@@ -74,7 +94,7 @@ func LoginHandler(c *gin.Context) {
 // @Produce json
 // @Success 200 {object} responses.ErrorResponse
 // @Router /register [get]
-func RegisterPageHandler(c *gin.Context) {
+func (h *authHandler) RegisterPageHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, responses.ErrorResponse{
 		Message: "Register page accessed successfully",
 	})
@@ -94,23 +114,55 @@ func RegisterPageHandler(c *gin.Context) {
 // @Failure 400 {object} responses.ErrorResponse
 // @Failure 500 {object} responses.ErrorResponse
 // @Router /register [post]
-func RegisterHandler(c *gin.Context) {
+func (h *authHandler) RegisterHandler(c *gin.Context) {
 	iruyanID := c.PostForm("iruyanId")
 	password := c.PostForm("password")
 	name := c.PostForm("userName")
 	email := c.PostForm("email")
 
-	errorHandler := errorhandler.ErrorHandler{}
+	// --- パラメータのバリデーション ---
+	missing := []string{}
+	if iruyanID == "" {
+		missing = append(missing, "iruyanId")
+	}
+	if password == "" {
+		missing = append(missing, "password")
+	}
+	if name == "" {
+		missing = append(missing, "userName")
+	}
+	if email == "" {
+		missing = append(missing, "email")
+	}
+	if len(missing) > 0 {
+		c.JSON(http.StatusBadRequest, responses.ErrorResponse{
+			Message: "Missing required parameter(s): " + strings.Join(missing, ", "),
+		})
 
-	user, err := models.NewUser(infrastructure.DB, name, iruyanID, password, email)
-	if err != nil {
-		errorHandler.BadRequest(c, err.Error())
 		return
 	}
 
-	result := infrastructure.DB.Create(user)
-	if result.Error != nil {
-		errorHandler.InternalServerError(c, "Failed to save user to database: "+result.Error.Error())
+	user, err := h.AuthUsecase.RegisterUser(name, iruyanID, password, email)
+	if err != nil {
+		switch {
+		case errors.Is(err, errdefs.ErrDuplicateIruyanID):
+			c.JSON(http.StatusConflict, responses.ErrorResponse{Message: "iruyan_id is already taken"})
+		case errors.Is(err, errdefs.ErrDuplicateEmail):
+			c.JSON(http.StatusConflict, responses.ErrorResponse{Message: "email is already registered"})
+		case errors.Is(err, errdefs.ErrInvalidPassword):
+			c.JSON(http.StatusBadRequest, responses.ErrorResponse{Message: "invalid password"})
+		case errors.Is(err, errdefs.ErrPasswordTooShort):
+			c.JSON(http.StatusBadRequest, responses.ErrorResponse{Message: "password must be at least 6 characters long"})
+		case errors.Is(err, errdefs.ErrPasswordMissingChars):
+			c.JSON(http.StatusBadRequest, responses.ErrorResponse{Message: "password must contain at least one letter and one number"})
+		case errors.Is(err, errdefs.ErrInvalidEmail):
+			c.JSON(http.StatusBadRequest, responses.ErrorResponse{Message: "invalid email format"})
+		case errors.Is(err, errdefs.ErrUserNotFound):
+			c.JSON(http.StatusNotFound, responses.ErrorResponse{Message: "user not found"})
+		default:
+			log.Printf("[RegisterUser] unexpected error: %+v", err)
+			c.JSON(http.StatusInternalServerError, responses.ErrorResponse{Message: "unexpected error"})
+		}
 		return
 	}
 
@@ -135,19 +187,23 @@ func RegisterHandler(c *gin.Context) {
 // @Failure 400 {object} responses.ErrorResponse
 // @Failure 404 {object} responses.ErrorResponse
 // @Router /logout [post]
-func LogoutHandler(c *gin.Context) {
+func (h *authHandler) LogoutHandler(c *gin.Context) {
 	iruyanID := c.PostForm("iruyanId")
 
-	// エラーハンドラをインスタンス化
-	errorHandler := errorhandler.ErrorHandler{}
+	if iruyanID == "" {
+		c.JSON(http.StatusBadRequest, responses.ErrorResponse{
+			Message: "iruyanId is required",
+		})
+		return
+	}
 
-	// ユーザーが存在するか確認
-	var user models.User
-	if err := infrastructure.DB.Where("iruyan_id = ?", iruyanID).First(&user).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			errorHandler.NotFoundError(c, "User not found")
-		} else {
-			errorHandler.InternalServerError(c, "Database error")
+	user, err := h.AuthUsecase.LogoutUser(iruyanID)
+	if err != nil {
+		switch {
+		case errors.Is(err, errdefs.ErrUserNotFound):
+			c.JSON(http.StatusUnauthorized, responses.ErrorResponse{Message: "user not found"})
+		default:
+			c.JSON(http.StatusInternalServerError, responses.ErrorResponse{Message: "internal error: " + err.Error()})
 		}
 		return
 	}

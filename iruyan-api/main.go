@@ -4,8 +4,9 @@ import (
 	_ "iruyan-api/docs" // Swaggerのドキュメントをインポート
 	"iruyan-api/infrastructure"
 	"iruyan-api/middleware"
+	"iruyan-api/repositories"
 	"iruyan-api/routes"
-	roomInit "iruyan-api/usecase/room"
+	usecase "iruyan-api/usecases/room"
 	"log"
 	"os"
 
@@ -28,15 +29,25 @@ func main() {
 	// データベース初期化
 	infrastructure.InitDB()
 
+	db := infrastructure.DB
+
+	// Repositoryの初期化
+	userRepo := repositories.NewUserRepository(db)
+	roomRepo := repositories.NewRoomRepository(db)
+	seatRepo := repositories.NewSeatRepository(db)
+	workTimeRepo := repositories.NewWorkTimeRepository(db)
+
+	// Usecaseの初期化
+	roomUsecase := usecase.NewRoomUsecase(userRepo, roomRepo, seatRepo, workTimeRepo, db)
+
 	// 部屋の初期化処理
 	roomName := os.Getenv("DEFAULT_ROOM_NAME")
 	if roomName == "" {
 		roomName = "General"
 	}
-	if err := roomInit.CreateRoomWithSeats(roomName, 10); err != nil {
+	if err := roomUsecase.CreateRoomWithSeats(roomName, 10); err != nil {
 		log.Printf("⚠️  初期ルーム作成失敗: %v", err)
 	}
-
 	// Ginのルータを作成
 	router := gin.Default()
 

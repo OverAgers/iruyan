@@ -1,24 +1,33 @@
 package routes
 
 import (
-	"iruyan-api/handlers/auth"
+	handlers "iruyan-api/handlers/auth"
+	"iruyan-api/infrastructure"
+	"iruyan-api/repositories"
+	usecases "iruyan-api/usecases/auth"
 
 	"github.com/gin-gonic/gin"
 )
 
 func RegisterAuthRoutes(router *gin.Engine) {
+	// --- 依存性の注入 ---
+	db := infrastructure.DB // *gorm.DB のインスタンス
+	userRepo := repositories.NewUserRepository(db)
+	authUsecase := usecases.NewAuthUsecase(userRepo)
+	authHandler := handlers.NewAuthHandler(authUsecase)
+
 	// ログイン画面表示
-	router.GET("/login", auth.LoginPageHandler)
+	router.GET("/login", authHandler.LoginPageHandler)
 
 	// ログイン処理
-	router.POST("/login", auth.LoginHandler)
+	router.POST("/login", authHandler.LoginHandler)
 
 	// 新規登録画面表示
-	router.GET("/register", auth.RegisterPageHandler)
+	router.GET("/register", authHandler.RegisterPageHandler)
 
 	// 新規登録処理
-	router.POST("/register", auth.RegisterHandler)
+	router.POST("/register", authHandler.RegisterHandler)
 
 	// ログアウト
-	router.POST("/logout", auth.LogoutHandler)
+	router.POST("/logout", authHandler.LogoutHandler)
 }

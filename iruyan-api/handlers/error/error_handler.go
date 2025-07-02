@@ -23,6 +23,8 @@ func (e *ErrorHandler) ErrorResponse(c *gin.Context, statusCode int, message str
 			message = "Forbidden"
 		case http.StatusNotFound:
 			message = "Not Found"
+		case http.StatusConflict:
+			message = "StatusConflict"
 		case http.StatusInternalServerError:
 			message = "Internal Server Error"
 		}
@@ -51,6 +53,16 @@ func (e *ErrorHandler) Forbidden(c *gin.Context, message string) {
 // NotFoundError handles HTTP 404 Not Found errors.
 func (e *ErrorHandler) NotFoundError(c *gin.Context, message string) {
 	e.ErrorResponse(c, http.StatusNotFound, message)
+}
+
+// Conflict handles HTTP 409 Conflict errors.
+func (e *ErrorHandler) Conflict(c *gin.Context, message string) {
+	e.ErrorResponse(c, http.StatusConflict, message)
+}
+
+// UnprocessableEntity handles HTTP 422 Unprocessable Entity.
+func (e *ErrorHandler) UnprocessableEntity(c *gin.Context, message string) {
+	e.ErrorResponse(c, http.StatusUnprocessableEntity, message)
 }
 
 // InternalServerError handles HTTP 500 Internal Server Error.

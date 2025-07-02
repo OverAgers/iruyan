@@ -1,5 +1,8 @@
 version: "3"
 
+includes:
+  backend: ./iruyan-api/Taskfile.yml
+
 tasks:
   default:
     desc: "タスク一覧を表示する"

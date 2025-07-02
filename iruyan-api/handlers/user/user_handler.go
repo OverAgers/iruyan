@@ -3,17 +3,28 @@
 package user
 
 import (
-	"iruyan-api/infrastructure"
-	"iruyan-api/models"
+	"errors"
+	"iruyan-api/pkg/errdefs"
 	"iruyan-api/responses"
-	"strings"
-	"time"
+	userusecase "iruyan-api/usecases/user"
+	worktimeusecase "iruyan-api/usecases/worktime"
 
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
+
+type userHandler struct {
+	UserUsecase     userusecase.UserUsecase
+	WorkTimeUsecase worktimeusecase.WorkTimeUsecase
+}
+
+func NewUserHandler(userUsecase userusecase.UserUsecase, workTimeUsecase worktimeusecase.WorkTimeUsecase) *userHandler {
+	return &userHandler{
+		UserUsecase:     userUsecase,
+		WorkTimeUsecase: workTimeUsecase,
+	}
+}
 
 // PageHandler godoc
 // @Summary Show user page
@@ -25,21 +36,17 @@ import (
 // @Failure 404 {object} responses.ErrorResponse
 // @Failure 500 {object} responses.ErrorResponse
 // @Router /user/{iruyanId} [get]
-func PageHandler(c *gin.Context) {
+func (h *userHandler) PageHandler(c *gin.Context) {
 	iruyanID := c.Param("iruyanId")
 
-	var user models.User
-	err := user.FindByIruyanID(infrastructure.DB, iruyanID)
+	err := h.UserUsecase.CheckUserExists(iruyanID)
 	if err != nil {
-		if strings.HasPrefix(err.Error(), "user not found with iruyan_id:") {
-			c.JSON(http.StatusNotFound, responses.ErrorResponse{
-				Message: "User not found",
-			})
-			return
+		switch {
+		case errors.Is(err, errdefs.ErrUserNotFound):
+			c.JSON(http.StatusNotFound, responses.ErrorResponse{Message: "user not found"})
+		default:
+			c.JSON(http.StatusInternalServerError, responses.ErrorResponse{Message: "unexpected error"})
 		}
-		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
-			Message: "Database error",
-		})
 		return
 	}
 
@@ -56,20 +63,17 @@ func PageHandler(c *gin.Context) {
 // @Param iruyanId path string true "UIruyan ID"
 // @Success 200 {object} map[string]interface{}
 // @Router /user/{iruyanId}/delete [delete]
-func DeleteHandler(c *gin.Context) {
+func (h *userHandler) DeleteHandler(c *gin.Context) {
 	iruyanID := c.Param("iruyanId")
 
-	var user models.User
-	if err := user.DeleteByIruyanID(infrastructure.DB, iruyanID); err != nil {
-		if strings.HasPrefix(err.Error(), "user not found with iruyan_id:") {
-			c.JSON(http.StatusNotFound, responses.ErrorResponse{
-				Message: "User not found",
-			})
-			return
+	err := h.UserUsecase.DeleteUser(iruyanID)
+	if err != nil {
+		switch {
+		case errors.Is(err, errdefs.ErrUserNotFound):
+			c.JSON(http.StatusNotFound, responses.ErrorResponse{Message: "user not found"})
+		default:
+			c.JSON(http.StatusInternalServerError, responses.ErrorResponse{Message: "failed to delete user"})
 		}
-		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
-			Message: "Failed to delete user",
-		})
 		return
 	}
 
@@ -89,49 +93,32 @@ func DeleteHandler(c *gin.Context) {
 // @Failure 404 {object} responses.ErrorResponse
 // @Failure 500 {object} responses.ErrorResponse
 // @Router /user/{iruyanId}/work_info [get]
-func WorkInfoHandler(c *gin.Context) {
+func (h *userHandler) WorkInfoHandler(c *gin.Context) {
 	iruyanID := c.Param("iruyanId")
 
-	var user models.User
-	err := user.FindByIruyanID(infrastructure.DB, iruyanID)
+	err := h.UserUsecase.CheckUserExists(iruyanID)
 	if err != nil {
-		if strings.HasPrefix(err.Error(), "user not found with iruyan_id:") {
-			c.JSON(http.StatusNotFound, responses.ErrorResponse{
-				Message: "User not found",
-			})
-			return
+		switch {
+		case errors.Is(err, errdefs.ErrUserNotFound):
+			c.JSON(http.StatusNotFound, responses.ErrorResponse{Message: "user not found"})
+		default:
+			c.JSON(http.StatusInternalServerError, responses.ErrorResponse{Message: "unexpected error"})
 		}
-		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
-			Message: "Database error",
-		})
 		return
 	}
 
-	workLogs, err := models.GetLogForLastWeek(infrastructure.DB, iruyanID)
+	var worktimeUsecase worktimeusecase.WorkTimeUsecase
+	workInfo, err := worktimeUsecase.GetWorkLogForLastWeek(iruyanID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
-			Message: "Failed to retrieve work logs",
-		})
+		switch {
+		case errors.Is(err, errdefs.ErrNotSeated):
+			c.JSON(http.StatusBadRequest, responses.ErrorResponse{Message: "the user is not currently seated"})
+		case errors.Is(err, errdefs.ErrSeatMismatch):
+			c.JSON(http.StatusBadRequest, responses.ErrorResponse{Message: err.Error()})
+		default:
+			c.JSON(http.StatusInternalServerError, responses.ErrorResponse{Message: "unexpected error"})
+		}
 		return
-	}
-
-	dailyWorkHours := make(map[string]time.Duration)
-	for _, log := range workLogs {
-		dateStr := log.EntryTime.Format("2006-01-02")
-		dailyWorkHours[dateStr] += log.Duration
-	}
-
-	dailyLogs := []responses.DailyWorkLogResponse{}
-	for date, hours := range dailyWorkHours {
-		dailyLogs = append(dailyLogs, responses.DailyWorkLogResponse{
-			Date:  date,
-			Hours: hours,
-		})
-	}
-
-	workInfo := responses.WorkLogForLastWeekResponse{
-		IruyanID:  iruyanID,
-		DailyLogs: dailyLogs,
 	}
 
 	c.JSON(http.StatusOK, workInfo)
@@ -144,21 +131,17 @@ func WorkInfoHandler(c *gin.Context) {
 // @Param iruyanId path string true "Iruyan ID"
 // @Success 200 {object} map[string]interface{}
 // @Router /user/{iruyanId}/together [get]
-func TogetherTimeHandler(c *gin.Context) {
+func (h *userHandler) TogetherTimeHandler(c *gin.Context) {
 	iruyanID := c.Param("iruyanId")
 
-	var user models.User
-	err := user.FindByIruyanID(infrastructure.DB, iruyanID)
+	err := h.UserUsecase.CheckUserExists(iruyanID)
 	if err != nil {
-		if strings.HasPrefix(err.Error(), "user not found with iruyan_id:") {
-			c.JSON(http.StatusNotFound, responses.ErrorResponse{
-				Message: "User not found",
-			})
-			return
+		switch {
+		case errors.Is(err, errdefs.ErrUserNotFound):
+			c.JSON(http.StatusNotFound, responses.ErrorResponse{Message: "user not found"})
+		default:
+			c.JSON(http.StatusInternalServerError, responses.ErrorResponse{Message: "unexpected error"})
 		}
-		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
-			Message: "Database error",
-		})
 		return
 	}
 
@@ -175,21 +158,17 @@ func TogetherTimeHandler(c *gin.Context) {
 // @Param iruyanId path string true "Iruyan ID"
 // @Success 200 {object} map[string]interface{}
 // @Router /user/{iruyanId}/ranking [get]
-func RankingHandler(c *gin.Context) {
+func (h *userHandler) RankingHandler(c *gin.Context) {
 	iruyanID := c.Param("iruyanId")
 
-	var user models.User
-	err := user.FindByIruyanID(infrastructure.DB, iruyanID)
+	err := h.UserUsecase.CheckUserExists(iruyanID)
 	if err != nil {
-		if strings.HasPrefix(err.Error(), "user not found with iruyan_id:") {
-			c.JSON(http.StatusNotFound, responses.ErrorResponse{
-				Message: "User not found",
-			})
-			return
+		switch {
+		case errors.Is(err, errdefs.ErrUserNotFound):
+			c.JSON(http.StatusNotFound, responses.ErrorResponse{Message: "user not found"})
+		default:
+			c.JSON(http.StatusInternalServerError, responses.ErrorResponse{Message: "unexpected error"})
 		}
-		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
-			Message: "Database error",
-		})
 		return
 	}
 
@@ -209,50 +188,23 @@ func RankingHandler(c *gin.Context) {
 // @Failure 404 {object} responses.ErrorResponse
 // @Failure 500 {object} responses.ErrorResponse
 // @Router /user/{iruyanId}/task [post]
-func TaskHandler(c *gin.Context) {
+func (h *userHandler) TaskHandler(c *gin.Context) {
 	iruyanID := c.Param("iruyanId")
 	task := c.PostForm("task")
 
-	var user models.User
-	err := user.FindByIruyanID(infrastructure.DB, iruyanID)
-	if err != nil {
-		if strings.HasPrefix(err.Error(), "user not found with iruyan_id:") {
-			c.JSON(http.StatusNotFound, responses.ErrorResponse{
-				Message: "User not found",
-			})
-			return
+	if err := h.WorkTimeUsecase.UpdateTask(iruyanID, task); err != nil {
+		switch {
+		case errors.Is(err, errdefs.ErrUserNotFound):
+			c.JSON(http.StatusNotFound, responses.ErrorResponse{Message: "user not found"})
+		case errors.Is(err, errdefs.ErrNotInRoom):
+			c.JSON(http.StatusBadRequest, responses.ErrorResponse{Message: "user is not currently in a room"})
+		default:
+			c.JSON(http.StatusInternalServerError, responses.ErrorResponse{Message: "unexpected error"})
 		}
-		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
-			Message: "Database error",
-		})
 		return
 	}
 
-	var workTime models.WorkTime
-	if err = infrastructure.DB.Where("user_id = ? AND leaving_time IS NULL", user.ID).First(&workTime).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			c.JSON(http.StatusBadRequest, responses.ErrorResponse{
-				Message: "User is not currently in a room",
-			})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
-			Message: "Database error",
-		})
-		return
-	}
-
-	workTime.Task = task
-	if err = infrastructure.DB.Save(&workTime).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
-			Message: "Failed to update task",
-		})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Task updated successfully",
-	})
+	c.JSON(http.StatusOK, gin.H{"message": "Task updated successfully"})
 }
 
 // GetRecentLog godoc
@@ -265,51 +217,26 @@ func TaskHandler(c *gin.Context) {
 // @Failure 404 {object} responses.ErrorResponse
 // @Failure 500 {object} responses.ErrorResponse
 // @Router /user/{iruyanId}/recent_log [get]
-func GetRecentLog(c *gin.Context) {
+func (h *userHandler) GetRecentLogHandler(c *gin.Context) {
 	iruyanID := c.Param("iruyanId")
 
-	var user models.User
-	err := user.FindByIruyanID(infrastructure.DB, iruyanID)
+	logs, err := h.WorkTimeUsecase.GetRecentLogs(iruyanID, 5)
 	if err != nil {
-		if strings.HasPrefix(err.Error(), "user not found with iruyan_id:") {
-			c.JSON(http.StatusNotFound, responses.ErrorResponse{
-				Message: "User not found",
-			})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
-			Message: "Database error",
-		})
-		return
-	}
-
-	workTimes, err := models.GetLatestEntriesByUser(infrastructure.DB, iruyanID, 5)
-	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			c.JSON(http.StatusBadRequest, responses.ErrorResponse{
-				Message: "No worktime records found",
-			})
-		} else {
-			c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
-				Message: "Failed to find worktime record",
-			})
+		switch {
+		case errors.Is(err, errdefs.ErrUserNotFound):
+			c.JSON(http.StatusNotFound, responses.ErrorResponse{Message: "user not found"})
+		case errors.Is(err, errdefs.ErrNotInRoom):
+			c.JSON(http.StatusBadRequest, responses.ErrorResponse{Message: "no worktime records found"})
+		default:
+			c.JSON(http.StatusInternalServerError, responses.ErrorResponse{Message: "unexpected error"})
 		}
 		return
-	}
-
-	workTimeLogs := make([]responses.WorkTimeLog, len(workTimes))
-	for i, workTime := range workTimes {
-		workTimeLogs[i] = responses.WorkTimeLog{
-			EntryTime:   workTime.EntryTime,
-			LeavingTime: workTime.LeavingTime,
-			Duration:    workTime.Duration,
-		}
 	}
 
 	c.JSON(http.StatusOK, responses.GetRecentLogResponse{
 		Message:     "Get recent log successfully",
 		IruyanID:    iruyanID,
-		WorkTimeLog: workTimeLogs,
+		WorkTimeLog: logs,
 	})
 }
 
@@ -320,8 +247,8 @@ func GetRecentLog(c *gin.Context) {
 // @Success 200 {array} responses.User
 // @Failure 500 {object} responses.ErrorResponse
 // @Router /user/fetch/all [get]
-func GetAllUsersHandler(c *gin.Context) {
-	users, err := models.GetAllUsers(infrastructure.DB)
+func (h *userHandler) GetAllUsersHandler(c *gin.Context) {
+	users, err := h.UserUsecase.GetAllUsers()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
 			Message: "Failed to retrieve users",
@@ -350,19 +277,20 @@ func GetAllUsersHandler(c *gin.Context) {
 // @Failure 404 {object} responses.ErrorResponse
 // @Failure 500 {object} responses.ErrorResponse
 // @Router /user/fetch/{iruyanId} [get]
-func GetUserByIruyanIDHandler(c *gin.Context) {
+func (h *userHandler) GetUserByIruyanIDHandler(c *gin.Context) {
 	iruyanId := c.Param("iruyanId")
-	var user models.User
-	if err := user.FindByIruyanID(infrastructure.DB, iruyanId); err != nil {
-		if err.Error() == "user not found with iruyan_id: "+iruyanId {
+
+	user, err := h.UserUsecase.GetUserByIruyanID(iruyanId)
+	if err != nil {
+		if errors.Is(err, errdefs.ErrUserNotFound) {
 			c.JSON(http.StatusNotFound, responses.ErrorResponse{
 				Message: "User not found",
 			})
-			return
+		} else {
+			c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
+				Message: "Failed to retrieve user",
+			})
 		}
-		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
-			Message: "Failed to retrieve user",
-		})
 		return
 	}
 

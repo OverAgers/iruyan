@@ -60,6 +60,7 @@ definitions:
   responses.LoginSuccessResponse:
     properties:
       message:
+        example: Login successful
         type: string
       user:
         $ref: '#/definitions/responses.UserInfo'
@@ -67,6 +68,7 @@ definitions:
   responses.LogoutSuccessResponse:
     properties:
       message:
+        example: Logout successful
         type: string
       user:
         $ref: '#/definitions/responses.UserInfo'
@@ -74,6 +76,7 @@ definitions:
   responses.RegisterSuccessResponse:
     properties:
       message:
+        example: Registration successful
         type: string
       user:
         $ref: '#/definitions/responses.UserInfo'
@@ -132,10 +135,22 @@ definitions:
     type: object
   responses.SeatStatusResponse:
     properties:
+      avatar_url:
+        type: string
+      email:
+        type: string
       iruyan_id:
+        type: string
+      note:
         type: string
       seat_number:
         type: integer
+      start_time:
+        type: integer
+      status:
+        type: string
+      task:
+        type: string
       user_name:
         type: string
     type: object
@@ -151,10 +166,13 @@ definitions:
   responses.UserInfo:
     properties:
       email:
+        example: john@example.com
         type: string
       iruyanId:
+        example: johndoe
         type: string
-      userName:
+      name:
+        example: John Doe
         type: string
     type: object
   responses.WorkLogForLastWeekResponseSwagger:
@@ -247,8 +265,16 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/responses.LoginSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
         "401":
           description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.ErrorResponse'
+        "500":
+          description: Internal Server Error
           schema:
             $ref: '#/definitions/responses.ErrorResponse'
       summary: User login
@@ -489,7 +515,7 @@ paths:
       summary: Leave a room
       tags:
       - room
-  /rooms/{roomId}/seat/{seatNumber}/leave:
+  /rooms/{roomId}/seats/{seatNumber}/leave:
     put:
       consumes:
       - application/x-www-form-urlencoded
@@ -533,7 +559,7 @@ paths:
       summary: ユーザーが座席から離席する
       tags:
       - seat
-  /rooms/{roomId}/seat/{seatNumber}/take:
+  /rooms/{roomId}/seats/{seatNumber}/take:
     put:
       consumes:
       - application/x-www-form-urlencoded

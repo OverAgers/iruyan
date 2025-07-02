@@ -3,11 +3,13 @@
 package room
 
 import (
-	"fmt"
-	"iruyan-api/handlers/seat"
-	"iruyan-api/infrastructure"
-	"iruyan-api/models"
+	"errors"
+	errorhandler "iruyan-api/handlers/error"
+	"iruyan-api/pkg/errdefs"
+	"iruyan-api/presenters"
 	"iruyan-api/responses"
+	usecase "iruyan-api/usecases/room"
+	"log"
 
 	"net/http"
 	"strconv"
@@ -15,8 +17,18 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 )
+
+type roomHandler struct {
+	RoomUsecase usecase.RoomUsecase
+}
+
+// [DI] AuthUsecase
+func NewRoomHandler(roomUsecase usecase.RoomUsecase) *roomHandler {
+	return &roomHandler{
+		RoomUsecase: roomUsecase,
+	}
+}
 
 // CreateRoomHandler Room作成
 // @Summary Create a new room
@@ -29,46 +41,32 @@ import (
 // @Failure 400 {object} responses.ErrorResponse
 // @Failure 500 {object} responses.ErrorResponse
 // @Router /rooms [post]
-func CreateRoomHandler(c *gin.Context) {
+func (h *roomHandler) CreateRoomHandler(c *gin.Context) {
 	roomName := c.PostForm("roomName")
 
-	room := models.Room{Name: roomName}
-
-	if err := room.ValidateName(); err != nil {
-		c.JSON(http.StatusBadRequest, responses.ErrorResponse{Message: err.Error()})
-		return
-	}
-
-	// トランザクションを開始
-	tx := infrastructure.DB.Begin()
-	if err := tx.Create(&room).Error; err != nil {
-		tx.Rollback() // エラーが発生したらロールバック
-		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
-			Message: "Failed to create room: " + err.Error(),
-		})
-		return
-	}
-
-	// 部屋の作成と同時にシートを自動的に10個作る
-	for i := 0; i < 10; i++ {
-		_, err := seat.CreateSeat(tx, room.ID)
-		if err != nil {
-			tx.Rollback() // シート作成に失敗したらロールバック
-			c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
-				Message: "Failed to create seat: " + err.Error(),
-			})
-			return
+	room, err := h.RoomUsecase.CreateRoom(roomName)
+	if err != nil {
+		switch {
+		case errors.Is(err, errdefs.ErrInvalidRoomName):
+			c.JSON(http.StatusBadRequest, responses.ErrorResponse{Message: "invalid room name"})
+		case errors.Is(err, errdefs.ErrCreateRoomFailed):
+			c.JSON(http.StatusInternalServerError, responses.ErrorResponse{Message: "failed to create room"})
+		case errors.Is(err, errdefs.ErrCreateSeatFailed):
+			c.JSON(http.StatusInternalServerError, responses.ErrorResponse{Message: "failed to create seats"})
+		case errors.Is(err, errdefs.ErrTransactionCommit):
+			c.JSON(http.StatusInternalServerError, responses.ErrorResponse{Message: "failed to finalize room creation"})
+		default:
+			log.Printf("[CreateRoom] unexpected error: %+v", err)
+			c.JSON(http.StatusInternalServerError, responses.ErrorResponse{Message: "unexpected error"})
 		}
+		return
 	}
-
-	tx.Commit() // 全て（ルームの作成・シートの作成）成功したらコミット
 
 	c.JSON(http.StatusOK, responses.RoomCreateResponse{
 		Message:  "Room created successfully",
 		RoomID:   room.ID,
 		RoomName: room.Name,
 	})
-
 }
 
 // GetRoomsHandler ルーム一覧を取得
@@ -78,39 +76,18 @@ func CreateRoomHandler(c *gin.Context) {
 // @Produce json
 // @Success 200 {object} responses.RoomListResponse
 // @Router /rooms [get]
-func GetRoomsHandler(c *gin.Context) {
-	var rooms []models.Room
-
-	// ルーム情報を関連するシート情報と共に取得
-	if err := infrastructure.DB.Preload("Seats").Find(&rooms).Error; err != nil {
+func (h *roomHandler) GetRoomsHandler(c *gin.Context) {
+	rooms, err := h.RoomUsecase.GetRooms()
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
-			Message: "Failed to retrieve rooms: " + err.Error(),
+			Message: "failed to retrieve rooms: " + err.Error(),
 		})
 		return
 	}
 
-	// レスポンスデータの準備
-	roomDetails := make([]responses.RoomDetail, len(rooms))
-	for i, room := range rooms {
-		seats := make([]responses.SeatDetail, len(room.Seats))
-		for j, seat := range room.Seats {
-			seats[j] = responses.SeatDetail{
-				SeatID:     seat.ID.String(),
-				RoomID:     seat.RoomID.String(),
-				SeatNumber: seat.SeatNumber,
-			}
-		}
-		roomDetails[i] = responses.RoomDetail{
-			RoomID:   room.ID.String(),
-			RoomName: room.Name,
-			Seats:    seats,
-		}
-	}
-
-	// レスポンスを送信
 	c.JSON(http.StatusOK, responses.RoomListResponse{
 		Message: "Rooms retrieved successfully",
-		Rooms:   roomDetails,
+		Rooms:   rooms,
 	})
 }
 
@@ -123,40 +100,31 @@ func GetRoomsHandler(c *gin.Context) {
 // @Success 200 {object} responses.RoomDetailResponse
 // @Failure 404 {object} responses.ErrorResponse
 // @Router /rooms/{roomId} [get]
-func GetRoomHandler(c *gin.Context) {
-	roomID := c.Param("roomId")
+func (h *roomHandler) GetRoomHandler(c *gin.Context) {
+	roomIDStr := c.Param("roomId")
 
-	// Roomモデルを定義
-	var room models.Room
-
-	// 指定された room_id の Roomをデータベースから取得
-	if err := infrastructure.DB.Preload("Seats").Where("id = ?", roomID).First(&room).Error; err != nil {
-		// Roomが見つからない場合、404エラーレスポンスを返す
-		c.JSON(http.StatusNotFound, responses.ErrorResponse{
-			Message: "Room not found",
-		})
+	// UUIDのパース
+	roomID, err := uuid.Parse(roomIDStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, responses.ErrorResponse{Message: "invalid room ID format"})
 		return
 	}
 
-	// Room情報とSeat情報をレスポンス形式に整形
-	seats := make([]responses.SeatDetail, len(room.Seats))
-	for i, seat := range room.Seats {
-		seats[i] = responses.SeatDetail{
-			SeatID:     seat.ID.String(),
-			RoomID:     seat.RoomID.String(),
-			SeatNumber: seat.SeatNumber,
+	room, err := h.RoomUsecase.GetRoomByID(roomID)
+	if err != nil {
+		switch {
+		case errors.Is(err, errdefs.ErrRoomNotFound):
+			c.JSON(http.StatusNotFound, responses.ErrorResponse{Message: "room not found"})
+		default:
+			c.JSON(http.StatusInternalServerError, responses.ErrorResponse{Message: "unexpected error"})
 		}
+		return
 	}
 
-	// Roomが見つかった場合の成功レスポンス
 	c.JSON(http.StatusOK, responses.RoomResponse{
 		Message: "Room details retrieved successfully",
 		RoomID:  room.ID.String(),
-		Room: responses.RoomDetail{
-			RoomID:   room.ID.String(),
-			RoomName: room.Name,
-			Seats:    seats,
-		},
+		Room:    presenters.ToRoomDetail(room),
 	})
 }
 
@@ -172,55 +140,33 @@ func GetRoomHandler(c *gin.Context) {
 // @Failure 404 {object} responses.ErrorResponse "Room not found"
 // @Failure 500 {object} responses.ErrorResponse "Failed to record entry to the room"
 // @Router /rooms/{roomId}/enter/{iruyanId} [post]
-func EnterRoomHandler(c *gin.Context) {
-	roomID := c.Param("roomId")
+func (h *roomHandler) EnterRoomHandler(c *gin.Context) {
+	roomIDStr := c.Param("roomId")
 	iruyanID := c.Param("iruyanId")
 	task := c.PostForm("task")
 
-	// ユーザーをデータベースから取得
-	var user models.User
-	if err := user.FindByIruyanID(infrastructure.DB, iruyanID); err != nil {
-		c.JSON(http.StatusNotFound, responses.ErrorResponse{
-			Message: "User not found",
-		})
-		return
-	}
-
-	var room models.Room
-	// ルームが存在するか確認
-	if err := room.FindByID(infrastructure.DB, roomID); err != nil {
-		c.JSON(http.StatusNotFound, responses.ErrorResponse{
-			Message: "Room not found",
-		})
-		return
-	}
-
-	parsedRoomID, err := uuid.Parse(roomID)
+	// UUIDのパース
+	roomID, err := uuid.Parse(roomIDStr)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, responses.ErrorResponse{Message: "invalid room ID format"})
 		return
 	}
 
-	// WorkTimeに入室情報を記録
-	workTime, err := models.RecordEntry(infrastructure.DB, iruyanID, parsedRoomID, task)
+	workTime, room, err := h.RoomUsecase.EnterRoom(iruyanID, roomID, task)
 	if err != nil {
-		if err.Error() == "user not found" {
-			c.JSON(http.StatusNotFound, responses.ErrorResponse{
-				Message: "User not found",
-			})
-		} else if err.Error() == "user is already in the room" {
-			c.JSON(http.StatusBadRequest, responses.ErrorResponse{
-				Message: "User is already in the room",
-			})
-		} else {
-			c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
-				Message: "Failed to record entry to the room",
-			})
+		switch {
+		case errors.Is(err, errdefs.ErrUserNotFound):
+			c.JSON(http.StatusNotFound, responses.ErrorResponse{Message: "user not found"})
+		case errors.Is(err, errdefs.ErrRoomNotFound):
+			c.JSON(http.StatusNotFound, responses.ErrorResponse{Message: "room not found"})
+		case errors.Is(err, errdefs.ErrAlreadyInRoom):
+			c.JSON(http.StatusBadRequest, responses.ErrorResponse{Message: "user is already in the room"})
+		default:
+			c.JSON(http.StatusInternalServerError, responses.ErrorResponse{Message: "failed to record entry to the room"})
 		}
 		return
 	}
 
-	// 成功時のレスポンスとしてWorkTime情報を返す
 	c.JSON(http.StatusOK, responses.EnterRoomResponse{
 		Message:   "Room entry recorded successfully",
 		RoomID:    workTime.RoomID.String(),
@@ -243,88 +189,51 @@ func EnterRoomHandler(c *gin.Context) {
 // @Failure 404 {object} responses.ErrorResponse "Room or user not found"
 // @Failure 500 {object} responses.ErrorResponse "Failed to record leaving time"
 // @Router /rooms/{roomId}/leave [post]
-func LeaveRoomHandler(c *gin.Context) {
+func (h *roomHandler) LeaveRoomHandler(c *gin.Context) {
 	roomID := c.Param("roomId")
 	iruyanID := c.PostForm("iruyanId")
-	durationStr := c.PostForm("duration") // DurationをPostFormで取得
+	durationStr := c.PostForm("duration")
 
-	// Durationをtime.Duration型に変換
+	errorHandler := errorhandler.ErrorHandler{}
+
+	// durationのバリデーション
 	duration, err := time.ParseDuration(durationStr)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, responses.ErrorResponse{
-			Message: "Invalid duration format. Use format like '1h2m3s'.",
-		})
+		errorHandler.BadRequest(c, "Invalid duration format. Use format like '1h2m3s'.")
 		return
 	}
 
-	// ルームが存在するか確認
-	var room models.Room
-	if err := room.FindByID(infrastructure.DB, roomID); err != nil {
-		c.JSON(http.StatusNotFound, responses.ErrorResponse{
-			Message: "Room not found",
-		})
-		return
-	}
-
-	// ユーザーをデータベースから取得
-	var user models.User
-	if err := user.FindByIruyanID(infrastructure.DB, iruyanID); err != nil {
-		c.JSON(http.StatusNotFound, responses.ErrorResponse{
-			Message: "User not found",
-		})
-		return
-	}
-
+	// UUIDチェック
 	parsedRoomID, err := uuid.Parse(roomID)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, responses.ErrorResponse{Message: "invalid room ID format"})
+		errorHandler.BadRequest(c, "Invalid room ID format")
 		return
 	}
 
-	// WorkTimeテーブルから最新の入室記録を取得（LeavingTimeがNULLのレコードを取得）
-	workTime, err := models.GetLatestEntry(infrastructure.DB, iruyanID, parsedRoomID)
+	leaveInfo, err := h.RoomUsecase.LeaveRoom(iruyanID, parsedRoomID, duration)
 	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			c.JSON(http.StatusBadRequest, responses.ErrorResponse{
-				Message: "User is not currently in the room",
-			})
-		} else {
-			c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
-				Message: "Failed to find entry record",
-			})
+		switch {
+		case errors.Is(err, errdefs.ErrUserNotFound):
+			errorHandler.NotFoundError(c, "user not found")
+		case errors.Is(err, errdefs.ErrRoomNotFound):
+			errorHandler.NotFoundError(c, "room not found")
+		case errors.Is(err, errdefs.ErrNotInRoom):
+			errorHandler.BadRequest(c, "user is not currently in the room")
+		case errors.Is(err, errdefs.ErrInvalidDuration):
+			errorHandler.BadRequest(c, "invalid duration: shorter than time spent")
+		default:
+			errorHandler.InternalServerError(c, "Failed to record leaving time")
 		}
 		return
 	}
 
-	// LeavingTimeとDurationを設定
-	leavingTime := time.Now()
-	workTime.LeavingTime = leavingTime
-	workTime.Duration = duration // クライアントから受け取ったDurationを使用
-
-	// Durationがエントリー時間から計算されるDurationより短ければエラーを返す
-	if duration < leavingTime.Sub(workTime.EntryTime) {
-		c.JSON(http.StatusBadRequest, responses.ErrorResponse{
-			Message: "Invalid duration: Duration is shorter than time spent in room",
-		})
-		return
-	}
-
-	// 退室記録をデータベースに保存
-	if err := infrastructure.DB.Save(workTime).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
-			Message: "Failed to record leaving time",
-		})
-		return
-	}
-
-	// 成功時のレスポンス
 	c.JSON(http.StatusOK, responses.LeaveRoomResponse{
 		Message:     "Left the room successfully",
-		RoomID:      roomID,
-		RoomName:    room.Name,
-		EntryTime:   workTime.EntryTime,
-		LeavingTime: leavingTime,
-		Duration:    workTime.Duration,
+		RoomID:      leaveInfo.RoomID,
+		RoomName:    leaveInfo.RoomName,
+		EntryTime:   leaveInfo.EntryTime,
+		LeavingTime: leaveInfo.LeavingTime,
+		Duration:    leaveInfo.Duration,
 	})
 }
 
@@ -342,82 +251,37 @@ func LeaveRoomHandler(c *gin.Context) {
 // @Failure 404 {object} responses.ErrorResponse "ユーザーまたは座席が存在しない場合"
 // @Failure 409 {object} responses.ErrorResponse "座席がすでに他ユーザーに使用されている場合"
 // @Failure 500 {object} responses.ErrorResponse "サーバ内部エラー"
-// @Router /rooms/{roomId}/seat/{seatNumber}/take [put]
-func TakeSeatHandler(c *gin.Context) {
+// @Router /rooms/{roomId}/seats/{seatNumber}/take [put]
+func (h *roomHandler) TakeSeatHandler(c *gin.Context) {
 	roomIDParam := c.Param("roomId")
 	seatNumberParam := c.Param("seatNumber")
 	iruyanID := c.PostForm("iruyanId")
 
-	// room_idをUUID型に変換してroomID変数に保存
 	roomID, err := uuid.Parse(roomIDParam)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, responses.ErrorResponse{
-			Message: "Invalid roomID format",
-		})
+		c.JSON(http.StatusBadRequest, responses.ErrorResponse{Message: "Invalid roomID format"})
 		return
 	}
 
-	// seat_idをUUID型に変換してseatID変数に保存
 	seatNumber, err := strconv.Atoi(seatNumberParam)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, responses.ErrorResponse{
-			Message: "Invalid seatID format",
-		})
+		c.JSON(http.StatusBadRequest, responses.ErrorResponse{Message: "Invalid seatNumber format"})
 		return
 	}
 
-	// ユーザーが存在するか確認
-	var user models.User
-	if err := user.FindByIruyanID(infrastructure.DB, iruyanID); err != nil {
-		c.JSON(http.StatusNotFound, responses.ErrorResponse{
-			Message: "User not found",
-		})
-		return
-	}
-
-	// 指定された座席が部屋に存在するかを確認
-	// 存在しない場合、エラー（無効な座席番号）を返す
-	var seat models.Seat
-	if err := seat.IsSeatExistsInRoom(infrastructure.DB, roomID, seatNumber); err != nil {
-		c.JSON(http.StatusNotFound, responses.ErrorResponse{
-			Message: "Seat is not found in this room",
-		})
-		return
-	}
-
-	// 指定された座席が空いているかを確認
-	// 空いていない場合、エラーを返す
-	var work models.WorkTime
-	if err := work.IsSeatTakenInRoom(infrastructure.DB, roomID, seatNumber); err != nil {
-		c.JSON(http.StatusConflict, responses.ErrorResponse{
-			Message: "Seat is already taken",
-		})
-		return
-	}
-
-	// WorkTimeテーブルからユーザの最新の入室記録を取得
-	workTime, err := models.GetLatestEntry(infrastructure.DB, iruyanID, roomID)
-	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			c.JSON(http.StatusBadRequest, responses.ErrorResponse{
-				Message: "User is not currently in the room",
-			})
-		} else {
-			c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
-				Message: "Failed to find entry record",
-			})
+	if err := h.RoomUsecase.TakeSeat(iruyanID, roomID, seatNumber); err != nil {
+		switch {
+		case errors.Is(err, errdefs.ErrUserNotFound):
+			c.JSON(http.StatusNotFound, responses.ErrorResponse{Message: "user not found"})
+		case errors.Is(err, errdefs.ErrSeatNotFound):
+			c.JSON(http.StatusNotFound, responses.ErrorResponse{Message: "seat not found in this room"})
+		case errors.Is(err, errdefs.ErrSeatAlreadyTaken):
+			c.JSON(http.StatusConflict, responses.ErrorResponse{Message: "seat is already taken"})
+		case errors.Is(err, errdefs.ErrNotInRoom):
+			c.JSON(http.StatusBadRequest, responses.ErrorResponse{Message: "user is not currently in the room"})
+		default:
+			c.JSON(http.StatusInternalServerError, responses.ErrorResponse{Message: "unexpected error"})
 		}
-		return
-	}
-
-	// 座席情報を更新する
-	workTime.SeatNumber = seatNumber
-
-	// 座席情報をデータベースに更新
-	if err := infrastructure.DB.Model(&workTime).Update("seat_number", seatNumber).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
-			Message: "Failed to record seat number",
-		})
 		return
 	}
 
@@ -441,82 +305,35 @@ func TakeSeatHandler(c *gin.Context) {
 // @Failure 400 {object} responses.ErrorResponse "ユーザーが着席していない、または指定された座席と一致しない場合"
 // @Failure 404 {object} responses.ErrorResponse "ユーザーが存在しない場合"
 // @Failure 500 {object} responses.ErrorResponse "サーバ内部エラー"
-// @Router /rooms/{roomId}/seat/{seatNumber}/leave [put]
-func LeaveSeatHandler(c *gin.Context) {
+// @Router /rooms/{roomId}/seats/{seatNumber}/leave [put]
+func (h *roomHandler) LeaveSeatHandler(c *gin.Context) {
 	roomIDParam := c.Param("roomId")
 	seatNumberParam := c.Param("seatNumber")
 	iruyanID := c.PostForm("iruyanId")
 
-	// room_idをUUID型に変換してroomID変数に保存
 	roomID, err := uuid.Parse(roomIDParam)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, responses.ErrorResponse{
-			Message: "Invalid roomID format",
-		})
+		c.JSON(http.StatusBadRequest, responses.ErrorResponse{Message: "invalid room ID format"})
 		return
 	}
 
-	// seat_idをUUID型に変換してseatID変数に保存
 	seatNumber, err := strconv.Atoi(seatNumberParam)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, responses.ErrorResponse{
-			Message: "Invalid seatID format",
-		})
+		c.JSON(http.StatusBadRequest, responses.ErrorResponse{Message: "invalid seat number format"})
 		return
 	}
 
-	// ユーザーが存在するか確認
-	var user models.User
-	if err := user.FindByIruyanID(infrastructure.DB, iruyanID); err != nil {
-		c.JSON(http.StatusNotFound, responses.ErrorResponse{
-			Message: "User not found",
-		})
-		return
-	}
-
-	// WorkTimeテーブルからユーザの最新の入室記録を取得
-	workTime, err := models.GetLatestEntry(infrastructure.DB, iruyanID, roomID)
-	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			c.JSON(http.StatusBadRequest, responses.ErrorResponse{
-				Message: "User is not currently in the room",
-			})
-		} else {
-			c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
-				Message: "Failed to find entry record",
-			})
+	if err := h.RoomUsecase.LeaveSeat(iruyanID, roomID, seatNumber); err != nil {
+		switch {
+		case errors.Is(err, errdefs.ErrUserNotFound):
+			c.JSON(http.StatusNotFound, responses.ErrorResponse{Message: "user not found"})
+		case errors.Is(err, errdefs.ErrNotSeated):
+			c.JSON(http.StatusBadRequest, responses.ErrorResponse{Message: "the user is not currently seated"})
+		case errors.Is(err, errdefs.ErrSeatMismatch):
+			c.JSON(http.StatusBadRequest, responses.ErrorResponse{Message: "the seat number does not match the user's current seat"})
+		default:
+			c.JSON(http.StatusInternalServerError, responses.ErrorResponse{Message: "unexpected error"})
 		}
-		return
-	}
-
-	// ユーザのDB上の座席情報が指定された座席情報と一致しているか確認する
-	// 着席していなかった場合
-	if workTime.SeatNumber == 0 {
-		// 座席番号が0であれば、ユーザーは着席していない
-		c.JSON(http.StatusBadRequest, responses.ErrorResponse{
-			Message: "The user is not currently seated.",
-		})
-		return
-	}
-
-	// 着席しているが、番号が一致していなかった場合
-	if workTime.SeatNumber != seatNumber {
-		// 座席番号が一致しない場合のエラーメッセージ
-		c.JSON(http.StatusBadRequest, responses.ErrorResponse{
-			Message: fmt.Sprintf("The seat number does not match the user's record. Current seat number is %d", workTime.SeatNumber),
-		})
-		return
-	}
-
-	// 座席情報を更新する
-	newSeatNumber := 0
-	workTime.SeatNumber = seatNumber
-
-	// 座席情報をデータベースに更新
-	if err := infrastructure.DB.Model(&workTime).Update("seat_number", newSeatNumber).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
-			Message: "Failed to record seat number",
-		})
 		return
 	}
 
@@ -536,49 +353,26 @@ func LeaveSeatHandler(c *gin.Context) {
 // @Success 200 {array} responses.SeatStatusResponse
 // @Failure 500 {object} responses.ErrorResponse
 // @Router /rooms/{roomId}/seats/status [get]
-func GetSeatedUsersInRoomHandler(c *gin.Context) {
+func (h *roomHandler) GetSeatedUsersInRoomHandler(c *gin.Context) {
 	roomIDParam := c.Param("roomId")
-
 	roomID, err := uuid.Parse(roomIDParam)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, responses.ErrorResponse{
-			Message: "Invalid roomID format",
-		})
+		c.JSON(http.StatusBadRequest, responses.ErrorResponse{Message: "invalid room ID format"})
 		return
 	}
 
-	var workTimes []models.WorkTime
-	if err := infrastructure.DB.
-		Preload("User").
-		Where("room_id = ? AND seat_number > 0", roomID).
-		Find(&workTimes).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
-			Message: "Failed to retrieve seat status",
-		})
+	seatedUsers, err := h.RoomUsecase.GetSeatedUsers(roomID)
+	if err != nil {
+		switch {
+		case errors.Is(err, errdefs.ErrRoomNotFound):
+			c.JSON(http.StatusNotFound, responses.ErrorResponse{Message: "room not found"})
+		case errors.Is(err, errdefs.ErrDataRetrievalFailed):
+			c.JSON(http.StatusInternalServerError, responses.ErrorResponse{Message: "failed to retrieve seat status"})
+		default:
+			c.JSON(http.StatusInternalServerError, responses.ErrorResponse{Message: "unexpected error"})
+		}
 		return
 	}
 
-	// 誰も座っていない場合は空配列を返す
-	if len(workTimes) == 0 {
-		c.JSON(http.StatusOK, []responses.SeatStatusResponse{})
-		return
-	}
-
-	// 整形して返す
-	response := make([]responses.SeatStatusResponse, 0, len(workTimes))
-	for _, wt := range workTimes {
-		response = append(response, responses.SeatStatusResponse{
-			SeatNumber: wt.SeatNumber,
-			IruyanID:   wt.User.IruyanID,
-			UserName:   wt.User.Name,
-			Email:      wt.User.Email,
-			AvatarUrl:  "",                  // GORMでUserにAvatarUrlフィールドがある場合
-			Task:       wt.Task,             // WorkTimeにTaskがある想定
-			Note:       "",                  // WorkTimeにNoteがある想定
-			Status:     "",                  // enumなら文字列に変換
-			StartTime:  wt.EntryTime.Unix(), // time.TimeならUnix秒に変換
-		})
-	}
-
-	c.JSON(http.StatusOK, response)
+	c.JSON(http.StatusOK, seatedUsers)
 }

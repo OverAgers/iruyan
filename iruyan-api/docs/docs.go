@@ -76,8 +76,20 @@ const docTemplate = `{
                             "$ref": "#/definitions/responses.LoginSuccessResponse"
                         }
                     },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    },
                     "401": {
                         "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/responses.ErrorResponse"
                         }
@@ -430,7 +442,45 @@ const docTemplate = `{
                 }
             }
         },
-        "/rooms/{roomId}/seat/{seatNumber}/leave": {
+        "/rooms/{roomId}/seats/status": {
+            "get": {
+                "description": "Returns a list of users currently seated in the given room",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "room"
+                ],
+                "summary": "Get seated users in a specific room",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Room ID",
+                        "name": "roomId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/responses.SeatStatusResponse"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/rooms/{roomId}/seats/{seatNumber}/leave": {
             "put": {
                 "description": "ユーザーが現在着席中の座席から離れます。",
                 "consumes": [
@@ -495,7 +545,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/rooms/{roomId}/seat/{seatNumber}/take": {
+        "/rooms/{roomId}/seats/{seatNumber}/take": {
             "put": {
                 "description": "指定された部屋・座席番号にユーザーを着席させます。",
                 "consumes": [
@@ -559,44 +609,6 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "サーバ内部エラー",
-                        "schema": {
-                            "$ref": "#/definitions/responses.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/rooms/{roomId}/seats/status": {
-            "get": {
-                "description": "Returns a list of users currently seated in the given room",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "room"
-                ],
-                "summary": "Get seated users in a specific room",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Room ID",
-                        "name": "roomId",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/responses.SeatStatusResponse"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/responses.ErrorResponse"
                         }
@@ -1295,7 +1307,8 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "message": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Login successful"
                 },
                 "user": {
                     "$ref": "#/definitions/responses.UserInfo"
@@ -1306,7 +1319,8 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "message": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Logout successful"
                 },
                 "user": {
                     "$ref": "#/definitions/responses.UserInfo"
@@ -1317,7 +1331,8 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "message": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Registration successful"
                 },
                 "user": {
                     "$ref": "#/definitions/responses.UserInfo"
@@ -1408,11 +1423,29 @@ const docTemplate = `{
         "responses.SeatStatusResponse": {
             "type": "object",
             "properties": {
+                "avatar_url": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
                 "iruyan_id": {
+                    "type": "string"
+                },
+                "note": {
                     "type": "string"
                 },
                 "seat_number": {
                     "type": "integer"
+                },
+                "start_time": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "task": {
+                    "type": "string"
                 },
                 "user_name": {
                     "type": "string"
@@ -1437,13 +1470,16 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "email": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "john@example.com"
                 },
                 "iruyanId": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "johndoe"
                 },
-                "userName": {
-                    "type": "string"
+                "name": {
+                    "type": "string",
+                    "example": "John Doe"
                 }
             }
         },

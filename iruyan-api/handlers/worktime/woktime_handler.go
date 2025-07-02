@@ -2,17 +2,27 @@
 package worktime
 
 import (
-	"iruyan-api/infrastructure"
-	"iruyan-api/models"
+	"errors"
+	"iruyan-api/pkg/errdefs"
+	usecase "iruyan-api/usecases/worktime"
+
 	"iruyan-api/responses"
 	"net/http"
 	"strconv"
-	"strings"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
+
+type workTimeHandler struct {
+	WorkTimeUsecase usecase.WorkTimeUsecase
+}
+
+func NewWorkTimeHandler(workTimeUsecase usecase.WorkTimeUsecase) *workTimeHandler {
+	return &workTimeHandler{
+		WorkTimeUsecase: workTimeUsecase,
+	}
+}
 
 // EntryHandler godoc
 // @Summary Record entry time
@@ -26,25 +36,10 @@ import (
 // @Failure 400 {object} responses.ErrorResponse
 // @Failure 500 {object} responses.ErrorResponse
 // @Router /worktime/entry [post]
-func EntryHandler(c *gin.Context) {
+func (h *workTimeHandler) EntryHandler(c *gin.Context) {
 	iruyanID := c.PostForm("iruyanId")
 	roomIDStr := c.PostForm("roomId")
 	task := c.PostForm("task")
-
-	var user models.User
-	err := user.FindByIruyanID(infrastructure.DB, iruyanID)
-	if err != nil {
-		if strings.HasPrefix(err.Error(), "user not found with iruyan_id:") {
-			c.JSON(http.StatusNotFound, responses.ErrorResponse{
-				Message: "User not found",
-			})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
-			Message: "Database error",
-		})
-		return
-	}
 
 	roomID, err := uuid.Parse(roomIDStr)
 	if err != nil {
@@ -52,30 +47,16 @@ func EntryHandler(c *gin.Context) {
 		return
 	}
 
-	var existing models.WorkTime
-	inRoom, err := existing.IsUserAlreadyInRoom(infrastructure.DB, user.ID, roomID)
+	workTime, err := h.WorkTimeUsecase.EnterRoom(iruyanID, roomID, task)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{Message: err.Error()})
-		return
-	}
-	if inRoom {
-		c.JSON(http.StatusBadRequest, responses.ErrorResponse{Message: "user is already in the room"})
-		return
-	}
-
-	now := time.Now()
-
-	workTime := models.WorkTime{
-		RoomID:      roomID,
-		UserID:      user.ID,
-		Task:        task,
-		EntryTime:   now,
-		LeavingTime: time.Time{},
-		Duration:    0,
-	}
-
-	if err := infrastructure.DB.Create(&workTime).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{Message: err.Error()})
+		switch {
+		case errors.Is(err, errdefs.ErrUserNotFound):
+			c.JSON(http.StatusNotFound, responses.ErrorResponse{Message: "user not found"})
+		case errors.Is(err, errdefs.ErrAlreadyInRoom):
+			c.JSON(http.StatusBadRequest, responses.ErrorResponse{Message: "user is already in the room"})
+		default:
+			c.JSON(http.StatusInternalServerError, responses.ErrorResponse{Message: "unexpected error"})
+		}
 		return
 	}
 
@@ -83,10 +64,9 @@ func EntryHandler(c *gin.Context) {
 		RoomID:      workTime.RoomID,
 		Task:        workTime.Task,
 		EntryTime:   workTime.EntryTime,
-		LeavingTime: time.Time{},
-		Duration:    0,
+		LeavingTime: workTime.LeavingTime,
+		Duration:    workTime.Duration,
 	}
-
 	c.JSON(http.StatusOK, resp)
 }
 
@@ -101,24 +81,9 @@ func EntryHandler(c *gin.Context) {
 // @Failure 400 {object} responses.ErrorResponse
 // @Failure 404 {object} responses.ErrorResponse
 // @Router /worktime/latest [get]
-func GetLatestEntryHandler(c *gin.Context) {
+func (h *workTimeHandler) GetLatestEntryHandler(c *gin.Context) {
 	iruyanID := c.Query("iruyanId")
 	roomIDStr := c.Query("roomId")
-
-	var user models.User
-	err := user.FindByIruyanID(infrastructure.DB, iruyanID)
-	if err != nil {
-		if strings.HasPrefix(err.Error(), "user not found with iruyan_id:") {
-			c.JSON(http.StatusNotFound, responses.ErrorResponse{
-				Message: "User not found",
-			})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
-			Message: "Database error",
-		})
-		return
-	}
 
 	roomID, err := uuid.Parse(roomIDStr)
 	if iruyanID == "" || err != nil {
@@ -126,24 +91,27 @@ func GetLatestEntryHandler(c *gin.Context) {
 		return
 	}
 
-	var workTime models.WorkTime
-	if err := infrastructure.DB.
-		Where("user_id = ? AND room_id = ? AND leaving_time IS NULL", user.ID, roomID).
-		Order("entry_time desc").
-		First(&workTime).Error; err != nil {
-		c.JSON(http.StatusNotFound, responses.ErrorResponse{Message: "no active session found"})
+	workTime, err := h.WorkTimeUsecase.GetLatestEntry(iruyanID, roomID)
+	if err != nil {
+		switch {
+		case errors.Is(err, errdefs.ErrUserNotFound):
+			c.JSON(http.StatusNotFound, responses.ErrorResponse{Message: "user not found"})
+		case errors.Is(err, errdefs.ErrNoActiveSession):
+			c.JSON(http.StatusNotFound, responses.ErrorResponse{Message: "no active session found"})
+		default:
+			c.JSON(http.StatusInternalServerError, responses.ErrorResponse{Message: "unexpected error"})
+		}
 		return
 	}
 
 	resp := responses.WorkTimeResponse{
-		IruyanID:    user.IruyanID,
+		IruyanID:    workTime.User.IruyanID,
 		RoomID:      workTime.RoomID,
 		Task:        workTime.Task,
 		EntryTime:   workTime.EntryTime,
 		LeavingTime: workTime.LeavingTime,
 		Duration:    workTime.Duration,
 	}
-
 	c.JSON(http.StatusOK, resp)
 }
 
@@ -158,24 +126,9 @@ func GetLatestEntryHandler(c *gin.Context) {
 // @Failure 400 {object} responses.ErrorResponse
 // @Failure 500 {object} responses.ErrorResponse
 // @Router /worktime/recent [get]
-func GetRecentLogsHandler(c *gin.Context) {
+func (h *workTimeHandler) GetRecentLogsHandler(c *gin.Context) {
 	iruyanID := c.Query("iruyanId")
 	limitStr := c.DefaultQuery("limit", "5")
-
-	var user models.User
-	err := user.FindByIruyanID(infrastructure.DB, iruyanID)
-	if err != nil {
-		if strings.HasPrefix(err.Error(), "user not found with iruyan_id:") {
-			c.JSON(http.StatusNotFound, responses.ErrorResponse{
-				Message: "User not found",
-			})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
-			Message: "Database error",
-		})
-		return
-	}
 
 	limit, err := strconv.Atoi(limitStr)
 	if err != nil || limit <= 0 {
@@ -183,29 +136,20 @@ func GetRecentLogsHandler(c *gin.Context) {
 		return
 	}
 
-	var workTimes []models.WorkTime
-	if err := infrastructure.DB.
-		Where("user_id = ?", user.ID).
-		Order("entry_time desc").
-		Limit(limit).
-		Find(&workTimes).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{Message: err.Error()})
+	logs, err := h.WorkTimeUsecase.GetRecentLogs(iruyanID, limit)
+	if err != nil {
+		switch {
+		case errors.Is(err, errdefs.ErrUserNotFound):
+			c.JSON(http.StatusNotFound, responses.ErrorResponse{Message: "user not found"})
+		case errors.Is(err, errdefs.ErrNotInRoom):
+			c.JSON(http.StatusBadRequest, responses.ErrorResponse{Message: "no worktime records found"})
+		default:
+			c.JSON(http.StatusInternalServerError, responses.ErrorResponse{Message: "unexpected error"})
+		}
 		return
 	}
 
-	var result []responses.WorkTimeResponse
-	for _, wt := range workTimes {
-		result = append(result, responses.WorkTimeResponse{
-			IruyanID:    user.IruyanID,
-			RoomID:      wt.RoomID,
-			Task:        wt.Task,
-			EntryTime:   wt.EntryTime,
-			LeavingTime: wt.LeavingTime,
-			Duration:    wt.Duration,
-		})
-	}
-
-	c.JSON(http.StatusOK, result)
+	c.JSON(http.StatusOK, logs)
 }
 
 // GetWeeklyLogsHandler godoc
@@ -218,48 +162,23 @@ func GetRecentLogsHandler(c *gin.Context) {
 // @Failure 400 {object} responses.ErrorResponse
 // @Failure 500 {object} responses.ErrorResponse
 // @Router /worktime/weekly [get]
-func GetWeeklyLogsHandler(c *gin.Context) {
+func (h *workTimeHandler) GetWeeklyLogsHandler(c *gin.Context) {
 	iruyanID := c.Query("iruyanId")
 
-	var user models.User
-	err := user.FindByIruyanID(infrastructure.DB, iruyanID)
+	logs, err := h.WorkTimeUsecase.GetWeeklyLogs(iruyanID)
 	if err != nil {
-		if strings.HasPrefix(err.Error(), "user not found with iruyan_id:") {
-			c.JSON(http.StatusNotFound, responses.ErrorResponse{
-				Message: "User not found",
-			})
-			return
+		switch {
+		case errors.Is(err, errdefs.ErrUserNotFound):
+			c.JSON(http.StatusNotFound, responses.ErrorResponse{Message: "user not found"})
+		case errors.Is(err, errdefs.ErrNotInRoom): // 仮に週ログが見つからないときの独自定義
+			c.JSON(http.StatusBadRequest, responses.ErrorResponse{Message: "no worktime records found"})
+		default:
+			c.JSON(http.StatusInternalServerError, responses.ErrorResponse{Message: "unexpected error"})
 		}
-		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
-			Message: "Database error",
-		})
 		return
 	}
 
-	oneWeekAgo := time.Now().AddDate(0, 0, -6)
-
-	var workTimes []models.WorkTime
-	if err := infrastructure.DB.
-		Where("user_id = ? AND entry_time >= ?", user.ID, oneWeekAgo).
-		Order("entry_time desc").
-		Find(&workTimes).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{Message: err.Error()})
-		return
-	}
-
-	var result []responses.WorkTimeResponse
-	for _, wt := range workTimes {
-		result = append(result, responses.WorkTimeResponse{
-			IruyanID:    user.IruyanID,
-			RoomID:      wt.RoomID,
-			Task:        wt.Task,
-			EntryTime:   wt.EntryTime,
-			LeavingTime: wt.LeavingTime,
-			Duration:    wt.Duration,
-		})
-	}
-
-	c.JSON(http.StatusOK, result)
+	c.JSON(http.StatusOK, logs)
 }
 
 // GetAllWorkTimeHandler godoc
@@ -270,16 +189,17 @@ func GetWeeklyLogsHandler(c *gin.Context) {
 // @Success 200 {object} responses.WorkTimeListResponseSwagger
 // @Failure 500 {object} responses.ErrorResponse
 // @Router /worktime/fetch/all [get]
-func GetAllWorkTimeHandler(c *gin.Context) {
-	var workTimes []models.WorkTime
-
-	if err := infrastructure.DB.
-		Preload("User").
-		Preload("Room").
-		Find(&workTimes).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
-			Message: "Failed to retrieve work time records",
-		})
+func (h *workTimeHandler) GetAllWorkTimeHandler(c *gin.Context) {
+	workTimes, err := h.WorkTimeUsecase.GetAllWorkTimes()
+	if err != nil {
+		switch {
+		case errors.Is(err, errdefs.ErrUserNotFound):
+			c.JSON(http.StatusNotFound, responses.ErrorResponse{Message: "user not found"})
+		case errors.Is(err, errdefs.ErrNotInRoom): // 仮に週ログが見つからないときの独自定義
+			c.JSON(http.StatusBadRequest, responses.ErrorResponse{Message: "no worktime records found"})
+		default:
+			c.JSON(http.StatusInternalServerError, responses.ErrorResponse{Message: "unexpected error"})
+		}
 		return
 	}
 
@@ -298,19 +218,19 @@ func GetAllWorkTimeHandler(c *gin.Context) {
 // @Failure 400 {object} responses.ErrorResponse
 // @Failure 500 {object} responses.ErrorResponse
 // @Router /worktime/fetch/{iruyanId} [get]
-func GetWorkTimeByIruyanIDHandler(c *gin.Context) {
+func (h *workTimeHandler) GetWorkTimeByIruyanIDHandler(c *gin.Context) {
 	iruyanID := c.Param("iruyanId")
 
-	var workTimes []models.WorkTime
-	if err := infrastructure.DB.
-		Joins("JOIN users ON users.id = work_times.user_id").
-		Where("users.iruyan_id = ?", iruyanID).
-		Preload("User").
-		Preload("Room").
-		Find(&workTimes).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
-			Message: "Failed to retrieve work time records for user",
-		})
+	workTimes, err := h.WorkTimeUsecase.GetWorkTimeByIruyanID(iruyanID)
+	if err != nil {
+		switch {
+		case errors.Is(err, errdefs.ErrUserNotFound):
+			c.JSON(http.StatusNotFound, responses.ErrorResponse{Message: "user not found"})
+		case errors.Is(err, errdefs.ErrNotInRoom):
+			c.JSON(http.StatusBadRequest, responses.ErrorResponse{Message: "no worktime records found"})
+		default:
+			c.JSON(http.StatusInternalServerError, responses.ErrorResponse{Message: "unexpected error"})
+		}
 		return
 	}
 

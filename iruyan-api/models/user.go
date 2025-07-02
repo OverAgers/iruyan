@@ -1,12 +1,10 @@
 package models
 
 import (
-	"errors"
-	"fmt"
+	"iruyan-api/pkg/errdefs"
 	"regexp"
 
 	"golang.org/x/crypto/bcrypt"
-	"gorm.io/gorm"
 )
 
 // User 構造体
@@ -19,37 +17,18 @@ type User struct {
 }
 
 // NewUser: User構造体のコンストラクタ関数
-func NewUser(db *gorm.DB, name, iruyanID, password, email string) (*User, error) {
-	// ユーザーネームの重複チェック
-	var existingUser User
-	if err := db.Where("iruyan_id = ?", iruyanID).Or("email = ?", email).First(&existingUser).Error; err == nil {
-		if existingUser.IruyanID == iruyanID {
-			return nil, fmt.Errorf("iruyan_id '%s' is already taken", iruyanID)
-		}
-		if existingUser.Email == email {
-			return nil, fmt.Errorf("email '%s' is already registered", email)
-		}
-	} else if !errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, fmt.Errorf("failed to check existing user: %w", err)
-	}
-
-	// メールアドレスのバリデーション
+func NewUser(name, iruyanID, password, email string) (*User, error) {
 	if err := validateEmail(email); err != nil {
 		return nil, err
 	}
-
-	// パスワードのバリデーション
 	if err := validatePassword(password); err != nil {
 		return nil, err
 	}
-
-	// パスワードをハッシュ化
 	hashedPassword, err := HashPassword(password)
 	if err != nil {
 		return nil, err
 	}
 
-	// 新しいUserインスタンスを生成し、ハッシュ化されたパスワードを設定
 	return &User{
 		Name:     name,
 		IruyanID: iruyanID,
@@ -68,7 +47,7 @@ func HashPassword(password string) (string, error) {
 func validatePassword(password string) error {
 	// パスワードが少なくとも6文字以上であり、英字と数字がそれぞれ少なくとも1つ含まれているかをチェック
 	if len(password) < 6 {
-		return fmt.Errorf("password must be at least 6 characters long")
+		return errdefs.ErrPasswordTooShort
 	}
 
 	// 英字と数字が少なくとも1つずつ含まれているかを正規表現で確認
@@ -76,7 +55,7 @@ func validatePassword(password string) error {
 	hasNumber := regexp.MustCompile(`[0-9]`).MatchString
 
 	if !hasLetter(password) || !hasNumber(password) {
-		return fmt.Errorf("password must contain at least one letter and one number")
+		return errdefs.ErrPasswordMissingChars
 	}
 
 	return nil
@@ -86,59 +65,15 @@ func validatePassword(password string) error {
 func validateEmail(email string) error {
 	match, _ := regexp.MatchString(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`, email)
 	if !match {
-		return fmt.Errorf("invalid email format")
+		return errdefs.ErrInvalidEmail
 	}
 	return nil
 }
 
 // CheckPassword 受け取ったプレーンテキストのパスワードをハッシュ化されたパスワードと比較するメソッド
-func (u *User) CheckPassword(password string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password))
-	return err == nil
-}
-
-// GetAllUsers retrieves all users from the database.
-func GetAllUsers(db *gorm.DB) ([]User, error) {
-	var users []User
-	if err := db.Find(&users).Error; err != nil {
-		return nil, err
+func (u *User) CheckPassword(password string) error {
+	if err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password)); err != nil {
+		return errdefs.ErrInvalidPassword
 	}
-	return users, nil
-}
-
-// FindByID - IDを元にUserが存在するかを検索するメソッド
-func (u *User) FindByID(db *gorm.DB, userID uint) error {
-	if err := db.Where("id = ?", userID).First(u).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return errors.New("user not found")
-		}
-		return err
-	}
-	return nil
-}
-
-// FindByIruyanID - IruyanID を元に User を検索するメソッド
-func (u *User) FindByIruyanID(db *gorm.DB, iruyanID string) error {
-	err := db.Where("iruyan_id = ?", iruyanID).First(u).Error
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return fmt.Errorf("user not found with iruyan_id: %s", iruyanID)
-		}
-		return fmt.Errorf("failed to find user by iruyan_id (%s): %w", iruyanID, err)
-	}
-	return nil
-}
-
-func (u *User) DeleteByIruyanID(db *gorm.DB, iruyanID string) error {
-	// まず削除対象のユーザーを取得
-	if err := u.FindByIruyanID(db, iruyanID); err != nil {
-		return fmt.Errorf("delete failed: %w", err)
-	}
-
-	// 見つかったユーザーを削除
-	if err := db.Delete(u).Error; err != nil {
-		return fmt.Errorf("failed to delete user with iruyan_id (%s): %w", iruyanID, err)
-	}
-
 	return nil
 }
