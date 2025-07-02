@@ -78,7 +78,7 @@ export default function Seats() {
       return;
     }
 
-    const url = `${API_URL}/rooms/${roomId}/seat/${seatNumber}/${isVacant ? "take" : "leave"}`;
+    const url = `${API_URL}/rooms/${roomId}/seats/${seatNumber}/${isVacant ? "take" : "leave"}`;
     const formData = new URLSearchParams({ iruyanId: currentUser.iruyanId });
 
     try {

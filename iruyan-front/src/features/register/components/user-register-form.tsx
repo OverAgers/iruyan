@@ -41,10 +41,10 @@ export default function UserRegisterForm({ onSuccess, onError }: Props) {
       onSuccess(userInfo);
     } catch (error: unknown) {
       console.error("登録に失敗しました", error);
-      
+
       let errorCode = "UNKNOWN_ERROR";
       let errorMessage = "登録に失敗しました";
-      
+
       // Check for AxiosError first (since AxiosError extends Error)
       if (typeof error === 'object' && error !== null && 'response' in error && 'isAxiosError' in error) {
         // Handle axios error response
@@ -59,7 +59,7 @@ export default function UserRegisterForm({ onSuccess, onError }: Props) {
           };
           isAxiosError: boolean;
         };
-        
+
         // Extract error message from response
         if (axiosError.response?.data?.message) {
           errorMessage = axiosError.response.data.message;
@@ -68,7 +68,7 @@ export default function UserRegisterForm({ onSuccess, onError }: Props) {
         } else if (typeof axiosError.response?.data === 'string') {
           errorMessage = axiosError.response.data;
         }
-        
+
         // Extract error code
         if (axiosError.response?.status) {
           errorCode = axiosError.response.status.toString();
@@ -76,7 +76,7 @@ export default function UserRegisterForm({ onSuccess, onError }: Props) {
         if (axiosError.response?.data?.code) {
           errorCode = axiosError.response.data.code;
         }
-        
+
         // Handle specific error messages
         if (errorMessage.includes("already taken")) {
           errorCode = "409";
@@ -84,7 +84,7 @@ export default function UserRegisterForm({ onSuccess, onError }: Props) {
       } else if (error instanceof Error) {
         errorMessage = error.message;
       }
-      
+
       // Call parent error handler if provided
       if (onError) {
         onError(errorCode, errorMessage);
