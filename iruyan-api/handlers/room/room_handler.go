@@ -4,7 +4,6 @@ package room
 
 import (
 	"errors"
-	"fmt"
 	errorhandler "iruyan-api/handlers/error"
 	"iruyan-api/pkg/errdefs"
 	"iruyan-api/presenters"
@@ -325,8 +324,6 @@ func (h *roomHandler) LeaveSeatHandler(c *gin.Context) {
 	}
 
 	if err := h.RoomUsecase.LeaveSeat(iruyanID, roomID, seatNumber); err != nil {
-		fmt.Printf("[LeaveSeatHandler] error: %+v", err) // ここでログ出力
-
 		switch {
 		case errors.Is(err, errdefs.ErrUserNotFound):
 			c.JSON(http.StatusNotFound, responses.ErrorResponse{Message: "user not found"})
