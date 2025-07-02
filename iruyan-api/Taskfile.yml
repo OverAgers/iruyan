@@ -25,6 +25,12 @@ tasks:
       - echo "🔍 handlers/auth/auth_handler_test.go を gotestsum でテスト中..."
       - gotestsum --format=standard-verbose -- -run '^Test.*' ./handlers/auth
 
+  test-room:
+    desc: "handlers/room の認証テストを実行（gotestsum 使用、ASCII表示）"
+    cmds:
+      - echo "🔍 handlers/room/room_handler_test.go を gotestsum でテスト中..."
+      - gotestsum --format=standard-verbose -- -run '^Test.*' ./handlers/room
+
   lint:
     desc: "ローカルで golangci-lint を実行（標準出力付き）"
     cmds:
