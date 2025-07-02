@@ -22,12 +22,6 @@ import (
 	"iruyan-api/usecases/room/mocks"
 )
 
-// テスト用ログ整形
-func logStep(t *testing.T, label, msg string) {
-	t.Helper()
-	t.Logf("[%-10s] %s", label, msg)
-}
-
 // テスト用ルーター
 func setupTestRouterWithMock(mockRoomUsecase *mocks.RoomUsecase) *gin.Engine {
 	gin.SetMode(gin.TestMode)
