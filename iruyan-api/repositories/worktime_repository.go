@@ -38,7 +38,7 @@ func NewWorkTimeRepository(db *gorm.DB) WorkTimeRepositoryInterface {
 func (r *workTimeRepository) IsUserAlreadyInRoom(userID uint, roomID uuid.UUID) (bool, error) {
 	var count int64
 	if err := r.DB.Model(&models.WorkTime{}).
-		Where("user_id = ? AND room_id = ? AND exit_time IS NULL", userID, roomID).
+		Where("user_id = ? AND room_id = ? AND leaving_time IS NULL", userID, roomID).
 		Count(&count).Error; err != nil {
 		return false, err
 	}
