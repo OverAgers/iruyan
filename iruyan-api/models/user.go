@@ -1,8 +1,7 @@
 package models
 
 import (
-	"errors"
-	"fmt"
+	"iruyan-api/pkg/errdefs"
 	"regexp"
 
 	"golang.org/x/crypto/bcrypt"
@@ -48,7 +47,7 @@ func HashPassword(password string) (string, error) {
 func validatePassword(password string) error {
 	// パスワードが少なくとも6文字以上であり、英字と数字がそれぞれ少なくとも1つ含まれているかをチェック
 	if len(password) < 6 {
-		return fmt.Errorf("password must be at least 6 characters long")
+		return errdefs.ErrPasswordTooShort
 	}
 
 	// 英字と数字が少なくとも1つずつ含まれているかを正規表現で確認
@@ -56,7 +55,7 @@ func validatePassword(password string) error {
 	hasNumber := regexp.MustCompile(`[0-9]`).MatchString
 
 	if !hasLetter(password) || !hasNumber(password) {
-		return fmt.Errorf("password must contain at least one letter and one number")
+		return errdefs.ErrPasswordMissingChars
 	}
 
 	return nil
@@ -66,7 +65,7 @@ func validatePassword(password string) error {
 func validateEmail(email string) error {
 	match, _ := regexp.MatchString(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`, email)
 	if !match {
-		return fmt.Errorf("invalid email format")
+		return errdefs.ErrInvalidEmail
 	}
 	return nil
 }
@@ -74,7 +73,7 @@ func validateEmail(email string) error {
 // CheckPassword 受け取ったプレーンテキストのパスワードをハッシュ化されたパスワードと比較するメソッド
 func (u *User) CheckPassword(password string) error {
 	if err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password)); err != nil {
-		return errors.New("invalid password")
+		return errdefs.ErrInvalidPassword
 	}
 	return nil
 }

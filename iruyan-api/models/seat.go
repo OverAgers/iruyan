@@ -1,7 +1,7 @@
 package models
 
 import (
-	"errors"
+	"iruyan-api/pkg/errdefs"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -42,7 +42,7 @@ func NewSeat(db *gorm.DB, roomID uuid.UUID) (*Seat, error) {
 func (s *Seat) IsSeatExistsInRoom(db *gorm.DB, roomID uuid.UUID, seatNumber int) error {
 	if err := db.Where("room_id = ? AND seat_number = ?", roomID, seatNumber).First(s).Error; err != nil {
 		// 座席が存在しないとき
-		return errors.New("Seat is not found in this room")
+		return errdefs.ErrSeatNotFound
 	}
 	// 座席が存在するとき
 	return nil

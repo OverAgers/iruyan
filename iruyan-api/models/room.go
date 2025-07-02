@@ -2,7 +2,7 @@
 package models
 
 import (
-	"errors"
+	"iruyan-api/pkg/errdefs"
 	"regexp"
 
 	"github.com/google/uuid"
@@ -22,10 +22,10 @@ var roomNamePattern = regexp.MustCompile(`^[a-zA-Z0-9!@#$%^&*()_+\-=\[\]{};':"\\
 // ValidateName validates the room name using a predefined pattern.
 func (r *Room) ValidateName() error {
 	if r.Name == "" {
-		return errors.New("room name is required")
+		return errdefs.ErrRoomNameRequired
 	}
 	if !roomNamePattern.MatchString(r.Name) {
-		return errors.New("room name must contain only lowercase letters and numbers, with no special characters")
+		return errdefs.ErrRoomNameInvalidFormat
 	}
 	return nil
 }
