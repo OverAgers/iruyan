@@ -442,7 +442,45 @@ const docTemplate = `{
                 }
             }
         },
-        "/rooms/{roomId}/seat/{seatNumber}/leave": {
+        "/rooms/{roomId}/seats/status": {
+            "get": {
+                "description": "Returns a list of users currently seated in the given room",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "room"
+                ],
+                "summary": "Get seated users in a specific room",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Room ID",
+                        "name": "roomId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/responses.SeatStatusResponse"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/rooms/{roomId}/seats/{seatNumber}/leave": {
             "put": {
                 "description": "ユーザーが現在着席中の座席から離れます。",
                 "consumes": [
@@ -507,7 +545,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/rooms/{roomId}/seat/{seatNumber}/take": {
+        "/rooms/{roomId}/seats/{seatNumber}/take": {
             "put": {
                 "description": "指定された部屋・座席番号にユーザーを着席させます。",
                 "consumes": [
@@ -571,44 +609,6 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "サーバ内部エラー",
-                        "schema": {
-                            "$ref": "#/definitions/responses.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/rooms/{roomId}/seats/status": {
-            "get": {
-                "description": "Returns a list of users currently seated in the given room",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "room"
-                ],
-                "summary": "Get seated users in a specific room",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Room ID",
-                        "name": "roomId",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/responses.SeatStatusResponse"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/responses.ErrorResponse"
                         }

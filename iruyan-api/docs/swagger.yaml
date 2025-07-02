@@ -515,7 +515,7 @@ paths:
       summary: Leave a room
       tags:
       - room
-  /rooms/{roomId}/seat/{seatNumber}/leave:
+  /rooms/{roomId}/seats/{seatNumber}/leave:
     put:
       consumes:
       - application/x-www-form-urlencoded
@@ -559,7 +559,7 @@ paths:
       summary: ユーザーが座席から離席する
       tags:
       - seat
-  /rooms/{roomId}/seat/{seatNumber}/take:
+  /rooms/{roomId}/seats/{seatNumber}/take:
     put:
       consumes:
       - application/x-www-form-urlencoded

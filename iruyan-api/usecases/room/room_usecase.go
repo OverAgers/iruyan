@@ -256,14 +256,15 @@ func (u *roomUsecase) LeaveSeat(iruyanID string, roomID uuid.UUID, seatNumber in
 
 	workTime, err := u.WorkTimeRepo.GetLatestEntry(user.ID, roomID)
 	if err != nil {
-		return err
+		return errdefs.ErrNoActiveSession
 	}
 
 	if workTime.SeatNumber == 0 {
 		return errdefs.ErrNotSeated
 	}
+
 	if workTime.SeatNumber != seatNumber {
-		return fmt.Errorf("%w: current seat number is %d", errdefs.ErrSeatMismatch, workTime.SeatNumber)
+		return errdefs.ErrSeatMismatch
 	}
 
 	return u.WorkTimeRepo.UpdateSeatNumber(workTime.ID, 0)

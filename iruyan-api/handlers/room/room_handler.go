@@ -4,6 +4,7 @@ package room
 
 import (
 	"errors"
+	"fmt"
 	errorhandler "iruyan-api/handlers/error"
 	"iruyan-api/pkg/errdefs"
 	"iruyan-api/presenters"
@@ -251,7 +252,7 @@ func (h *roomHandler) LeaveRoomHandler(c *gin.Context) {
 // @Failure 404 {object} responses.ErrorResponse "ユーザーまたは座席が存在しない場合"
 // @Failure 409 {object} responses.ErrorResponse "座席がすでに他ユーザーに使用されている場合"
 // @Failure 500 {object} responses.ErrorResponse "サーバ内部エラー"
-// @Router /rooms/{roomId}/seat/{seatNumber}/take [put]
+// @Router /rooms/{roomId}/seats/{seatNumber}/take [put]
 func (h *roomHandler) TakeSeatHandler(c *gin.Context) {
 	roomIDParam := c.Param("roomId")
 	seatNumberParam := c.Param("seatNumber")
@@ -305,7 +306,7 @@ func (h *roomHandler) TakeSeatHandler(c *gin.Context) {
 // @Failure 400 {object} responses.ErrorResponse "ユーザーが着席していない、または指定された座席と一致しない場合"
 // @Failure 404 {object} responses.ErrorResponse "ユーザーが存在しない場合"
 // @Failure 500 {object} responses.ErrorResponse "サーバ内部エラー"
-// @Router /rooms/{roomId}/seat/{seatNumber}/leave [put]
+// @Router /rooms/{roomId}/seats/{seatNumber}/leave [put]
 func (h *roomHandler) LeaveSeatHandler(c *gin.Context) {
 	roomIDParam := c.Param("roomId")
 	seatNumberParam := c.Param("seatNumber")
@@ -324,13 +325,15 @@ func (h *roomHandler) LeaveSeatHandler(c *gin.Context) {
 	}
 
 	if err := h.RoomUsecase.LeaveSeat(iruyanID, roomID, seatNumber); err != nil {
+		fmt.Printf("[LeaveSeatHandler] error: %+v", err) // ここでログ出力
+
 		switch {
 		case errors.Is(err, errdefs.ErrUserNotFound):
 			c.JSON(http.StatusNotFound, responses.ErrorResponse{Message: "user not found"})
 		case errors.Is(err, errdefs.ErrNotSeated):
 			c.JSON(http.StatusBadRequest, responses.ErrorResponse{Message: "the user is not currently seated"})
 		case errors.Is(err, errdefs.ErrSeatMismatch):
-			c.JSON(http.StatusBadRequest, responses.ErrorResponse{Message: err.Error()})
+			c.JSON(http.StatusBadRequest, responses.ErrorResponse{Message: "the seat number does not match the user's current seat"})
 		default:
 			c.JSON(http.StatusInternalServerError, responses.ErrorResponse{Message: "unexpected error"})
 		}
@@ -375,5 +378,4 @@ func (h *roomHandler) GetSeatedUsersInRoomHandler(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, seatedUsers)
-
 }
