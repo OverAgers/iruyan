@@ -4,18 +4,23 @@ package auth
 
 import (
 	"errors"
+	"fmt"
+	"log"
 	"net/http"
 	"strings"
 
 	errorhandler "iruyan-api/handlers/error"
-	"iruyan-api/infrastructure"
-	"iruyan-api/models"
-	"iruyan-api/repository"
+	"iruyan-api/pkg/errdefs"
+
 	"iruyan-api/responses"
+	usecase "iruyan-api/usecases/auth"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
+
+type AuthHandler struct {
+	AuthUsecase usecase.AuthUsecase
+}
 
 // LoginPageHandler ログイン画面表示
 // @Summary Show login page
@@ -47,7 +52,6 @@ func LoginHandler(c *gin.Context) {
 	iruyanID := c.PostForm("iruyanId")
 	password := c.PostForm("password")
 
-	// --- [1] バリデーションチェック（空欄チェック） ---
 	if iruyanID == "" || password == "" {
 		c.JSON(http.StatusBadRequest, responses.ErrorResponse{
 			Message: "iruyanId and password are required",
@@ -55,35 +59,19 @@ func LoginHandler(c *gin.Context) {
 		return
 	}
 
-	// --- [2] ユーザー検索 ---
-	var user models.User
-	result := infrastructure.DB.Where("iruyan_id = ?", iruyanID).First(&user)
-
-	if result.Error != nil {
-		// ユーザーが見つからなかった場合
-		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			c.JSON(http.StatusUnauthorized, responses.ErrorResponse{
-				Message: "authentication failed: user not found",
-			})
-			return
+	var authUsecase usecase.AuthUsecase
+	user, err := authUsecase.LoginUser(iruyanID, password)
+	if err != nil {
+		switch {
+		case errors.Is(err, errdefs.ErrUserNotFound):
+			c.JSON(http.StatusUnauthorized, responses.ErrorResponse{Message: "user not found"})
+		case errors.Is(err, errdefs.ErrInvalidPassword):
+			c.JSON(http.StatusUnauthorized, responses.ErrorResponse{Message: "invalid password"})
+		default:
+			c.JSON(http.StatusInternalServerError, responses.ErrorResponse{Message: "unexpected error"})
 		}
-
-		// データベース関連のその他のエラー（500）
-		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
-			Message: "internal error: failed to retrieve user",
-		})
-		return
 	}
 
-	// --- [3] パスワードチェック ---
-	if !user.CheckPassword(password) {
-		c.JSON(http.StatusUnauthorized, responses.ErrorResponse{
-			Message: "authentication failed: invalid password",
-		})
-		return
-	}
-
-	// --- [4] 認証成功時 ---
 	c.JSON(http.StatusOK, responses.LoginSuccessResponse{
 		Message: "Login successful",
 		User: responses.UserInfo{
@@ -130,34 +118,46 @@ func RegisterHandler(c *gin.Context) {
 	errorHandler := errorhandler.ErrorHandler{}
 
 	// --- パラメータのバリデーション ---
-	if iruyanID == "" || password == "" || name == "" || email == "" {
-		missing := []string{}
-		if iruyanID == "" {
-			missing = append(missing, "iruyanId")
-		}
-		if password == "" {
-			missing = append(missing, "password")
-		}
-		if name == "" {
-			missing = append(missing, "userName")
-		}
-		if email == "" {
-			missing = append(missing, "email")
-		}
-
+	missing := []string{}
+	if iruyanID == "" {
+		missing = append(missing, "iruyanId")
+	}
+	if password == "" {
+		missing = append(missing, "password")
+	}
+	if name == "" {
+		missing = append(missing, "userName")
+	}
+	if email == "" {
+		missing = append(missing, "email")
+	}
+	if len(missing) > 0 {
 		errorHandler.BadRequest(c, "Missing required parameter(s): "+strings.Join(missing, ", "))
 		return
 	}
 
-	user, err := repository.CreateUser(infrastructure.DB, name, iruyanID, password, email)
+	var authUsecase usecase.AuthUsecase
+	user, err := authUsecase.RegisterUser(name, iruyanID, password, email)
 	if err != nil {
-		switch err {
-		case repository.ErrDuplicateIruyanID, repository.ErrDuplicateEmail:
-			errorHandler.Conflict(c, err.Error())
+		msg := err.Error()
+		switch {
+		case errors.Is(err, errdefs.ErrDuplicateIruyanID),
+			errors.Is(err, errdefs.ErrDuplicateEmail):
+			errorHandler.Conflict(c, msg)
+
+		case errors.Is(err, errdefs.ErrInvalidPassword),
+			errors.Is(err, errdefs.ErrInvalidEmail):
+			errorHandler.BadRequest(c, msg)
+
+		case errors.Is(err, errdefs.ErrUserNotFound):
+			errorHandler.NotFoundError(c, msg)
+
 		default:
-			errorHandler.BadRequest(c, err.Error())
+			// ログだけ詳細、レスポンスは汎用文言
+			log.Printf("[RegisterUser] unexpected error: %+v", err)
+			errorHandler.InternalServerError(c, msg)
 		}
-		return
+
 	}
 
 	c.JSON(http.StatusOK, responses.RegisterSuccessResponse{
@@ -184,16 +184,14 @@ func RegisterHandler(c *gin.Context) {
 func LogoutHandler(c *gin.Context) {
 	iruyanID := c.PostForm("iruyanId")
 
-	// エラーハンドラをインスタンス化
-	errorHandler := errorhandler.ErrorHandler{}
-
-	// ユーザーが存在するか確認
-	var user models.User
-	if err := infrastructure.DB.Where("iruyan_id = ?", iruyanID).First(&user).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			errorHandler.NotFoundError(c, "User not found")
-		} else {
-			errorHandler.InternalServerError(c, "Database error")
+	var authUsecase usecase.AuthUsecase
+	user, err := authUsecase.LogoutUser(iruyanID)
+	if err != nil {
+		switch err.Error() {
+		case fmt.Sprintf("user not found with iruyan_id: %s", iruyanID):
+			c.JSON(http.StatusUnauthorized, responses.ErrorResponse{Message: "authentication failed: user not found"})
+		default:
+			c.JSON(http.StatusInternalServerError, responses.ErrorResponse{Message: "internal error: " + err.Error()})
 		}
 		return
 	}
