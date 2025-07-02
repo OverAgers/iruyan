@@ -9,6 +9,11 @@ tasks:
     cmds:
       - task --list
 
+  build:
+    desc: "Dockerコンテナをビルドする"
+    cmds:
+      - docker compose --build
+
   run:
     desc: "Dockerコンテナを起動する"
     cmds:
