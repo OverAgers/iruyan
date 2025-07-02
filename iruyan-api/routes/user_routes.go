@@ -14,7 +14,7 @@ func RegisterUserRoutes(router *gin.Engine) {
 		userGroup.GET("/work_info", user.WorkInfoHandler)
 		userGroup.GET("/together", user.TogetherTimeHandler)
 		userGroup.GET("/ranking", user.RankingHandler)
-		userGroup.GET("/recent_log", user.GetRecentLog)
+		userGroup.GET("/recent_log", user.GetRecentLogHandler)
 		userGroup.POST("/task", user.TaskHandler)
 	}
 

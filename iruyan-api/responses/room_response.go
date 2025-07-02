@@ -1,6 +1,7 @@
 package responses
 
 import (
+	"iruyan-api/models"
 	"time"
 
 	"github.com/google/uuid"
@@ -93,4 +94,20 @@ type SeatStatusResponse struct {
 	Note       string `json:"note,omitempty"`
 	Status     string `json:"status"`
 	StartTime  int64  `json:"start_time"`
+}
+
+func ConvertToRoomDetail(room *models.Room) RoomDetail {
+	seats := make([]SeatDetail, len(room.Seats))
+	for i, seat := range room.Seats {
+		seats[i] = SeatDetail{
+			SeatID:     seat.ID.String(),
+			RoomID:     seat.RoomID.String(),
+			SeatNumber: seat.SeatNumber,
+		}
+	}
+	return RoomDetail{
+		RoomID:   room.ID.String(),
+		RoomName: room.Name,
+		Seats:    seats,
+	}
 }
