@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterWorktimeRoutes(router *gin.Engine) {
+func RegisterWorktimeRoutes(router *gin.RouterGroup) {
 	// --- 依存性の注入 ---
 	db := infrastructure.DB // *gorm.DB のインスタンス
 	workTimeRepo := repositories.NewWorkTimeRepository(db)

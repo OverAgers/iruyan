@@ -1,4 +1,4 @@
-basePath: /
+basePath: /api/v1
 definitions:
   models.User:
     properties:
@@ -62,6 +62,9 @@ definitions:
       message:
         example: Login successful
         type: string
+      token:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type: string
       user:
         $ref: '#/definitions/responses.UserInfo'
     type: object
@@ -77,6 +80,9 @@ definitions:
     properties:
       message:
         example: Registration successful
+        type: string
+      token:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
         type: string
       user:
         $ref: '#/definitions/responses.UserInfo'
@@ -220,10 +226,7 @@ definitions:
     type: object
 host: localhost:8080
 info:
-  contact:
-    email: support@swagger.io
-    name: API Support
-    url: http://www.swagger.io/support
+  contact: {}
   description: This is a server for IRUYAN.
   title: IRUYAN API
   version: "1.0"
@@ -238,6 +241,8 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/responses.ErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Show login page
       tags:
       - auth
@@ -277,6 +282,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/responses.ErrorResponse'
+      security:
+      - BearerAuth: []
       summary: User login
       tags:
       - auth
@@ -307,6 +314,8 @@ paths:
           description: Not Found
           schema:
             $ref: '#/definitions/responses.ErrorResponse'
+      security:
+      - BearerAuth: []
       summary: User logout
       tags:
       - auth
@@ -320,6 +329,8 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/responses.ErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Show registration page
       tags:
       - auth
@@ -367,6 +378,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/responses.ErrorResponse'
+      security:
+      - BearerAuth: []
       summary: User registration
       tags:
       - auth
@@ -380,9 +393,11 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/responses.RoomListResponse'
+      security:
+      - BearerAuth: []
       summary: Get list of rooms with seats
       tags:
-      - rooms
+      - room
     post:
       consumes:
       - application/x-www-form-urlencoded
@@ -409,6 +424,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/responses.ErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Create a new room
       tags:
       - room
@@ -432,6 +449,8 @@ paths:
           description: Not Found
           schema:
             $ref: '#/definitions/responses.ErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Get room details
       tags:
       - room
@@ -468,6 +487,8 @@ paths:
           description: Failed to record entry to the room
           schema:
             $ref: '#/definitions/responses.ErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Enter a room
       tags:
       - room
@@ -512,6 +533,8 @@ paths:
           description: Failed to record leaving time
           schema:
             $ref: '#/definitions/responses.ErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Leave a room
       tags:
       - room
@@ -629,6 +652,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/responses.ErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Get seated users in a specific room
       tags:
       - room
@@ -659,6 +684,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/responses.ErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Show user page
       tags:
       - user
@@ -677,6 +704,8 @@ paths:
           schema:
             additionalProperties: true
             type: object
+      security:
+      - BearerAuth: []
       summary: Delete a user
       tags:
       - user
@@ -695,6 +724,8 @@ paths:
           schema:
             additionalProperties: true
             type: object
+      security:
+      - BearerAuth: []
       summary: Get user ranking
       tags:
       - user
@@ -725,6 +756,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/responses.ErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Get user's recent work logs
       tags:
       - user
@@ -760,6 +793,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/responses.ErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Update current task
       tags:
       - user
@@ -778,6 +813,8 @@ paths:
           schema:
             additionalProperties: true
             type: object
+      security:
+      - BearerAuth: []
       summary: Get time spent together
       tags:
       - user
@@ -808,6 +845,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/responses.ErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Get user's work log for the past week
       tags:
       - user
@@ -833,6 +872,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/responses.ErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Get user by Iruyan ID
       tags:
       - user
@@ -850,6 +891,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/responses.ErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Get all users
       tags:
       - user
@@ -887,6 +930,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/responses.ErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Record entry time
       tags:
       - worktime
@@ -915,6 +960,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/responses.ErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Get WorkTime records for a specific user
       tags:
       - worktime
@@ -932,6 +979,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/responses.ErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Get all WorkTime records
       tags:
       - worktime
@@ -966,6 +1015,8 @@ paths:
           description: Not Found
           schema:
             $ref: '#/definitions/responses.ErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Get latest active entry
       tags:
       - worktime
@@ -1001,6 +1052,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/responses.ErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Get recent work logs
       tags:
       - worktime
@@ -1031,7 +1084,15 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/responses.ErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Get weekly work logs
       tags:
       - worktime
+securityDefinitions:
+  BearerAuth:
+    description: JWT形式のアクセストークン。「Bearer <token>」の形式で入力してください
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

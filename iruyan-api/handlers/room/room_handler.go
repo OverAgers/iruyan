@@ -34,6 +34,7 @@ func NewRoomHandler(roomUsecase usecase.RoomUsecase) *roomHandler {
 // @Summary Create a new room
 // @Description Creates a room with the provided name
 // @Tags room
+// @Security BearerAuth
 // @Accept x-www-form-urlencoded
 // @Produce json
 // @Param roomName formData string true "Room Name" default(RoomA)
@@ -72,7 +73,8 @@ func (h *roomHandler) CreateRoomHandler(c *gin.Context) {
 // GetRoomsHandler ルーム一覧を取得
 // @Summary Get list of rooms with seats
 // @Description Retrieves a list of rooms, each with associated seat information
-// @Tags rooms
+// @Tags room
+// @Security BearerAuth
 // @Produce json
 // @Success 200 {object} responses.RoomListResponse
 // @Router /rooms [get]
@@ -95,6 +97,7 @@ func (h *roomHandler) GetRoomsHandler(c *gin.Context) {
 // @Summary Get room details
 // @Description Retrieves the details of a specific room
 // @Tags room
+// @Security BearerAuth
 // @Produce json
 // @Param roomId path string true "Room ID"
 // @Success 200 {object} responses.RoomDetailResponse
@@ -132,6 +135,7 @@ func (h *roomHandler) GetRoomHandler(c *gin.Context) {
 // @Summary Enter a room
 // @Description Records the entry time of a user entering a specific room and stores the entry information in WorkTime.
 // @Tags room
+// @Security BearerAuth
 // @Accept json
 // @Produce json
 // @Param roomId path string true "Room ID"
@@ -180,6 +184,7 @@ func (h *roomHandler) EnterRoomHandler(c *gin.Context) {
 // @Summary Leave a room
 // @Description Allows a user to leave a specific room and records the leaving time
 // @Tags room
+// @Security BearerAuth
 // @Produce json
 // @Param roomId path string true "Room ID"
 // @Param iruyanId formData string true "Iruyan ID" default(johndoe)
@@ -348,6 +353,7 @@ func (h *roomHandler) LeaveSeatHandler(c *gin.Context) {
 // @Summary Get seated users in a specific room
 // @Description Returns a list of users currently seated in the given room
 // @Tags room
+// @Security BearerAuth
 // @Produce json
 // @Param roomId path string true "Room ID"
 // @Success 200 {array} responses.SeatStatusResponse

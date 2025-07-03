@@ -10,7 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterUserRoutes(router *gin.Engine) {
+func RegisterUserRoutes(router *gin.RouterGroup) {
 	// --- 依存性の注入 ---
 	db := infrastructure.DB // *gorm.DB のインスタンス
 	userRepo := repositories.NewUserRepository(db)

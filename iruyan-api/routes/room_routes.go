@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterRoomRoutes(router *gin.Engine) {
+func RegisterRoomRoutes(router *gin.RouterGroup) {
 	// --- 依存性の注入 ---
 	db := infrastructure.DB
 

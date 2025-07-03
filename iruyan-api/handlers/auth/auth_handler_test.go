@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"os"
 	"strings"
 	"testing"
 
@@ -11,6 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
+	"iruyan-api/config"
 	"iruyan-api/infrastructure"
 	"iruyan-api/models"
 	"iruyan-api/pkg/errdefs"
@@ -48,6 +50,10 @@ func TestLoginHandler_Success(t *testing.T) {
 	t.Cleanup(func() {
 		t.Logf("--- [INFO] End: 正常なログイン成功テスト ---\n")
 	})
+
+	// JWT_SECRET をテスト用に設定
+	os.Setenv("JWT_SECRET", "testsecret")
+	config.Init()
 
 	mockUsecase := new(mocks.AuthUsecase)
 
@@ -181,10 +187,13 @@ func TestRegisterHandler_Success(t *testing.T) {
 		t.Logf("--- [INFO] End: 登録成功テスト ---\n")
 	})
 
+	// ✅ JWT_SECRETをテスト用にセット
+	os.Setenv("JWT_SECRET", "testsecret")
+	config.Init()
+
 	mockUsecase := new(mocks.AuthUsecase)
 	router := setupTestRouterWithMock(mockUsecase)
 
-	// Registerが正常に完了する場合はnilを返す
 	mockUsecase.
 		On("RegisterUser", "New User", "newuser", "securepass1234", "newuser@example.com").
 		Return(&models.User{

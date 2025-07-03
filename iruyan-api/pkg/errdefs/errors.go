@@ -22,7 +22,7 @@ var (
 	ErrNotInRoom             = errors.New("user is already in the room")
 	ErrAlreadyInRoom         = errors.New("user is not currently in the room")
 	ErrInvalidDuration       = errors.New("invalid duration: shorter than time spent")
-	ErrSeatNotFound          = errors.New("Seat not found in this room")
+	ErrSeatNotFound          = errors.New("seat not found in this room")
 	ErrSeatAlreadyTaken      = errors.New("seat is already taken")
 	ErrNotSeated             = errors.New("the user is not currently seated")
 	ErrSeatMismatch          = errors.New("the seat number does not match the user's current seat")
@@ -34,4 +34,10 @@ var (
 	// --- General errors ---
 	ErrInternalServer    = errors.New("internal server error")
 	ErrTransactionCommit = errors.New("failed to commit transaction")
+
+	// --- JWT errors ---
+	ErrJWTSecretNotSet = errors.New("JWT secret not set")
+	ErrJWTInvalidToken = errors.New("invalid JWT token")
+	ErrJWTSignToken    = errors.New("failed to sign token")
+	ErrJWTParseFailure = errors.New("failed to parse JWT token")
 )
