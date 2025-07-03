@@ -202,7 +202,6 @@ func (h *authHandler) RegisterHandler(c *gin.Context) {
 				Message: "failed to parse JWT token",
 			})
 		default:
-			log.Print("New Error: %d", err)
 			c.JSON(http.StatusInternalServerError, responses.ErrorResponse{Message: "unexpected error"})
 		}
 		return

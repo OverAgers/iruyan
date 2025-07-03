@@ -21,16 +21,16 @@ func JWTMiddleware() gin.HandlerFunc {
 		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
 
 		_, claims, err := utils.ParseJWT(tokenString)
-		switch {
-		case err == nil:
+		switch err {
+		case nil:
 			// OK
-		case err == errdefs.ErrJWTSecretNotSet:
+		case errdefs.ErrJWTSecretNotSet:
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Server misconfiguration: JWT secret not set"})
 			return
-		case err == errdefs.ErrJWTInvalidToken:
+		case errdefs.ErrJWTInvalidToken:
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid token format"})
 			return
-		case err == errdefs.ErrJWTParseFailure:
+		case errdefs.ErrJWTParseFailure:
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Token parsing failed"})
 			return
 		default:
