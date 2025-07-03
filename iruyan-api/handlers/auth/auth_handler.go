@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"iruyan-api/pkg/errdefs"
+	"iruyan-api/utils"
 
 	"iruyan-api/responses"
 	usecase "iruyan-api/usecases/auth"
@@ -31,6 +32,7 @@ func NewAuthHandler(authUsecase usecase.AuthUsecase) *authHandler {
 // @Summary Show login page
 // @Description Displays the login page with a message
 // @Tags auth
+// @Security BearerAuth
 // @Produce json
 // @Success 200 {object} responses.ErrorResponse
 // @Router /login [get]
@@ -44,6 +46,7 @@ func (h *authHandler) LoginPageHandler(c *gin.Context) {
 // @Summary User login
 // @Description Authenticates the user based on iruyanID and password
 // @Tags auth
+// @Security BearerAuth
 // @Accept x-www-form-urlencoded
 // @Produce json
 // @Param iruyanId formData string true "Iruyan ID" default(johndoe)
@@ -77,6 +80,15 @@ func (h *authHandler) LoginHandler(c *gin.Context) {
 		return
 	}
 
+	// JWT発行
+	token, err := utils.GenerateJWT(user.IruyanID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
+			Message: "failed to generate token",
+		})
+		return
+	}
+
 	c.JSON(http.StatusOK, responses.LoginSuccessResponse{
 		Message: "Login successful",
 		User: responses.UserInfo{
@@ -84,6 +96,7 @@ func (h *authHandler) LoginHandler(c *gin.Context) {
 			Name:     user.Name,
 			Email:    user.Email,
 		},
+		Token: token,
 	})
 }
 
@@ -91,6 +104,7 @@ func (h *authHandler) LoginHandler(c *gin.Context) {
 // @Summary Show registration page
 // @Description Displays the registration page with a message
 // @Tags auth
+// @Security BearerAuth
 // @Produce json
 // @Success 200 {object} responses.ErrorResponse
 // @Router /register [get]
@@ -104,6 +118,7 @@ func (h *authHandler) RegisterPageHandler(c *gin.Context) {
 // @Summary User registration
 // @Description Registers a new user with the provided details
 // @Tags auth
+// @Security BearerAuth
 // @Accept x-www-form-urlencoded
 // @Produce json
 // @Param iruyanId formData string true "Iruyan ID" default(johndoe)
@@ -166,6 +181,33 @@ func (h *authHandler) RegisterHandler(c *gin.Context) {
 		return
 	}
 
+	// JWT発行
+	token, err := utils.GenerateJWT(user.IruyanID)
+	if err != nil {
+		switch {
+		case errors.Is(err, errdefs.ErrJWTSecretNotSet):
+			c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
+				Message: "JWT secret not set",
+			})
+		case errors.Is(err, errdefs.ErrJWTInvalidToken):
+			c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
+				Message: "invalid JWT token",
+			})
+		case errors.Is(err, errdefs.ErrJWTSignToken):
+			c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
+				Message: "failed to sign token",
+			})
+		case errors.Is(err, errdefs.ErrJWTParseFailure):
+			c.JSON(http.StatusInternalServerError, responses.ErrorResponse{
+				Message: "failed to parse JWT token",
+			})
+		default:
+			log.Print("New Error: %d", err)
+			c.JSON(http.StatusInternalServerError, responses.ErrorResponse{Message: "unexpected error"})
+		}
+		return
+	}
+
 	c.JSON(http.StatusOK, responses.RegisterSuccessResponse{
 		Message: "Registration successful",
 		User: responses.UserInfo{
@@ -173,6 +215,7 @@ func (h *authHandler) RegisterHandler(c *gin.Context) {
 			Name:     user.Name,
 			Email:    user.Email,
 		},
+		Token: token,
 	})
 }
 
@@ -180,6 +223,7 @@ func (h *authHandler) RegisterHandler(c *gin.Context) {
 // @Summary User logout
 // @Description Logs out the user based on provided IruyanID
 // @Tags auth
+// @Security BearerAuth
 // @Accept x-www-form-urlencoded
 // @Produce json
 // @Param iruyanId formData string true "Iruyan ID" default(johndoe)

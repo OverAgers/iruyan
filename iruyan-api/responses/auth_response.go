@@ -4,12 +4,14 @@ package responses
 type LoginSuccessResponse struct {
 	Message string   `json:"message" example:"Login successful"`
 	User    UserInfo `json:"user"`
+	Token   string   `json:"token" example:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."`
 }
 
 // RegisterSuccessResponse 新規登録成功時のレスポンス
 type RegisterSuccessResponse struct {
 	Message string   `json:"message" example:"Registration successful"`
 	User    UserInfo `json:"user"`
+	Token   string   `json:"token" example:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."`
 }
 
 // LogoutSuccessResponse ログアウト成功時のレスポンス

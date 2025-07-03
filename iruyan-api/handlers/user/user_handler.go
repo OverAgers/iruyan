@@ -30,6 +30,7 @@ func NewUserHandler(userUsecase userusecase.UserUsecase, workTimeUsecase worktim
 // @Summary Show user page
 // @Description Display user page for a specific user ID
 // @Tags user
+// @Security BearerAuth
 // @Param iruyanId path string true "Iruyan ID"
 // @Success 200 {object} map[string]interface{}
 // @Failure 400 {object} responses.ErrorResponse
@@ -60,6 +61,7 @@ func (h *userHandler) PageHandler(c *gin.Context) {
 // @Summary Delete a user
 // @Description Delete user by ID
 // @Tags user
+// @Security BearerAuth
 // @Param iruyanId path string true "UIruyan ID"
 // @Success 200 {object} map[string]interface{}
 // @Router /user/{iruyanId}/delete [delete]
@@ -87,6 +89,7 @@ func (h *userHandler) DeleteHandler(c *gin.Context) {
 // @Summary Get user's work log for the past week
 // @Description Retrieve user's work logs grouped by day (Duration as ISO 8601 format string)
 // @Tags user
+// @Security BearerAuth
 // @Param iruyanId path string true "Iruyan ID"
 // @Success 200 {object} responses.WorkLogForLastWeekResponseSwagger
 // @Failure 400 {object} responses.ErrorResponse
@@ -128,6 +131,7 @@ func (h *userHandler) WorkInfoHandler(c *gin.Context) {
 // @Summary Get time spent together
 // @Description Returns mock together time
 // @Tags user
+// @Security BearerAuth
 // @Param iruyanId path string true "Iruyan ID"
 // @Success 200 {object} map[string]interface{}
 // @Router /user/{iruyanId}/together [get]
@@ -155,6 +159,7 @@ func (h *userHandler) TogetherTimeHandler(c *gin.Context) {
 // @Summary Get user ranking
 // @Description Returns focus ranking of the user
 // @Tags user
+// @Security BearerAuth
 // @Param iruyanId path string true "Iruyan ID"
 // @Success 200 {object} map[string]interface{}
 // @Router /user/{iruyanId}/ranking [get]
@@ -181,6 +186,7 @@ func (h *userHandler) RankingHandler(c *gin.Context) {
 // @Summary Update current task
 // @Description Updates the user's current task for ongoing work session
 // @Tags user
+// @Security BearerAuth
 // @Param iruyanId path int true "User ID"
 // @Param task formData string true "Task Description"
 // @Success 200 {object} map[string]interface{}
@@ -211,6 +217,7 @@ func (h *userHandler) TaskHandler(c *gin.Context) {
 // @Summary Get user's recent work logs
 // @Description Returns the latest 5 work logs for the user (Duration as ISO 8601 format string)
 // @Tags user
+// @Security BearerAuth
 // @Param iruyanId path string true "Iruyan ID"
 // @Success 200 {object} responses.GetRecentLogResponseSwagger
 // @Failure 400 {object} responses.ErrorResponse
@@ -244,6 +251,7 @@ func (h *userHandler) GetRecentLogHandler(c *gin.Context) {
 // @Summary Get all users
 // @Description Retrieves a list of all registered users
 // @Tags user
+// @Security BearerAuth
 // @Success 200 {array} responses.User
 // @Failure 500 {object} responses.ErrorResponse
 // @Router /user/fetch/all [get]
@@ -272,6 +280,7 @@ func (h *userHandler) GetAllUsersHandler(c *gin.Context) {
 // @Summary Get user by Iruyan ID
 // @Description Retrieves a user based on the provided Iruyan ID
 // @Tags user
+// @Security BearerAuth
 // @Param iruyanId path string true "Iruyan ID"
 // @Success 200 {object} models.User
 // @Failure 404 {object} responses.ErrorResponse

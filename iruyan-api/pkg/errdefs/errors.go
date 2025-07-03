@@ -34,4 +34,10 @@ var (
 	// --- General errors ---
 	ErrInternalServer    = errors.New("internal server error")
 	ErrTransactionCommit = errors.New("failed to commit transaction")
+
+	// --- JWT errors ---
+	ErrJWTSecretNotSet = errors.New("JWT secret not set")
+	ErrJWTInvalidToken = errors.New("invalid JWT token")
+	ErrJWTSignToken    = errors.New("failed to sign token")
+	ErrJWTParseFailure = errors.New("failed to parse JWT token")
 )

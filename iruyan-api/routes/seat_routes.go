@@ -4,4 +4,4 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterSeatRoutes(router *gin.Engine) {}
+func RegisterSeatRoutes(router *gin.RouterGroup) {}

@@ -28,6 +28,7 @@ func NewWorkTimeHandler(workTimeUsecase usecase.WorkTimeUsecase) *workTimeHandle
 // @Summary Record entry time
 // @Description Creates a work time record when a user enters a room
 // @Tags worktime
+// @Security BearerAuth
 // @Produce json
 // @Param iruyanId formData string true "Iruyan ID" default(johndoe)
 // @Param roomId formData string true "Room UUID"
@@ -74,6 +75,7 @@ func (h *workTimeHandler) EntryHandler(c *gin.Context) {
 // @Summary Get latest active entry
 // @Description Retrieves the latest work time record for a user that has not ended (leaving_time is null)
 // @Tags worktime
+// @Security BearerAuth
 // @Produce json
 // @Param iruyanId query string true "Iruyan ID" default(johndoe)
 // @Param roomId query string true "Room UUID"
@@ -119,6 +121,7 @@ func (h *workTimeHandler) GetLatestEntryHandler(c *gin.Context) {
 // @Summary Get recent work logs
 // @Description Retrieves the most recent N work time records for a user
 // @Tags worktime
+// @Security BearerAuth
 // @Produce json
 // @Param iruyanId query string true "Iruyan ID" default(johndoe)
 // @Param limit query int false "Number of records to return" default(5)
@@ -156,6 +159,7 @@ func (h *workTimeHandler) GetRecentLogsHandler(c *gin.Context) {
 // @Summary Get weekly work logs
 // @Description Retrieves all work time records from the past 7 days for a user
 // @Tags worktime
+// @Security BearerAuth
 // @Produce json
 // @Param iruyanId query string true "Iruyan ID" default(johndoe)
 // @Success 200 {array} responses.WorkTimeResponseSwagger
@@ -185,6 +189,7 @@ func (h *workTimeHandler) GetWeeklyLogsHandler(c *gin.Context) {
 // @Summary Get all WorkTime records
 // @Description Retrieves all work time records from the database
 // @Tags worktime
+// @Security BearerAuth
 // @Produce json
 // @Success 200 {object} responses.WorkTimeListResponseSwagger
 // @Failure 500 {object} responses.ErrorResponse
@@ -212,6 +217,7 @@ func (h *workTimeHandler) GetAllWorkTimeHandler(c *gin.Context) {
 // @Summary Get WorkTime records for a specific user
 // @Description Retrieves all work time records for a user identified by iruyanID
 // @Tags worktime
+// @Security BearerAuth
 // @Produce json
 // @Param iruyanId path string true "Iruyan ID" default(johndoe)
 // @Success 200 {object} responses.WorkTimeListResponseSwagger
