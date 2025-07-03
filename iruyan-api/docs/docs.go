@@ -10,11 +10,7 @@ const docTemplate = `{
     "info": {
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
-        "contact": {
-            "name": "API Support",
-            "url": "http://www.swagger.io/support",
-            "email": "support@swagger.io"
-        },
+        "contact": {},
         "version": "{{.Version}}"
     },
     "host": "{{.Host}}",
@@ -22,6 +18,11 @@ const docTemplate = `{
     "paths": {
         "/login": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Displays the login page with a message",
                 "produces": [
                     "application/json"
@@ -40,6 +41,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Authenticates the user based on iruyanID and password",
                 "consumes": [
                     "application/x-www-form-urlencoded"
@@ -99,6 +105,11 @@ const docTemplate = `{
         },
         "/logout": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Logs out the user based on provided IruyanID",
                 "consumes": [
                     "application/x-www-form-urlencoded"
@@ -144,6 +155,11 @@ const docTemplate = `{
         },
         "/register": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Displays the registration page with a message",
                 "produces": [
                     "application/json"
@@ -162,6 +178,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Registers a new user with the provided details",
                 "consumes": [
                     "application/x-www-form-urlencoded"
@@ -231,12 +252,17 @@ const docTemplate = `{
         },
         "/rooms": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Retrieves a list of rooms, each with associated seat information",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "rooms"
+                    "room"
                 ],
                 "summary": "Get list of rooms with seats",
                 "responses": {
@@ -249,6 +275,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Creates a room with the provided name",
                 "consumes": [
                     "application/x-www-form-urlencoded"
@@ -294,6 +325,11 @@ const docTemplate = `{
         },
         "/rooms/{roomId}": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Retrieves the details of a specific room",
                 "produces": [
                     "application/json"
@@ -329,6 +365,11 @@ const docTemplate = `{
         },
         "/rooms/{roomId}/enter/{iruyanId}": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Records the entry time of a user entering a specific room and stores the entry information in WorkTime.",
                 "consumes": [
                     "application/json"
@@ -381,6 +422,11 @@ const docTemplate = `{
         },
         "/rooms/{roomId}/leave": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Allows a user to leave a specific room and records the leaving time",
                 "produces": [
                     "application/json"
@@ -444,6 +490,11 @@ const docTemplate = `{
         },
         "/rooms/{roomId}/seats/status": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Returns a list of users currently seated in the given room",
                 "produces": [
                     "application/json"
@@ -618,6 +669,11 @@ const docTemplate = `{
         },
         "/user/fetch/all": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Retrieves a list of all registered users",
                 "tags": [
                     "user"
@@ -644,6 +700,11 @@ const docTemplate = `{
         },
         "/user/fetch/{iruyanId}": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Retrieves a user based on the provided Iruyan ID",
                 "tags": [
                     "user"
@@ -682,6 +743,11 @@ const docTemplate = `{
         },
         "/user/{iruyanId}": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Display user page for a specific user ID",
                 "tags": [
                     "user"
@@ -727,6 +793,11 @@ const docTemplate = `{
         },
         "/user/{iruyanId}/delete": {
             "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Delete user by ID",
                 "tags": [
                     "user"
@@ -754,6 +825,11 @@ const docTemplate = `{
         },
         "/user/{iruyanId}/ranking": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Returns focus ranking of the user",
                 "tags": [
                     "user"
@@ -781,6 +857,11 @@ const docTemplate = `{
         },
         "/user/{iruyanId}/recent_log": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Returns the latest 5 work logs for the user (Duration as ISO 8601 format string)",
                 "tags": [
                     "user"
@@ -825,6 +906,11 @@ const docTemplate = `{
         },
         "/user/{iruyanId}/task": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Updates the user's current task for ongoing work session",
                 "tags": [
                     "user"
@@ -877,6 +963,11 @@ const docTemplate = `{
         },
         "/user/{iruyanId}/together": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Returns mock together time",
                 "tags": [
                     "user"
@@ -904,6 +995,11 @@ const docTemplate = `{
         },
         "/user/{iruyanId}/work_info": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Retrieve user's work logs grouped by day (Duration as ISO 8601 format string)",
                 "tags": [
                     "user"
@@ -948,6 +1044,11 @@ const docTemplate = `{
         },
         "/worktime/entry": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Creates a work time record when a user enters a room",
                 "produces": [
                     "application/json"
@@ -1003,6 +1104,11 @@ const docTemplate = `{
         },
         "/worktime/fetch/all": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Retrieves all work time records from the database",
                 "produces": [
                     "application/json"
@@ -1029,6 +1135,11 @@ const docTemplate = `{
         },
         "/worktime/fetch/{iruyanId}": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Retrieves all work time records for a user identified by iruyanID",
                 "produces": [
                     "application/json"
@@ -1071,6 +1182,11 @@ const docTemplate = `{
         },
         "/worktime/latest": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Retrieves the latest work time record for a user that has not ended (leaving_time is null)",
                 "produces": [
                     "application/json"
@@ -1120,6 +1236,11 @@ const docTemplate = `{
         },
         "/worktime/recent": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Retrieves the most recent N work time records for a user",
                 "produces": [
                     "application/json"
@@ -1172,6 +1293,11 @@ const docTemplate = `{
         },
         "/worktime/weekly": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Retrieves all work time records from the past 7 days for a user",
                 "produces": [
                     "application/json"
@@ -1310,6 +1436,10 @@ const docTemplate = `{
                     "type": "string",
                     "example": "Login successful"
                 },
+                "token": {
+                    "type": "string",
+                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                },
                 "user": {
                     "$ref": "#/definitions/responses.UserInfo"
                 }
@@ -1333,6 +1463,10 @@ const docTemplate = `{
                 "message": {
                     "type": "string",
                     "example": "Registration successful"
+                },
+                "token": {
+                    "type": "string",
+                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
                 },
                 "user": {
                     "$ref": "#/definitions/responses.UserInfo"
@@ -1548,6 +1682,14 @@ const docTemplate = `{
                 }
             }
         }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "description": "JWT形式のアクセストークン。「Bearer \u003ctoken\u003e」の形式で入力してください",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
     }
 }`
 
@@ -1555,7 +1697,7 @@ const docTemplate = `{
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
 	Host:             "localhost:8080",
-	BasePath:         "/",
+	BasePath:         "/api/v1",
 	Schemes:          []string{},
 	Title:            "IRUYAN API",
 	Description:      "This is a server for IRUYAN.",
