@@ -12,7 +12,7 @@ tasks:
   build:
     desc: "Dockerコンテナをビルドする"
     cmds:
-      - docker compose --build
+      - docker compose build
 
   run:
     desc: "Dockerコンテナを起動する"
