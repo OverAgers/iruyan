@@ -4,7 +4,6 @@ import React from "react";
 import {
   Box,
   Typography,
-  Avatar,
   Table,
   TableBody,
   TableCell,
@@ -15,6 +14,8 @@ import {
 import SubButton from "@/components/ui/button/sub-button";
 import { useRouter } from "next/navigation";
 import DynamicBarChart from "@/components/charts/dynamic-bar-chart";
+import OptimizedAvatar from "@/components/ui/avatar/optimized-avatar";
+import OptimizedBackground from "@/components/ui/background/optimized-background";
 
 function UserPage() {
   const router = useRouter();
@@ -29,11 +30,13 @@ function UserPage() {
   ];
 
   return (
-    <Box
+    <OptimizedBackground
+      src="/bg-image/bg_user.jpg"
+      alt="User page background"
+      priority={true}
       sx={{
         position: "relative",
         bgcolor: "#F7F4ED",
-        backgroundImage: "url('/bg-image/bg_user.jpg')",
         backgroundSize: "contain",
       }}
     >
@@ -75,10 +78,12 @@ function UserPage() {
               gap: "20px",
             }}
           >
-            <Avatar
+            <OptimizedAvatar
               alt="User Avatar"
               src="/path/to/profile-image.jpg"
-              sx={{ width: 160, height: 160, mb: 2 }}
+              width={160}
+              height={160}
+              priority={true}
             />
             <Box
               sx={{
@@ -186,10 +191,11 @@ function UserPage() {
                       >
                         {index + 1}
                       </Box>
-                      <Avatar
+                      <OptimizedAvatar
                         alt="Friend Avatar"
                         src="/path/to/profile-image.jpg"
-                        sx={{ width: 56, height: 56 }}
+                        width={56}
+                        height={56}
                       />
                     </Box>
                     <Box
@@ -261,10 +267,11 @@ function UserPage() {
                       >
                         {index + 1}
                       </Box>
-                      <Avatar
+                      <OptimizedAvatar
                         alt="Friend Avatar"
                         src="/path/to/profile-image.jpg"
-                        sx={{ width: 56, height: 56 }}
+                        width={56}
+                        height={56}
                       />
                     </Box>
                     <Box
@@ -326,7 +333,7 @@ function UserPage() {
           </Box>
         </Box>
       </Box>
-    </Box >
+    </OptimizedBackground>
   );
 }
 
