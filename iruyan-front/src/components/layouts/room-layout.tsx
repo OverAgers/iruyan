@@ -1,6 +1,7 @@
 import { Typography } from "@mui/joy";
 import { Grid2 } from "@mui/material";
 import Sidebar from "@/features/sidebar/components/sidebar";
+import OptimizedBackground from "@/components/ui/background/optimized-background";
 
 type Props = {
   children: React.ReactNode;
@@ -8,16 +9,22 @@ type Props = {
 
 export default function RoomLayout({ children }: Props) {
   return (
-    <Grid2
-      container
+    <OptimizedBackground
+      src="/bg-image/bg_room.jpg"
+      alt="Room background"
+      priority={true}
       sx={{
         height: "100vh",
-        backgroundImage: "url('/bg-image/bg_room.jpg')",
-        backgroundSize: "cover",
+        bgcolor: "#3C2800",
       }}
-      justifyContent={"space-between"}
-      bgcolor={"#3C2800"}
     >
+      <Grid2
+        container
+        sx={{
+          height: "100vh",
+        }}
+        justifyContent={"space-between"}
+      >
       <Grid2 container size={7}>
         <Grid2 container justifyContent={"space-between"} width={"100%"}>
           <Grid2 padding={4}>
@@ -37,6 +44,7 @@ export default function RoomLayout({ children }: Props) {
       <Grid2 size={4}>
         <Sidebar></Sidebar>
       </Grid2>
-    </Grid2>
+      </Grid2>
+    </OptimizedBackground>
   );
 }

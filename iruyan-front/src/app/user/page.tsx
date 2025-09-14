@@ -4,7 +4,6 @@ import React from "react";
 import {
   Box,
   Typography,
-  Avatar,
   Table,
   TableBody,
   TableCell,
@@ -13,8 +12,10 @@ import {
   TableRow,
 } from "@mui/material";
 import SubButton from "@/components/ui/button/sub-button";
-import { BarChart } from "@mui/x-charts/BarChart";
 import { useRouter } from "next/navigation";
+import DynamicBarChart from "@/components/charts/dynamic-bar-chart";
+import OptimizedAvatar from "@/components/ui/avatar/optimized-avatar";
+import OptimizedBackground from "@/components/ui/background/optimized-background";
 
 function UserPage() {
   const router = useRouter();
@@ -29,11 +30,13 @@ function UserPage() {
   ];
 
   return (
-    <Box
+    <OptimizedBackground
+      src="/bg-image/bg_user.jpg"
+      alt="User page background"
+      priority={true}
       sx={{
         position: "relative",
         bgcolor: "#F7F4ED",
-        backgroundImage: "url('/bg-image/bg_user.jpg')",
         backgroundSize: "contain",
       }}
     >
@@ -75,10 +78,12 @@ function UserPage() {
               gap: "20px",
             }}
           >
-            <Avatar
+            <OptimizedAvatar
               alt="User Avatar"
               src="/path/to/profile-image.jpg"
-              sx={{ width: 160, height: 160, mb: 2 }}
+              width={160}
+              height={160}
+              priority={true}
             />
             <Box
               sx={{
@@ -186,10 +191,11 @@ function UserPage() {
                       >
                         {index + 1}
                       </Box>
-                      <Avatar
+                      <OptimizedAvatar
                         alt="Friend Avatar"
                         src="/path/to/profile-image.jpg"
-                        sx={{ width: 56, height: 56 }}
+                        width={56}
+                        height={56}
                       />
                     </Box>
                     <Box
@@ -261,10 +267,11 @@ function UserPage() {
                       >
                         {index + 1}
                       </Box>
-                      <Avatar
+                      <OptimizedAvatar
                         alt="Friend Avatar"
                         src="/path/to/profile-image.jpg"
-                        sx={{ width: 56, height: 56 }}
+                        width={56}
+                        height={56}
                       />
                     </Box>
                     <Box
@@ -317,26 +324,16 @@ function UserPage() {
             </Table>
           </TableContainer>
           <Box sx={{ width: 400 }}>
-            <BarChart
-              series={[
-                {
-                  data: chartData.map((item) => item.hours),
-                  color: "#D3AE6F",
-                },
-              ]}
+            <DynamicBarChart
+              data={chartData}
+              width={400}
               height={400}
-              xAxis={[
-                {
-                  data: chartData.map((item) => item.day),
-                  scaleType: "band",
-                },
-              ]}
-              margin={{ top: 61, bottom: 30, left: 40, right: 10 }}
+              color="#D3AE6F"
             />
           </Box>
         </Box>
       </Box>
-    </Box >
+    </OptimizedBackground>
   );
 }
 
