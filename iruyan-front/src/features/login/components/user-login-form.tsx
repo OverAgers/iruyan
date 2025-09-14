@@ -16,8 +16,20 @@ type Props = {
 export default function UserLoginForm({ onSuccess }: Props) {
   const setUser = useUserStore((state) => state.setUser);
   const [loginError, setLoginError] = useState<string | null>(null); // ← エラー表示用 state
+  const [formValues, setFormValues] = useState({ iruyanId: '', password: '' }); // フォーム値の追跡
+
   const { errors, setValue, onSubmit: handleFormSubmit } = UseLoginForm({ onSubmit });
   const { isMutating, login } = UseLoginRequest();
+
+  // フィールド値変更ハンドラ
+  const handleFieldChange = (fieldName: keyof LoginForm, value: string) => {
+    setValue(fieldName, value);
+    setFormValues(prev => ({ ...prev, [fieldName]: value }));
+    // ログインエラーをクリア（ユーザーが入力を開始したら）
+    if (loginError) {
+      setLoginError(null);
+    }
+  };
 
   async function onSubmit(formData: LoginForm) {
     try {
@@ -59,16 +71,20 @@ export default function UserLoginForm({ onSuccess }: Props) {
       <AuthInputText
         label="ユーザーID"
         placeholder="ユーザーID"
-        onChange={(e) => setValue("iruyanId", e.target.value)}
+        onChange={(e) => handleFieldChange("iruyanId", e.target.value)}
         error={errors.iruyanId}
         type="text"
+        isValid={!errors.iruyanId && Boolean(formValues.iruyanId)}
+        showSuccess={true}
       />
       <AuthInputText
         label="パスワード"
         placeholder="パスワード"
-        onChange={(e) => setValue("password", e.target.value)}
+        onChange={(e) => handleFieldChange("password", e.target.value)}
         error={errors.password}
         type="password"
+        isValid={!errors.password && Boolean(formValues.password)}
+        showSuccess={true}
       />
 
       {/* ログインエラー表示 */}

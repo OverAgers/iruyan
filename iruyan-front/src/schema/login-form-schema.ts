@@ -2,8 +2,16 @@ import { z } from "zod";
 
 // ✅ ユーザー入力時のバリデーション
 export const loginFormSchema = z.object({
-  iruyanId: z.string().min(1, "入力してください"),
-  password: z.string().min(1, "入力してください"),
+  iruyanId: z
+    .string()
+    .min(1, "ユーザーIDを入力してください")
+    .max(50, "ユーザーIDは50文字以内で入力してください")
+    .regex(/^[a-zA-Z0-9_-]+$/, "ユーザーIDは英数字、ハイフン、アンダースコアのみ使用できます"),
+  password: z
+    .string()
+    .min(1, "パスワードを入力してください")
+    .min(4, "パスワードは4文字以上で入力してください")
+    .max(128, "パスワードは128文字以内で入力してください"),
 });
 
 export type LoginForm = z.infer<typeof loginFormSchema>;

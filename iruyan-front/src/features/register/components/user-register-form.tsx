@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import MainButton from "@/components/ui/button/main-button";
 import AuthInputText from "@/components/ui/input/authorization-input-text";
 import UseRegisterForm from "@/features/register/hooks/use-register-hooks";
@@ -15,6 +16,13 @@ type Props = {
 
 export default function UserRegisterForm({ onSuccess, onError }: Props) {
   const setUser = useUserStore((state) => state.setUser);
+  const [formValues, setFormValues] = useState({
+    iruyanId: '',
+    name: '',
+    email: '',
+    password: '',
+    passwordConfirm: ''
+  });
 
   const {
     register: registerUser,
@@ -96,39 +104,55 @@ export default function UserRegisterForm({ onSuccess, onError }: Props) {
     onSubmit,
   });
 
+  // フィールド値変更ハンドラ
+  const handleFieldChange = (fieldName: keyof RegisterForm, value: string) => {
+    setValue(fieldName, value);
+    setFormValues(prev => ({ ...prev, [fieldName]: value }));
+  };
+
   return (
     <form className="flex-col" onSubmit={handleFormSubmit}>
       <AuthInputText
         label="ユーザーID"
         placeholder="ユーザーID"
-        onChange={(e) => setValue("iruyanId", e.target.value)}
+        onChange={(e) => handleFieldChange("iruyanId", e.target.value)}
         error={errors.iruyanId}
+        isValid={!errors.iruyanId && Boolean(formValues.iruyanId)}
+        showSuccess={true}
       />
       <AuthInputText
         label="ユーザー名（表示名）"
         placeholder="ユーザー名"
-        onChange={(e) => setValue("name", e.target.value)}
+        onChange={(e) => handleFieldChange("name", e.target.value)}
         error={errors.name}
+        isValid={!errors.name && Boolean(formValues.name)}
+        showSuccess={true}
       />
       <AuthInputText
         label="メールアドレス"
         placeholder="メールアドレス"
-        onChange={(e) => setValue("email", e.target.value)}
+        onChange={(e) => handleFieldChange("email", e.target.value)}
         error={errors.email}
+        isValid={!errors.email && Boolean(formValues.email)}
+        showSuccess={true}
       />
       <AuthInputText
         label="パスワード"
         placeholder="パスワード"
-        onChange={(e) => setValue("password", e.target.value)}
+        onChange={(e) => handleFieldChange("password", e.target.value)}
         error={errors.password}
         type="password"
+        isValid={!errors.password && Boolean(formValues.password)}
+        showSuccess={true}
       />
       <AuthInputText
         label="パスワード確認"
         placeholder="パスワード確認"
-        onChange={(e) => setValue("passwordConfirm", e.target.value)}
+        onChange={(e) => handleFieldChange("passwordConfirm", e.target.value)}
         error={errors.passwordConfirm}
         type="password"
+        isValid={!errors.passwordConfirm && Boolean(formValues.passwordConfirm)}
+        showSuccess={true}
       />
       <div>
         <MainButton
