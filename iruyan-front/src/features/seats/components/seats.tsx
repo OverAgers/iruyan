@@ -99,7 +99,7 @@ export default function Seats() {
       if (isVacant) {
         moveSeat(seatId, currentUser); // 着席処理
       } else {
-        leaveSeat(seatId, currentUser); // 離席処理
+        leaveSeat(seatId); // 離席処理
       }
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
