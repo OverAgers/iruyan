@@ -13,8 +13,8 @@ import {
   TableRow,
 } from "@mui/material";
 import SubButton from "@/components/ui/button/sub-button";
-import { BarChart } from "@mui/x-charts/BarChart";
 import { useRouter } from "next/navigation";
+import DynamicBarChart from "@/components/charts/dynamic-bar-chart";
 
 function UserPage() {
   const router = useRouter();
@@ -317,21 +317,11 @@ function UserPage() {
             </Table>
           </TableContainer>
           <Box sx={{ width: 400 }}>
-            <BarChart
-              series={[
-                {
-                  data: chartData.map((item) => item.hours),
-                  color: "#D3AE6F",
-                },
-              ]}
+            <DynamicBarChart
+              data={chartData}
+              width={400}
               height={400}
-              xAxis={[
-                {
-                  data: chartData.map((item) => item.day),
-                  scaleType: "band",
-                },
-              ]}
-              margin={{ top: 61, bottom: 30, left: 40, right: 10 }}
+              color="#D3AE6F"
             />
           </Box>
         </Box>

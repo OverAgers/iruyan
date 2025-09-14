@@ -18,7 +18,8 @@
     "test:e2e:ui": "playwright test --ui",
     "audit": "pnpm audit --audit-level moderate",
     "depcheck": "depcheck",
-    "lighthouse": "lhci autorun"
+    "lighthouse": "lhci autorun",
+    "analyze": "ANALYZE=true next build"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -41,6 +42,7 @@
   },
   "devDependencies": {
     "@lhci/cli": "^0.12.0",
+    "@next/bundle-analyzer": "^15.5.3",
     "@playwright/test": "^1.53.1",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^14.3.1",
@@ -49,6 +51,7 @@
     "@types/node": "^20.19.2",
     "@types/react": "^18.3.23",
     "@types/react-dom": "^18.3.7",
+    "babel-plugin-import": "^1.13.8",
     "depcheck": "^1.4.7",
     "eslint": "^8.57.1",
     "eslint-config-next": "15.0.0",
