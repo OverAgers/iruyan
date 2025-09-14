@@ -11,11 +11,13 @@ import Webcam from "react-webcam";
 import useGetRoomList from "@/features/lobby/api/get-room-list";
 import usePostRoomEnterRequest from "@/features/lobby/api/post-room-enter";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 // import usePostLogoutRequest from "@/features/lobby/api/post-user-logout";
 
 export default function Lobby() {
+  const router = useRouter();
   const currentUser = useUserStore((state) => state.currentUser);
-  const { setTask, setNote, setAvatarUrl } = useUserStore();
+  const { setTask, setNote, setAvatarUrl, clearUser } = useUserStore();
 
   const roomList = useGetRoomList();
   const roomEntry = usePostRoomEnterRequest();
@@ -35,7 +37,7 @@ export default function Lobby() {
     
     if (!userInfo && !isLoggingOutFlag) {
       console.log("ユーザー情報が存在しないため、ログインページにリダイレクトします。");
-      window.location.href = "/login";
+      router.replace("/login");
       return;
     }
     
@@ -46,7 +48,7 @@ export default function Lobby() {
     
     // 初期化完了をマーク
     setIsInitialized(true);
-  }, []);
+  }, [router]);
 
   // 初期化中またはログアウト中は何も表示しない
   if (!isInitialized || isLoggingOut) {
@@ -73,7 +75,7 @@ export default function Lobby() {
         roomId: selectedRoomId,
       });
 
-      window.location.href = `/rooms/${selectedRoomId}`;
+      router.push(`/rooms/${selectedRoomId}`);
     } catch (error) {
       console.error("部屋へのエントリーに失敗しました:", error);
       alert("入室に失敗しました");
@@ -83,15 +85,18 @@ export default function Lobby() {
   const handleLogout = async () => {
     // ログアウトフラグを設定
     localStorage.setItem("is-logging-out", "true");
-    
+
     // ログアウト状態を設定
     setIsLoggingOut(true);
-    
+
+    // Zustandストアをクリア
+    clearUser();
+
     // ローカルストレージをクリア
     localStorage.removeItem("user-store");
-    
-    // 即座にリダイレクト
-    window.location.replace("/login");
+
+    // Next.js Routerでリダイレクト
+    router.replace("/login");
   };
 
   const handleCapture = async () => {
@@ -132,7 +137,7 @@ export default function Lobby() {
         <SubButton
           title="来店記録"
           size="lg"
-          onClick={() => (window.location.href = "/user")}
+          onClick={() => router.push("/user")}
         />
       </Box>
 

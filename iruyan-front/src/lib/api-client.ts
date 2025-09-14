@@ -33,7 +33,11 @@ apiClient.interceptors.response.use(
     if (error.response?.status === 401) {
       // Handle unauthorized access
       localStorage.removeItem("authToken");
-      window.location.href = "/login";
+      // Throw a specific error that can be caught by components
+      // and handled with proper Next.js routing
+      const unauthorizedError = new Error("UNAUTHORIZED");
+      unauthorizedError.name = "UnauthorizedError";
+      return Promise.reject(unauthorizedError);
     }
     return Promise.reject(error);
   }
