@@ -14,8 +14,10 @@ import {
 } from "@mui/material";
 import SubButton from "@/components/ui/button/sub-button";
 import { BarChart } from "@mui/x-charts/BarChart";
+import { useRouter } from "next/navigation";
 
 function UserPage() {
+  const router = useRouter();
   const chartData = [
     { day: "月", hours: 4 },
     { day: "火", hours: 3 },
@@ -38,7 +40,7 @@ function UserPage() {
       <SubButton
         title="ノートを閉じる"
         size="lg"
-        onClick={() => (window.location.href = "/lobby")}
+        onClick={() => router.push("/lobby")}
         sx={{
           position: "absolute",
           top: "37px",

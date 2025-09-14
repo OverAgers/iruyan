@@ -1,22 +1,26 @@
 'use client';
 
 import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import useUserStore from "@/stores/user-store";
 
 function App() {
-  useEffect(() => {
-    // ユーザー情報を取得（例としてローカルストレージを使用）
-    const userInfo = localStorage.getItem("user-store");
+  const router = useRouter();
+  const { currentUser } = useUserStore();
 
-    if (userInfo === "") {
+  useEffect(() => {
+    // Zustandストアから現在のユーザー状態を確認
+    if (currentUser) {
       // ユーザー情報がある場合は '/lobby' にリダイレクト
-      window.location.href = "/lobby";
+      router.replace("/lobby");
     } else {
       // ユーザー情報がない場合は '/login' にリダイレクト
-      window.location.href = "/login";
+      router.replace("/login");
     }
-  }, []);
+  }, [currentUser, router]);
 
-  return null; // 何も表示しない
+  // リダイレクト中は何も表示しない（または必要に応じてローディングを表示）
+  return null;
 }
 
 export default App;

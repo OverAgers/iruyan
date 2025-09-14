@@ -4,8 +4,10 @@ import { useEffect } from "react";
 import { formatTime } from "@/utils/time-utils";
 import useUserStore from "@/stores/user-store";
 import { useTimer } from "@/hooks/timer-hooks";
+import { useRouter } from "next/navigation";
 
 export default function WorkTime() {
+  const router = useRouter();
   const { currentUser, setStatus, incrementWorkTime, incrementRestTime, clearUser } =
     useUserStore();
 
@@ -47,9 +49,9 @@ export default function WorkTime() {
       // await logout.logout({ iruyanID: currentUser.iruyanID });
       localStorage.removeItem("user-store");
       clearUser();
-      window.location.href = "/login";
       setStatus("idle");
       stop();
+      router.replace("/login");
       // } catch (error) {
       // console.error("ログアウトに失敗しました:", error);
       // }
