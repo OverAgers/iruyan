@@ -120,7 +120,6 @@ export default function Lobby() {
         display: "flex",
         alignItems: "flex-end",
         justifyContent: "center",
-        height: "100vh",
       }}
     >
       <Box sx={({
@@ -195,8 +194,8 @@ export default function Lobby() {
                 <Image
                   src={currentUser.avatarUrl}
                   alt="Avatar"
-                  width={40}
-                  height={40}
+                  width={240}
+                  height={240}
                   style={{
                     borderRadius: "50%",
                     objectFit: "cover",

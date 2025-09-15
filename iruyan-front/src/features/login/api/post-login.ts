@@ -20,7 +20,7 @@ export type PostLoginRequest = z.infer<typeof postLoginRequestSchema>;
 export type PostLoginResponse = z.infer<typeof postLoginResponseSchema>;
 
 export default function usePostLoginRequest() {
-  const requestURL = `${process.env.NEXT_PUBLIC_API_URL}/login`;
+  const requestURL = `${process.env.NEXT_PUBLIC_API_BASE_URL}/login`;
 
   const [data, setData] = useState<PostLoginResponse | null>(null);
   const [error, setError] = useState<Error | null>(null);

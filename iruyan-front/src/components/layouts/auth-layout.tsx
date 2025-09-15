@@ -18,7 +18,6 @@ export default function AuthLayout({ children }: Props) {
       alt="Login background"
       priority={true}
       sx={{
-        bgcolor: "#F7F4ED",
         height: "100vh",
       }}
     >

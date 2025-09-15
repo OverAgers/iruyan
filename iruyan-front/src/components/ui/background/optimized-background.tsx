@@ -1,7 +1,6 @@
 "use client";
 
 import { ReactNode } from 'react';
-import Image from 'next/image';
 import { Box } from '@mui/material';
 
 interface OptimizedBackgroundProps {
@@ -16,12 +15,10 @@ interface OptimizedBackgroundProps {
 
 export default function OptimizedBackground({
   src,
-  alt,
   children,
-  priority = false,
   className,
   style,
-  sx
+  sx,
 }: OptimizedBackgroundProps) {
   return (
     <Box
@@ -29,29 +26,16 @@ export default function OptimizedBackground({
       sx={{
         position: 'relative',
         width: '100%',
-        height: '100%',
-        overflow: 'hidden',
-        ...sx
+        height: '100vh',
+        backgroundImage: `url(${src})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
       }}
       style={style}
     >
-      {/* Next.js Image as background */}
-      <Image
-        src={src}
-        alt={alt}
-        fill
-        priority={priority}
-        style={{
-          objectFit: 'cover',
-          zIndex: -1,
-        }}
-        sizes="100vw"
-        placeholder="blur"
-        blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAoACgDASIAAhEBAxEB/8QAFwABAQEBAAAAAAAAAAAAAAAABAUGA//EACgQAAIBAwMEAQUBAAAAAAAAAAECAwAEEQUSITFBBhNRImFxgZGhsf/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgMBAQAAAAAAAAAAAAAAAAECERIhEf/aAAwDAQACEQMRAD8A0tFFFaQCiiigAooooA//2Q=="
-      />
-
       {/* Content */}
-      <Box sx={{ position: 'relative', zIndex: 1, width: '100%', height: '100%' }}>
+      <Box sx={{ position: 'relative', zIndex: 1, width: '100%', height: '100%', ...sx }}>
         {children}
       </Box>
     </Box>
