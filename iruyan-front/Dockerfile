@@ -10,8 +10,8 @@ RUN node --version && pnpm --version
 # 作業ディレクトリを作成
 WORKDIR /app
 
-# package.jsonとpnpm-lock.yamlをコピー
-COPY package.json pnpm-lock.yaml ./
+# package.jsonとpnpm-workspace.yamlをコピー
+COPY package.json pnpm-workspace.yaml ./
 
 # 依存パッケージのインストール
 RUN pnpm install --prefer-frozen-lockfile
