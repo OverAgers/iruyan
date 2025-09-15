@@ -69,6 +69,50 @@ const nextConfig: NextConfig = {
     }
     return config;
   },
+  // webpack設定
+  webpack: (config, { dev, isServer }) => {
+    // 本番環境でのバンドルサイズ最適化
+    if (!dev && !isServer) {
+      config.optimization.splitChunks = {
+        chunks: 'all',
+        maxInitialRequests: 25,
+        minSize: 20000,
+        cacheGroups: {
+          vendor: {
+            test: /[\\/]node_modules[\\/]/,
+            name: 'vendors',
+            priority: 10,
+            reuseExistingChunk: true,
+          },
+          mui: {
+            test: /[\\/]node_modules[\\/]@mui[\\/]/,
+            name: 'mui',
+            priority: 20,
+            reuseExistingChunk: true,
+          },
+          muiX: {
+            test: /[\\/]node_modules[\\/]@mui\/x-[\\/]/,
+            name: 'mui-x',
+            priority: 25,
+            reuseExistingChunk: true,
+          },
+          emotion: {
+            test: /[\\/]node_modules[\\/]@emotion[\\/]/,
+            name: 'emotion',
+            priority: 15,
+            reuseExistingChunk: true,
+          },
+          common: {
+            name: 'common',
+            minChunks: 2,
+            priority: 5,
+            reuseExistingChunk: true,
+          },
+        },
+      };
+    }
+    return config;
+  },
 };
 
 export default withBundleAnalyzer(nextConfig);

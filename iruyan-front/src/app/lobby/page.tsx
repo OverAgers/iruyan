@@ -12,6 +12,7 @@ import useGetRoomList from "@/features/lobby/api/get-room-list";
 import usePostRoomEnterRequest from "@/features/lobby/api/post-room-enter";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import OptimizedBackground from "@/components/ui/background/optimized-background";
 // import usePostLogoutRequest from "@/features/lobby/api/post-user-logout";
 
 export default function Lobby() {
@@ -110,15 +111,16 @@ export default function Lobby() {
   };
 
   return (
-    <Box
+    <OptimizedBackground
+      src="/bg-image/bg_lobby.jpg"
+      alt="Lobby background"
+      priority={true}
       sx={{
         position: "relative",
         display: "flex",
         alignItems: "flex-end",
         justifyContent: "center",
         height: "100vh",
-        backgroundImage: "url('/bg-image/bg_lobby.jpg')",
-        backgroundSize: "cover",
       }}
     >
       <Box sx={({
@@ -378,6 +380,6 @@ export default function Lobby() {
           </Box>
         </Box>
       </Modal >
-    </Box >
+    </OptimizedBackground>
   );
 }
