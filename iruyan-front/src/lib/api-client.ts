@@ -18,7 +18,7 @@ export class ApiError extends Error {
 }
 
 const apiClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080",
+  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080/api/v1",
   headers: {
     "Content-Type": "application/json",
   },
@@ -37,8 +37,8 @@ apiClient.interceptors.request.use(
     }
     return config;
   },
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   (_error: unknown) => {
+    console.log(_error);
     return Promise.reject(new ApiError("Request failed", 0, undefined));
   }
 );
